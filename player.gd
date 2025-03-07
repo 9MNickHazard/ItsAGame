@@ -12,6 +12,9 @@ extends CharacterBody2D
 @onready var mana_particles: GPUParticles2D = get_node("/root/world/UI/ManaBar/ManaBarFullParticles")
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var hurtbox_collision: CollisionShape2D = $player_hurtbox/CollisionShape2D
+@onready var blink_cooldown_bar: ProgressBar = $BlinkCooldownBar
+@onready var player_health_bar: ProgressBar = $HealthBar
+@onready var stats_manager = get_node("/root/world/StatsManager")
 
 signal health_changed(new_health)
 signal health_depleted
@@ -22,31 +25,40 @@ signal max_mana_changed(new_max_mana)
 const FloatingDamageScene = preload("res://scenes/player_floating_damage.tscn")
 const FireBlinkScene = preload("res://scenes/fire_blink.tscn")
 const ShockwaveScene = preload("res://scenes/shockwave.tscn")
+const GravityWellScene = preload("res://scenes/gravity_well.tscn")
 
 #const PauseMenuScript = preload("res://scripts/pause_menu.gd")
 
+# gravity well ability
+var gravity_well_mana_cost = 75.0
+var gravity_well_cooldown = 8.0
+var gravity_well_timer = 0.0
+
 
 # blink variables
-#var can_blink = true
-#static var blink_cooldown = 10.0
-#var blink_timer = 0.0
-static var blink_distance = 300.0
+var can_blink = true
+var blink_cooldown = 5.0
+var blink_timer = 0.0
+var blink_cooldown_progress = 1.0
+
+
+const BLINK_DISTANCE = 400.0
 var blinking = false
-static var BLINK_SPEED = 1500.0
+const BLINK_SPEED = 1700.0
 var blink_target_position = Vector2.ZERO
 var blink_direction = Vector2.ZERO
 
 # mana variables
-static var max_mana = 100.0
+static var max_mana: int = 100
 var current_mana = 100.0
 var mana_cost_per_blink = 50.0
 var shockwave_mana_cost = 100.0
 
-static var max_health = 100.0
+static var max_health: int = 100
 var health = 100.0
-var speed: float = 450.0  
-var acceleration: float = 2000.0
-var friction: float = 1500.0
+static var speed: float = 450.0  
+var acceleration: float = 4000.0
+var friction: float = 4000.0
 var direction = "none"
 
 # upgrade related variables
@@ -55,20 +67,62 @@ var owns_gun2 = false
 var owns_sniper1 = false
 var owns_rocketlauncher = false
 var owns_fire_blink = false
+var owns_gravity_well = false
 
 var equip_gun1 = true
 var equip_gun2 = false
 var equip_sniper1 = false
 var equip_rocketlauncher = false
 
+# curesed powerup variables
+static var damage_multiplier = false
+static var weapon_restriction = false
+static var ability_mana_reduction = false
+
 func _ready() -> void:
 	update_gun_states()
-	mana_bar.max_value = max_mana
-	mana_bar.value = current_mana
+	mana_bar.max_value = int(max_mana)
+	mana_bar.value = int(current_mana)
 	mana_particles.emitting = current_mana >= mana_cost_per_blink
+	
+	blink_cooldown_bar.visible = false
+	blink_cooldown_bar.value = 0.0
+	
+	can_blink = true
+	blink_cooldown_progress = 1.0
+	
+	player_health_bar.max_value = int(max_health)
+	player_health_bar.value = int(health)
+	
+	health_changed.connect(_on_player_health_changed_local)
+	max_health_changed.connect(_on_player_max_health_changed_local)
 
 func _physics_process(delta: float) -> void:
-	# blink
+	if weapon_restriction and current_mana < max_mana:
+		current_mana = min(current_mana + delta, max_mana)
+		mana_bar.value = current_mana
+		mana_changed.emit(current_mana)
+		
+	if !can_blink:
+		if !blink_cooldown_bar.visible:
+			blink_cooldown_bar.visible = true
+			
+		blink_timer += delta
+		blink_cooldown_progress = blink_timer / blink_cooldown
+		
+		blink_cooldown_bar.value = blink_cooldown_progress
+		
+		if blink_timer >= blink_cooldown:
+			can_blink = true
+			blink_cooldown_progress = 1.0
+			blink_timer = 0.0
+			
+			blink_cooldown_bar.visible = false
+	
+	if gravity_well_timer > 0:
+		gravity_well_timer -= delta
+		
+	
 	if blinking:
 		var distance_to_target = global_position.distance_to(blink_target_position)
 		if distance_to_target > 10:
@@ -85,28 +139,58 @@ func _physics_process(delta: float) -> void:
 		player_movement(delta)
 		handle_blink()
 		handle_shockwave()
+		handle_gravity_well()
 	
 	if Input.is_action_just_released("scroll_up"):
-		switch_weapon(1)
-	elif Input.is_action_just_released("scroll_down"):
 		switch_weapon(-1)
+	elif Input.is_action_just_released("scroll_down"):
+		switch_weapon(1)
 		
 static func set_max_health(value: float):
-	max_health = value
+	max_health = int(value)
 	
 	var player = Engine.get_main_loop().get_root().get_node("world/player")
 	if player:
 		player.max_health_changed.emit(value)
 		
 static func set_max_mana(value: float):
-	max_mana = value
+	max_mana = int(value)
 	
 	var player = Engine.get_main_loop().get_root().get_node("world/player")
 	if player:
 		player.max_mana_changed.emit(value)
 		
+func _on_player_health_changed_local(new_health: float) -> void:
+	player_health_bar.value = new_health
+
+func _on_player_max_health_changed_local(new_max_health: float) -> void:
+	player_health_bar.max_value = int(new_max_health)
+		
+
+func handle_gravity_well() -> void:
+	if ability_mana_reduction:
+		gravity_well_mana_cost = 20.0
+	
+	if Input.is_action_just_pressed("Ability 2") and current_mana >= gravity_well_mana_cost and gravity_well_timer <= 0 and owns_gravity_well:
+		stats_manager.total_gravity_wells_used += 1
+		
+		var gravity_well = GravityWellScene.instantiate()
+		
+		var mouse_pos = get_global_mouse_position()
+		gravity_well.global_position = mouse_pos
+		
+		get_parent().add_child(gravity_well)
+		
+		current_mana -= gravity_well_mana_cost
+		mana_bar.value = current_mana
+		mana_changed.emit(current_mana)
+		gravity_well_timer = gravity_well_cooldown
+
 
 func switch_weapon(direction_num: int):
+	if weapon_restriction:
+		return
+	
 	var owned_weapons = []
 	if owns_gun1:
 		owned_weapons.append("gun1")
@@ -140,31 +224,38 @@ func switch_weapon(direction_num: int):
 	equip_sniper1 = (new_weapon == "sniper1")
 	equip_rocketlauncher = (new_weapon == "rocketlauncher")
 	
+	var weapon_hud = get_node_or_null("/root/world/UI/WeaponHUD")
+	if weapon_hud:
+		weapon_hud.update_weapon_display()
+	
 	update_gun_states()
 
 func handle_shockwave() -> void:
+	if ability_mana_reduction:
+		shockwave_mana_cost = 20.0
+		
 	mana_particles.emitting = current_mana >= max_mana
 	
 	if Input.is_action_just_pressed("Ability 1") and current_mana >= shockwave_mana_cost:
+		stats_manager.total_shockwaves_used += 1
+		
 		var shockwave = ShockwaveScene.instantiate()
 		shockwave.global_position = global_position
 		get_parent().add_child(shockwave)
 		shockwave.animated_sprite.play("shockwave")
 		
-		# Use mana and update UI
 		current_mana -= shockwave_mana_cost
 		mana_bar.value = current_mana
 		mana_changed.emit(current_mana)
 	
 func handle_blink() -> void:
-	mana_particles.emitting = current_mana >= max_mana
-	
-	if Input.is_action_just_pressed("Blink") and current_mana >= mana_cost_per_blink:
-		mana_particles.emitting = false
+	if Input.is_action_just_pressed("Blink") and can_blink:
 		perform_blink()
 
 
 func perform_blink() -> void:
+	stats_manager.total_blinks_used += 1
+	
 	if velocity.length() > 0:
 		blink_direction = velocity.normalized()
 	else:
@@ -184,15 +275,19 @@ func perform_blink() -> void:
 			
 		blink_direction = input_dir.normalized()
 	
-	blink_target_position = global_position + blink_direction * blink_distance
+	blink_target_position = global_position + blink_direction * BLINK_DISTANCE
 	
 	collision_shape.disabled = true
 	hurtbox_collision.disabled = true
 	
 	blinking = true
-	current_mana -= mana_cost_per_blink
-	mana_bar.value = current_mana
-	mana_changed.emit(current_mana)
+	
+	can_blink = false
+	blink_timer = 0.0
+	blink_cooldown_progress = 0.0
+	
+	blink_cooldown_bar.value = 0.0
+	blink_cooldown_bar.visible = true
 	
 	blink.play("blink_out")
 	
@@ -214,6 +309,9 @@ func perform_blink() -> void:
 
 	
 func update_gun_states():
+	if weapon_restriction:
+		return
+	
 	if owns_gun1 and equip_gun1:
 		gun.process_mode = Node.PROCESS_MODE_INHERIT
 		gun.visible = true
@@ -253,6 +351,9 @@ func update_gun_states():
 
 func acquire_fire_blink():
 	owns_fire_blink = true
+	
+func acquire_gravity_well():
+	owns_gravity_well = true
 
 func acquire_gun2():
 	owns_gun2 = true
@@ -294,7 +395,10 @@ func player_movement(delta):
 		input_direction.y += 1
 
 	input_direction = input_direction.normalized()
-
+	
+	#if speed_multiplier:
+		#speed = speed * 1.5
+	
 	var target_velocity = input_direction * speed
 
 	if input_direction != Vector2.ZERO:
@@ -330,6 +434,9 @@ func play_animation(dir, movement):
 		animated_sprite.play("idle")
 		
 func take_damage_from_mob1(damage):
+	if damage_multiplier:
+		damage = damage * 2
+		
 	var damage_number = FloatingDamageScene.instantiate()
 	damage_number.damage_amount = damage
 	get_parent().add_child(damage_number)
@@ -342,9 +449,10 @@ func take_damage_from_mob1(damage):
 		
 	var camera = $Camera2D
 	if camera and camera.has_method("add_trauma"):
-		# Amount of trauma proportional to damage (adjust as needed)
 		var trauma_amount = clamp(damage / 40.0, 0.3, 0.6)
 		camera.add_trauma(trauma_amount)
 	
 	animation_player.stop()
 	animation_player.play("player_damage_flash")
+	
+	stats_manager.damage_taken_from_enemies += damage

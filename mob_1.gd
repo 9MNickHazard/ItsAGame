@@ -22,12 +22,20 @@ extends CharacterBody2D
 @onready var goblin_sfx_15: AudioStreamPlayer2D = $Node2D/GoblinSFX15
 @onready var goblin_death_sfx: AnimationPlayer = $GoblinDeathSFX
 @onready var los_ray: RayCast2D = $LOSRayCast
-
+@onready var stats_manager = get_node("/root/world/StatsManager")
 
 const CoinScene = preload("res://scenes/coin.tscn")
 const FloatingDamageScene = preload("res://scenes/floating_damage.tscn")
 const HeartScene = preload("res://scenes/heart_pickup.tscn")
 const ManaBallScene = preload("res://scenes/mana_ball.tscn")
+const fivecoin_scene = preload("res://scenes/5_coin.tscn")
+const FloatingHealScene = preload("res://scenes/floating_heal.tscn")
+
+# gravity well variables
+var is_being_pulled_by_gravity_well = false
+var gravity_well_position = Vector2.ZERO
+var gravity_well_strength = 0.0
+var gravity_well_factor = 0.0
 
 # player pushback variables
 var push_direction = Vector2.ZERO
@@ -39,6 +47,7 @@ var is_attacking = false
 var attack_range = 60
 var attack_cooldown = 0.5
 var attack_timer = 0.0
+var max_health = 20.0
 var health = 20.0
 var overlapping_player = false
 var damage_cooldown = 1.5
@@ -46,11 +55,12 @@ var damage_timer = 0.0
 var damage
 var minimum_damage = 6.0
 var maximum_damage = 12.0
+var is_dead = false
 
 var knockback_timer = 0.0
 var knockback_duration = 0.15
 
-const SPEED = 200.0
+const SPEED = 275.0
 
 enum State {CHASE, WANDER, FLANK}
 var current_state = State.CHASE
@@ -72,12 +82,17 @@ func _ready() -> void:
 	
 			
 func _physics_process(delta):
+	if is_dead:
+		return
+		
+	var movement_velocity = Vector2.ZERO
+	
 	if is_being_pushed and player:
 		var push_velocity = push_direction * PUSH_SPEED
 		velocity = push_velocity
 		move_and_slide()
 		return
-		
+	
 	if knockback_timer > 0:
 		knockback_timer -= delta
 		move_and_slide()
@@ -88,7 +103,6 @@ func _physics_process(delta):
 	if state_timer >= 2.0:
 		state_timer = 0
 		
-		# Transitions from CHASE state
 		if current_state == State.CHASE:
 			var rand_value = randf()
 			if rand_value <= 0.15:
@@ -98,7 +112,6 @@ func _physics_process(delta):
 				current_state = State.FLANK
 				flank_direction = calculate_flank_direction()
 		
-		# Transitions from WANDER state
 		elif current_state == State.WANDER:
 			var rand_value = randf()
 			if rand_value <= 0.70:
@@ -107,7 +120,6 @@ func _physics_process(delta):
 				current_state = State.FLANK
 				flank_direction = calculate_flank_direction()
 		
-		# Transitions from FLANK state
 		elif current_state == State.FLANK:
 			var rand_value = randf()
 			if rand_value <= 0.70:
@@ -118,35 +130,42 @@ func _physics_process(delta):
 	
 	attack_timer += delta
 	
-	var direction
-	
+	var ai_direction
 	if not is_inside_play_area():
-		direction = global_position.direction_to(Vector2.ZERO)
+		ai_direction = global_position.direction_to(Vector2.ZERO)
 	elif current_state == State.CHASE:
-		direction = global_position.direction_to(player.global_position)
+		ai_direction = global_position.direction_to(player.global_position)
 	elif current_state == State.FLANK:
-		direction = flank_direction
+		ai_direction = flank_direction
 	else:
-		direction = wander_direction
+		ai_direction = wander_direction
 	
 	
 	var distance_to_player = global_position.distance_to(player.global_position)
 	
-	# only check distance if not already in middle of an attack
 	if not is_attacking and distance_to_player <= attack_range and attack_timer >= attack_cooldown:
 		start_attack()
 		attack_timer = 0.0
 	
 	var optimal_distance = 50.0
 	
+	var ai_velocity = Vector2.ZERO
 	if not is_attacking:
 		if distance_to_player > optimal_distance:
-			velocity = direction * SPEED
-		else:
-			velocity = Vector2.ZERO
+			ai_velocity = ai_direction * SPEED
+		
+		if is_being_pulled_by_gravity_well:
+			var pull_direction = global_position.direction_to(gravity_well_position)
 			
-		if direction.x != 0:
-			animated_sprite.flip_h = direction.x < 0
+			var pull_velocity = pull_direction * gravity_well_strength * gravity_well_factor
+			
+			var pull_dominance = pow(gravity_well_factor, 1.5)
+			velocity = ai_velocity * (1.0 - pull_dominance) + pull_velocity * pull_dominance
+		else:
+			velocity = ai_velocity
+			
+		if ai_direction.x != 0:
+			animated_sprite.flip_h = ai_direction.x < 0
 		
 		if velocity != Vector2.ZERO:
 			animated_sprite.play("run")
@@ -181,6 +200,9 @@ func _on_frame_changed():
 		
 
 func start_attack():
+	if is_dead:
+		return
+		
 	is_attacking = true
 	
 	facing_away_hitbox.monitoring = false
@@ -193,6 +215,9 @@ func start_attack():
 
 
 func end_attack():
+	if is_dead:
+		return
+		
 	is_attacking = false
 	facing_away_hitbox.monitoring = false
 	facing_camera_hitbox.monitoring = false
@@ -201,17 +226,17 @@ func end_attack():
 	animated_sprite.play("run")
 
 func play_attack_animation():
+	if is_dead:
+		return
+		
 	var to_player = player.global_position - global_position
 	
 	if abs(to_player.y) > abs(to_player.x):
 		if to_player.y > 0:
-			#facing_camera_hitbox.monitoring = true
 			animated_sprite.play("facing_camera_attack")
 		else:
-			#facing_away_hitbox.monitoring = true
 			animated_sprite.play("facing_away_attack")
 	else:
-		#side_hitbox.monitoring = true
 		animated_sprite.play("side_attack")
 		animated_sprite.flip_h = to_player.x < 0
 		
@@ -226,12 +251,9 @@ func is_inside_play_area() -> bool:
 		
 func calculate_flank_direction():
 	var to_player = player.global_position - global_position
-	# Perpendicular vector (rotate 90 degrees)
 	var perpendicular = Vector2(-to_player.y, to_player.x).normalized()
-	# Randomly choose clockwise or counter-clockwise
 	if randf() > 0.5:
 		perpendicular = -perpendicular
-	# Blend with some forward movement
 	return (perpendicular * 0.8 + to_player.normalized() * 0.2).normalized()
 			
 
@@ -269,6 +291,9 @@ func play_random_goblin_death_sound():
 		goblin_sfx_15.play()
 
 func take_damage(damage_dealt: float = 10.0, knockback_amount: float = 250.0, knockback_dir: Vector2 = Vector2.ZERO):
+	if is_dead:
+		return
+	
 	health -= damage_dealt
 	
 	var damage_number = FloatingDamageScene.instantiate()
@@ -280,15 +305,21 @@ func take_damage(damage_dealt: float = 10.0, knockback_amount: float = 250.0, kn
 		velocity = knockback_dir * knockback_amount
 		knockback_timer = knockback_duration
 		
+	stats_manager.damage_dealt_to_enemies += damage_dealt
+		
 	if health <= 0:
-		var coin_number = randi_range(1, 5)
+		is_dead = true
+		is_attacking = false
+		
+		stats_manager.add_enemy_kill("Torch Goblin")
+		
+		var coin_number = randi_range(1, 3)
 		var x_offset = randi_range(-25, 25)
 		var y_offset = randi_range(-25, 25)
+		
 		for i in range(coin_number):
-			if randi() % 2 == 0 and coin_number > 1:
-				x_offset = -x_offset
-			if randi() % 2 == 0 and coin_number > 1:
-				y_offset = -y_offset
+			x_offset = randi_range(-25, 25)
+			y_offset = randi_range(-25, 25)
 			
 			var coin = CoinPoolManager.get_coin()
 			if coin:
@@ -296,14 +327,14 @@ func take_damage(damage_dealt: float = 10.0, knockback_amount: float = 250.0, kn
 			else:
 				print("ERROR: Failed to get coin from pool")
 			
-		if randf() < 0.03: # 0.05
+		if randf() < 0.03:
 			x_offset = randi_range(1, 25)
 			y_offset = randi_range(1, 25)
 			var heart = HeartScene.instantiate()
 			heart.global_position = global_position + Vector2(x_offset, y_offset)
 			get_parent().call_deferred("add_child", heart)
 		
-		if randf() < 0.02: # 0.02
+		if randf() < 0.02:
 			x_offset = randi_range(1, 25)
 			y_offset = randi_range(1, 25)
 			var manaball = ManaBallScene.instantiate()
@@ -321,6 +352,17 @@ func take_damage(damage_dealt: float = 10.0, knockback_amount: float = 250.0, kn
 	animation_player.stop()
 	animation_player.play("hit_flash")
 
+func heal(amount: float):
+	if not is_instance_valid(self) or is_dead or health >= max_health:
+		return
+	
+	var actual_heal = min(amount, max_health - health)
+	health += actual_heal
+	
+	var heal_number = FloatingHealScene.instantiate()
+	heal_number.heal_amount = actual_heal
+	get_parent().add_child(heal_number)
+	heal_number.global_position = global_position + Vector2(0, -30)
 
 func _on_facing_away_hitbox_area_entered(area: Area2D) -> void:
 	if area.is_in_group("player_hurtbox"):

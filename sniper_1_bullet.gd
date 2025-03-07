@@ -12,6 +12,9 @@ var damage = randf_range(minimum_damage + damage_min_bonus, maximum_damage + dam
 static var speed_bonus = 0.0
 static var range_bonus = 0.0
 
+static var glass_cannon_multiplier = false
+static var runforrestrun_multiplier = false
+
 var BULLET_SPEED = 2000.0 + speed_bonus
 var RANGE = 2500.0 + range_bonus
 
@@ -28,6 +31,11 @@ func _physics_process(delta: float) -> void:
 
 func _on_body_entered(body: Node2D) -> void:
 	if body.has_method("take_damage"):
+		if glass_cannon_multiplier:
+			damage = damage * 2
+		if runforrestrun_multiplier:
+			damage = ceil(damage * 0.75)
+			
 		var knockback_dir = Vector2.RIGHT.rotated(rotation)
 		body.take_damage(damage, 400.0, knockback_dir)
 		

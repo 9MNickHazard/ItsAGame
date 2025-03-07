@@ -3,13 +3,15 @@ extends Area2D
 @onready var weapon_pivot: Marker2D = $"weapon pivot"
 @onready var shooting_point: Marker2D = $"weapon pivot/Sprite2D/shooting point"
 @onready var audio_stream_player: AudioStreamPlayer2D = $AudioStreamPlayer2D
-
+@onready var stats_manager = get_node("/root/world/StatsManager")
 
 const ROCKET = preload("res://scenes/rocket_ammo.tscn")
 
 var can_fire = true
 var fire_rate = 0.9
 var fire_timer = 0.0
+
+var weapon_name = "Nuke Launcher"
 
 
 func _physics_process(delta):
@@ -44,3 +46,10 @@ func shoot():
 	new_bullet.rotation = weapon_pivot.rotation
 	
 	get_node("/root/world").add_child(new_bullet)
+	
+	stats_manager.total_shots_fired += 1
+	
+	if stats_manager.shots_fired_by_weapon.has(weapon_name):
+		stats_manager.shots_fired_by_weapon[weapon_name] += 1
+	else:
+		stats_manager.shots_fired_by_weapon[weapon_name] = 1

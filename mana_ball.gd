@@ -2,7 +2,8 @@ extends Area2D
 
 @onready var pickup_area: Area2D = $PickupArea
 @onready var cpu_particles_2d: CPUParticles2D = $CPUParticles2D
-
+@onready var despawn_timer: Timer = $DespawnTimer
+@onready var stats_manager = get_node("/root/world/StatsManager")
 
 var player = null
 var max_speed = 600
@@ -12,7 +13,7 @@ var is_being_pulled = false
 
 func _ready() -> void:
 	cpu_particles_2d.emitting = true
-	
+	despawn_timer.start()
 
 func _physics_process(delta: float) -> void:
 	if is_being_pulled and player:
@@ -36,6 +37,9 @@ func _on_body_entered(body: Node2D) -> void:
 		var mana_amount = min(50, player.max_mana - player.current_mana)
 		player.current_mana += mana_amount
 		player.mana_changed.emit(player.current_mana)
+		
+		stats_manager.total_mana_balls_collected += 1
+		
 		queue_free()
 
 
@@ -56,3 +60,7 @@ func _on_pickup_area_body_exited(body: Node2D) -> void:
 		player = null
 		is_being_pulled = false
 		current_speed = 0
+
+
+func _on_despawn_timer_timeout() -> void:
+	queue_free()

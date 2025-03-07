@@ -3,14 +3,18 @@ extends Node2D
 @onready var shooting_point: Marker2D = $"weapon pivot/Pistol/shooting point"
 @onready var weapon_pivot: Marker2D = $"weapon pivot"
 @onready var doubleshot_gun_sound: AudioStreamPlayer2D = $"doubleshot gun sound"
+@onready var stats_manager = get_node("/root/world/StatsManager")
 
 const BULLET2 = preload("res://scenes/bullet_2.tscn")
 
 var can_fire = true
 var fire_rate = 0.12
 var fire_timer = 0.0
+var world
 
 const SPREAD_ANGLE = 0.10
+
+var weapon_name = "Multi-Shot Gun"
 
 
 func _physics_process(delta):
@@ -43,12 +47,36 @@ func shoot():
 	var new_bullet1 = BULLET2.instantiate()
 	var new_bullet2 = BULLET2.instantiate()
 	
+	var pause_menu = get_node("/root/world/PauseMenu")
+	
+	stats_manager.total_shots_fired += 2
+	
+	if stats_manager.shots_fired_by_weapon.has(weapon_name):
+		stats_manager.shots_fired_by_weapon[weapon_name] += 2
+	else:
+		stats_manager.shots_fired_by_weapon[weapon_name] = 2
+	
+	if pause_menu and pause_menu.gun2_level >= 4:
+		var new_bullet3 = BULLET2.instantiate()
+		new_bullet3.global_position = shooting_point.global_position
+		new_bullet3.rotation = weapon_pivot.rotation
+		world = get_node("/root/world")
+		world.add_child(new_bullet3)
+		
+		stats_manager.total_shots_fired += 1
+		
+		if stats_manager.shots_fired_by_weapon.has(weapon_name):
+			stats_manager.shots_fired_by_weapon[weapon_name] += 1
+	
 	new_bullet1.global_position = shooting_point.global_position
 	new_bullet1.rotation = weapon_pivot.rotation - SPREAD_ANGLE
 	
 	new_bullet2.global_position = shooting_point.global_position
 	new_bullet2.rotation = weapon_pivot.rotation + SPREAD_ANGLE
 	
-	var world = get_node("/root/world")
+	
+	if not world:
+		world = get_node("/root/world")
 	world.add_child(new_bullet1)
 	world.add_child(new_bullet2)
+		

@@ -1,4 +1,3 @@
-# ui.gd
 extends CanvasLayer
 
 @onready var health_bar: ProgressBar = $HealthBar
@@ -13,6 +12,7 @@ extends CanvasLayer
 @onready var PlayerScript = load("res://scripts/player.gd")
 @onready var mana_bar: ProgressBar = $ManaBar
 @onready var mana_amount_label: Label = $ManaBar/ManaAmountLabel
+@onready var stats_manager = get_node("/root/world/StatsManager")
 
 var coins_collected = 0
 var score = 0
@@ -53,7 +53,7 @@ func _on_player_health_changed(new_health):
 	
 func _on_player_mana_changed(new_mana):
 	mana_bar.value = new_mana
-	mana_amount_label.text = str(new_mana) + "/" + str(PlayerScript.max_mana)
+	mana_amount_label.text = str(int(new_mana)) + "/" + str(PlayerScript.max_mana)
 
 func _on_max_mana_changed(new_max_mana):
 	mana_bar.max_value = new_max_mana
@@ -66,6 +66,8 @@ func increase_score(amount):
 func add_coin(amount: int = 1):
 	coins_collected += amount
 	coin_label.text = "Coins: " + str(coins_collected)
+	
+	stats_manager.total_coins_collected += amount
 	
 
 func _on_level_up(new_level: int):
@@ -102,10 +104,10 @@ func _create_level_up_animation():
 	var track_index = animation.add_track(Animation.TYPE_VALUE)
 	
 	animation.track_set_path(track_index, ":position:y")
-	animation.track_insert_key(track_index, 0.0, 100)  # start
-	animation.track_insert_key(track_index, 0.5, 70)   # up
-	animation.track_insert_key(track_index, 1.5, 70)   # stay
-	animation.track_insert_key(track_index, 2.0, 40)   # fade out pos
+	animation.track_insert_key(track_index, 0.0, 100)
+	animation.track_insert_key(track_index, 0.5, 70)
+	animation.track_insert_key(track_index, 1.5, 70)
+	animation.track_insert_key(track_index, 2.0, 40)
 	
 	track_index = animation.add_track(Animation.TYPE_VALUE)
 	animation.track_set_path(track_index, ":scale")

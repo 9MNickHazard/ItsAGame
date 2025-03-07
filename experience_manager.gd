@@ -1,5 +1,7 @@
 extends Node
 
+@onready var stats_manager = get_node("/root/world/StatsManager")
+
 signal level_up(new_level)
 signal experience_gained(current_xp, xp_for_next_level)
 
@@ -64,6 +66,9 @@ func add_experience(amount: int):
 	while current_level < 50 and current_xp >= xp_table[current_level]:
 		current_level += 1
 		level_up.emit(current_level)
+		
+		if current_level > stats_manager.highest_level_reached:
+			stats_manager.highest_level_reached = current_level
 	
 	var xp_needed = xp_table[current_level] if current_level < 50 else 0
 	experience_gained.emit(current_xp, xp_needed)

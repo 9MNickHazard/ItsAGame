@@ -20,17 +20,21 @@ extends CharacterBody2D
 @onready var goblin_sfx_14: AudioStreamPlayer2D = $TNTGoblinSFX/GoblinSFX14
 @onready var goblin_sfx_15: AudioStreamPlayer2D = $TNTGoblinSFX/GoblinSFX15
 @onready var goblin_death_sfx: AnimationPlayer = $DeathSFX
-@onready var los_ray: RayCast2D = $LOSRayCast
+@onready var stats_manager = get_node("/root/world/StatsManager")
 
 const TNTScene = preload("res://scenes/tnt.tscn")
 const CoinScene = preload("res://scenes/coin.tscn")
 const FloatingDamageScene = preload("res://scenes/floating_damage.tscn")
 const HeartScene = preload("res://scenes/heart_pickup.tscn")
 const ManaBallScene = preload("res://scenes/mana_ball.tscn")
+const fivecoin_scene = preload("res://scenes/5_coin.tscn")
+const FloatingHealScene = preload("res://scenes/floating_heal.tscn")
 
+var is_being_pulled_by_gravity_well = false
+var gravity_well_position = Vector2.ZERO
+var gravity_well_strength = 0.0
+var gravity_well_factor = 0.0
 
-
-# player pushback variables
 var push_direction = Vector2.ZERO
 var is_being_pushed = false
 const PUSH_SPEED = 100.0
@@ -39,8 +43,10 @@ var player
 var throw_range = 500.0
 var throw_cooldown = 2.0
 var throw_timer = 0.0
+var max_health = 30.0
 var health = 30.0
 var is_throwing = false
+var is_dead = false
 
 var knockback_timer = 0.0
 var knockback_duration = 0.15
@@ -60,6 +66,9 @@ func _ready() -> void:
 	
 
 func _physics_process(delta):
+	if is_dead:
+		return
+		
 	if is_being_pushed and player:
 		var push_velocity = push_direction * PUSH_SPEED
 		velocity = push_velocity
@@ -84,32 +93,39 @@ func _physics_process(delta):
 			
 	throw_timer += delta
 			
-	var direction
-			
+	var ai_direction
 	if not is_inside_play_area():
-		direction = global_position.direction_to(Vector2.ZERO)
+		ai_direction = global_position.direction_to(Vector2.ZERO)
 	elif current_state == State.CHASE:
-		direction = global_position.direction_to(player.global_position)
+		ai_direction = global_position.direction_to(player.global_position)
 	else:
-		direction = wander_direction
+		ai_direction = wander_direction
 	
 	var distance_to_player = global_position.distance_to(player.global_position)
 	
-	# Handle TNT throwing
 	if distance_to_player <= throw_range and throw_timer >= throw_cooldown:
 		throw_tnt()
 		throw_timer = 0.0
 	
 	var optimal_distance = 400.0
-	# Handle movement when not throwing
+	var ai_velocity = Vector2.ZERO
+	
 	if not is_throwing:
 		if distance_to_player > optimal_distance:
-			velocity = direction * SPEED
-		else:
-			velocity = Vector2.ZERO
+			ai_velocity = ai_direction * SPEED
 		
-		if direction.x != 0:
-			animated_sprite.flip_h = direction.x < 0
+		if is_being_pulled_by_gravity_well:
+			var pull_direction = global_position.direction_to(gravity_well_position)
+			
+			var pull_velocity = pull_direction * gravity_well_strength * gravity_well_factor
+			
+			var pull_dominance = pow(gravity_well_factor, 1.5)
+			velocity = ai_velocity * (1.0 - pull_dominance) + pull_velocity * pull_dominance
+		else:
+			velocity = ai_velocity
+			
+		if ai_direction.x != 0:
+			animated_sprite.flip_h = ai_direction.x < 0
 		
 		if velocity != Vector2.ZERO:
 			animated_sprite.play("run")
@@ -122,6 +138,9 @@ func _physics_process(delta):
 	
 
 func throw_tnt():
+	if is_dead:
+		return
+		
 	is_throwing = true
 	animated_sprite.play("throw")
 	await animated_sprite.animation_finished
@@ -148,6 +167,9 @@ func is_inside_play_area() -> bool:
 		   global_position.y >= -970 and global_position.y <= 950
 
 func take_damage(damage_dealt: float = 10.0, knockback_amount: float = 250.0, knockback_dir: Vector2 = Vector2.ZERO):
+	if is_dead:
+		return
+		
 	health -= damage_dealt
 	
 	var damage_number = FloatingDamageScene.instantiate()
@@ -159,18 +181,30 @@ func take_damage(damage_dealt: float = 10.0, knockback_amount: float = 250.0, kn
 		velocity = knockback_dir * knockback_amount
 		knockback_timer = knockback_duration
 		
+	stats_manager.damage_dealt_to_enemies += damage_dealt
+		
 	if health <= 0:
-		var coin_number = randi_range(2, 8)
-		var x_offset = randi_range(5, 25)
-		var y_offset = randi_range(5, 25)
-		for i in range(coin_number):
-			if randi() % 2 == 0 and coin_number > 1:
-				x_offset = -x_offset
-			if randi() % 2 == 0 and coin_number > 1:
-				y_offset = -y_offset
+		is_dead = true
+		is_throwing = false
+		
+		stats_manager.add_enemy_kill("TNT Goblin")
+		
+		var coin_number = randi_range(1, 5)
+		var x_offset = randi_range(-25, 25)
+		var y_offset = randi_range(-25, 25)
+		
+		if coin_number >= 5:
+			var fivecoin = fivecoin_scene.instantiate()
+			fivecoin.global_position = global_position + Vector2(x_offset, y_offset)
+			get_parent().call_deferred("add_child", fivecoin)
 			
-			var coin = CoinPoolManager.get_coin()
-			coin.global_position = global_position + Vector2(x_offset, y_offset)
+		else:
+			for i in range(coin_number):
+				x_offset = randi_range(-25, 25)
+				y_offset = randi_range(-25, 25)
+				
+				var coin = CoinPoolManager.get_coin()
+				coin.global_position = global_position + Vector2(x_offset, y_offset)
 			
 		if randf() < 0.05:
 			x_offset = randi_range(1, 25)
@@ -230,6 +264,18 @@ func play_random_goblin_death_sound():
 		goblin_sfx_14.play()
 	elif sound_effect == 15:
 		goblin_sfx_15.play()
+		
+func heal(amount: float):
+	if not is_instance_valid(self) or is_dead or health >= max_health:
+		return
+	
+	var actual_heal = min(amount, max_health - health)
+	health += actual_heal
+	
+	var heal_number = FloatingHealScene.instantiate()
+	heal_number.heal_amount = actual_heal
+	get_parent().add_child(heal_number)
+	heal_number.global_position = global_position + Vector2(0, -30)
 		
 func _on_player_detector_area_entered(area: Area2D) -> void:
 	if area.is_in_group("player_hurtbox"):

@@ -13,11 +13,10 @@ func _ready():
 	
 	label.text = str(round(damage_amount))
 	
-	# fade out timer
 	var tween = create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, fade_duration).set_delay(lifetime)
 	tween.tween_callback(queue_free)
 
 func _process(delta):
 	position += velocity * delta
-	velocity.y += 100 * delta  # gravity effect
+	velocity.y += 100 * delta

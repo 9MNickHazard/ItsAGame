@@ -2,20 +2,19 @@ extends CanvasLayer
 
 
 @onready var round_label: Label = $RoundLabel
-@onready var wave_label: Label = $WaveLabel
 @onready var round_manager = get_node("/root/world/RoundManager")
+@onready var mobs_left_label: Label = $MobsLeftLabel
 
 func _ready():
 	round_label.text = "Round: 1"
-	#wave_label.text = "Wave: 1"
-	wave_label.visible = false
-	
-	# Connect signals from RoundManager
+	mobs_left_label.text = "Mobs Left: 0"
+
 	round_manager.round_started.connect(_on_round_started)
-	#round_manager.wave_started.connect(_on_wave_started)
+	round_manager.mobs_remaining_changed.connect(_on_mobs_remaining_changed)
 
 func _on_round_started(round_number):
 	round_label.text = "Round: " + str(round_number)
 	
-#func _on_wave_started(wave_number):
-	#wave_label.text = "Wave: " + str(wave_number)
+func _on_mobs_remaining_changed(remaining_count):
+	mobs_left_label.text = "Mobs Left: " + str(remaining_count)
+	

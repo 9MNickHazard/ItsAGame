@@ -2,6 +2,8 @@ extends Area2D
 
 @onready var pickup_area: Area2D = $PickupArea
 @onready var coin_sfx: AudioStreamPlayer2D = $"Coin SFX"
+@onready var despawn_timer: Timer = $DespawnTimer
+
 
 var player = null
 var max_speed = 600
@@ -12,6 +14,7 @@ var value = 1
 
 func _ready():
 	set_physics_process(false)
+	despawn_timer.start()
 
 func _physics_process(delta: float) -> void:
 	if is_being_pulled and player:
@@ -20,6 +23,7 @@ func _physics_process(delta: float) -> void:
 		var direction = global_position.direction_to(player.global_position)
 		
 		global_position += direction * current_speed * delta
+		
 
 
 func _on_body_entered(body: Node2D) -> void:
@@ -48,3 +52,11 @@ func _on_pickup_area_body_exited(body: Node2D) -> void:
 		player = null
 		is_being_pulled = false
 		current_speed = 0
+
+
+func _on_despawn_timer_timeout() -> void:
+	var coin_pool_manager = get_node("/root/CoinPoolManager")
+	if coin_pool_manager:
+		coin_pool_manager.release_coin(self)
+	else:
+		print("ERROR: CoinPoolManager not found!")

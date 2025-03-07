@@ -3,12 +3,15 @@ extends Node2D
 @onready var shooting_point: Marker2D = $"weapon pivot/Pistol/shooting point"
 @onready var weapon_pivot = $"weapon pivot"
 @onready var pistol_shot: AudioStreamPlayer2D = $"pistol shot"
+@onready var stats_manager = get_node("/root/world/StatsManager")
 
 const BULLET = preload("res://scenes/bullet.tscn")
 
 var can_fire = true
 var fire_rate = 0.18
 var fire_timer = 0.0
+
+var weapon_name = "Pistol"
 
 
 func _physics_process(delta):
@@ -41,6 +44,13 @@ func shoot():
 	var new_bullet = BULLET.instantiate()
 	new_bullet.global_position = shooting_point.global_position
 	new_bullet.rotation = weapon_pivot.rotation
+	
+	stats_manager.total_shots_fired += 1
+	
+	if stats_manager.shots_fired_by_weapon.has(weapon_name):
+		stats_manager.shots_fired_by_weapon[weapon_name] += 1
+	else:
+		stats_manager.shots_fired_by_weapon[weapon_name] = 1
 	
 	get_node("/root/world").add_child(new_bullet)
 	

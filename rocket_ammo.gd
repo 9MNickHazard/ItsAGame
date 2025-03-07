@@ -17,6 +17,9 @@ static var range_bonus = 0.0
 var BULLET_SPEED = 600.0 + speed_bonus
 var RANGE = 800.0 + range_bonus
 
+static var glass_cannon_multiplier = false
+static var runforrestrun_multiplier = false
+
 var has_exploded = false
 var enemies_hit = []
 
@@ -54,10 +57,15 @@ func _on_explosion_frame_changed():
 	if explosion.animation == "explosion":
 		var current_frame = explosion.frame
 		
-		if current_frame in [2, 3, 4]:  # Apply damage on frames 3, 4, and 5
+		if current_frame in [2, 3, 4]:
 			var bodies = explosion_area.get_overlapping_bodies()
 			for body in bodies:
 				if body.has_method("take_damage") and not enemies_hit.has(body):
+					if glass_cannon_multiplier:
+						damage = damage * 2
+					if runforrestrun_multiplier:
+						damage = ceil(damage * 0.75)
+						
 					enemies_hit.append(body)
 					var knockback_dir = (body.global_position - global_position).normalized()
 					body.take_damage(damage, 400.0, knockback_dir)

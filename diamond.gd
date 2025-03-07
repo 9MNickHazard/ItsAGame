@@ -1,7 +1,7 @@
 extends Area2D
 
 @onready var pickup_area: Area2D = $PickupArea
-
+@onready var stats_manager = get_node("/root/world/StatsManager")
 
 var player = null
 var max_speed = 600
@@ -23,6 +23,9 @@ func _on_body_entered(body: Node2D) -> void:
 	var ui = get_node("/root/world/UI")
 	if ui:
 		ui.add_coin(100)
+		
+	stats_manager.total_diamonds_collected += 1
+	
 	queue_free()
 
 

@@ -4,6 +4,7 @@ extends Node2D
 @onready var weapon_pivot = $"weapon pivot"
 @onready var laser_sight: Line2D = $"laser sight"
 @onready var sniper_shot: AudioStreamPlayer2D = $"sniper shot"
+@onready var stats_manager = get_node("/root/world/StatsManager")
 
 const BULLET = preload("res://scenes/sniper_1_bullet.tscn")
 
@@ -11,6 +12,8 @@ var can_fire = true
 var fire_rate = 0.60
 var fire_timer = 0.0
 const LASER_LENGTH = 2000
+
+var weapon_name = "Sniper"
 
 
 func _physics_process(delta):
@@ -49,4 +52,13 @@ func shoot():
 	new_bullet.rotation = weapon_pivot.rotation
 	
 	get_node("/root/world").add_child(new_bullet)
+	
+	stats_manager.total_shots_fired += 1
+	
+	if stats_manager.shots_fired_by_weapon.has(weapon_name):
+		stats_manager.shots_fired_by_weapon[weapon_name] += 1
+	else:
+		stats_manager.shots_fired_by_weapon[weapon_name] = 1
+	
+	
 	

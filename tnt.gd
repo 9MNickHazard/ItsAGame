@@ -28,7 +28,7 @@ func _ready():
 
 func throw(target_pos: Vector2):
 	target_position = target_pos
-	# random offset to throw
+
 	target_position += Vector2(randf_range(-150, 150), randf_range(-150, 150))
 
 	direction = global_position.direction_to(target_position)
