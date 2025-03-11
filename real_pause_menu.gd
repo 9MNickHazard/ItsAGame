@@ -271,7 +271,7 @@ func update_stats_display() -> void:
 	
 	# Progress stats
 	add_stat_label("Progress Stats", true)
-	add_stat_label("Highest Round Reached: " + str(stats_manager.highest_round_reached))
+	add_stat_label("Highest Difficulty Reached: " + str(snappedf(stats_manager.highest_difficulty_reached, 0.1)))
 	add_stat_label("Highest Level Reached: " + str(stats_manager.highest_level_reached))
 	
 	# Additional Stats
@@ -283,10 +283,10 @@ func update_stats_display() -> void:
 		var dps = stats_manager.damage_dealt_to_enemies / stats_manager.total_play_time_seconds
 		add_stat_label("Damage Per Second: " + str(snapped(dps, 0.01)))
 	
-	# Average coins per round
-	if stats_manager.rounds_completed > 0:
-		var coins_per_round = float(stats_manager.total_coins_collected) / stats_manager.rounds_completed
-		add_stat_label("Average Coins Per Round: " + str(snapped(coins_per_round, 0.1)))
+	# Average coins per kill
+	if stats_manager.total_enemies_killed > 0:
+		var coins_per_kill = float(stats_manager.total_coins_collected) / stats_manager.total_enemies_killed
+		add_stat_label("Average Coins Per Kill: " + str(snapped(coins_per_kill, 0.1)))
 
 
 func add_stat_label(text: String, is_header: bool = false):

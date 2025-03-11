@@ -24,13 +24,17 @@ var total_shots_fired: int = 0
 var shots_fired_by_weapon: Dictionary = {}
 
 # progress stats
-var rounds_completed: int = 0
-var highest_round_reached: int = 0
+var highest_difficulty_reached: float = 1.0
 var highest_level_reached: int = 1
 
 func _ready() -> void:
 	play_time_timer.timeout.connect(_on_timer_timeout)
 	reset_stats()
+	
+	# Connect to difficulty manager if it exists
+	var difficulty_manager = get_node_or_null("/root/world/DifficultyManager")
+	if difficulty_manager:
+		difficulty_manager.difficulty_increased.connect(_on_difficulty_increased)
 
 func _on_timer_timeout() -> void:
 	total_play_time_seconds += 1.0
@@ -52,8 +56,7 @@ func reset_stats() -> void:
 	total_gravity_wells_used = 0
 	total_shots_fired = 0
 	shots_fired_by_weapon = {}
-	rounds_completed = 0
-	highest_round_reached = 0
+	highest_difficulty_reached = 1.0
 	highest_level_reached = 1
 
 func start_tracking() -> void:
@@ -79,4 +82,7 @@ func add_enemy_kill(enemy_type: String) -> void:
 		enemy_kills_by_type[enemy_type] += 1
 	else:
 		enemy_kills_by_type[enemy_type] = 1
-		enemy_kills_by_type[enemy_type] = 1
+
+func _on_difficulty_increased(new_difficulty: float) -> void:
+	if new_difficulty > highest_difficulty_reached:
+		highest_difficulty_reached = new_difficulty

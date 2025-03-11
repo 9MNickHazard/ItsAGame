@@ -346,10 +346,7 @@ func toggle_pause():
 		update_cost_labels()
 		player_coins_label.text = "Coins: " + str(ui.coins_collected)
 		
-		if round_manager and !round_manager.round_in_progress:
-			continue_button.visible = true
-		else:
-			continue_button.visible = false
+		continue_button.visible = true
 			
 		get_tree().paused = true
 		
@@ -535,7 +532,12 @@ func _on_restart_button_pressed() -> void:
 	get_tree().reload_current_scene()
 	
 func _on_continue_button_pressed() -> void:
-	round_manager.continue_to_next_round()
+	var difficulty_manager = get_node("/root/world/DifficultyManager")
+	if difficulty_manager:
+		difficulty_manager.resume_game()
+		
+	get_tree().paused = false
+	pause_menu.visible = false
 
 
 

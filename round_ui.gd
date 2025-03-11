@@ -1,20 +1,20 @@
 extends CanvasLayer
 
 
-@onready var round_label: Label = $RoundLabel
-@onready var round_manager: Node2D = get_node("/root/world/RoundManager")
+@onready var difficulty_label: Label = $DifficultyLabel
 @onready var mobs_left_label: Label = $MobsLeftLabel
+@onready var difficulty_manager: Node2D = get_node("/root/world/DifficultyManager")
 
 func _ready() -> void:
-	round_label.text = "Round: 1"
-	mobs_left_label.text = "Mobs Left: 0"
+	difficulty_label.text = "Difficulty: 1.0"
+	#mobs_left_label.text = "Active Mobs: 0"
 
-	round_manager.round_started.connect(_on_round_started)
-	round_manager.mobs_remaining_changed.connect(_on_mobs_remaining_changed)
+	difficulty_manager.difficulty_increased.connect(_on_difficulty_increased)
+	#difficulty_manager.mobs_remaining_changed.connect(_on_mobs_remaining_changed)
 
-func _on_round_started(round_number: int) -> void:
-	round_label.text = "Round: " + str(round_number)
+func _on_difficulty_increased(new_difficulty: float) -> void:
+	difficulty_label.text = "Difficulty: " + str(snappedf(new_difficulty, 0.1))
 	
-func _on_mobs_remaining_changed(remaining_count: int) -> void:
-	mobs_left_label.text = "Mobs Left: " + str(remaining_count)
+#func _on_mobs_remaining_changed(remaining_count: int) -> void:
+	#mobs_left_label.text = "Active Mobs: " + str(remaining_count)
 	

@@ -63,8 +63,10 @@ var xp_table: Dictionary = {
 func add_experience(amount: int) -> void:
 	current_xp += amount
 	
+	var level_up_occurred: bool = false
 	while current_level < 50 and current_xp >= xp_table[current_level]:
 		current_level += 1
+		level_up_occurred = true
 		level_up.emit(current_level)
 		
 		if current_level > stats_manager.highest_level_reached:

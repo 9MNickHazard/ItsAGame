@@ -3,7 +3,7 @@ extends Node2D
 @onready var player: CharacterBody2D = $player
 @onready var ui: CanvasLayer = get_node("/root/world/UI")
 @onready var round_manager: Node2D = $RoundManager
-@onready var stats_manager: Node2D = get_node("/root/world/StatsManager")
+@onready var difficulty_manager: Node2D = get_node("/root/world/DifficultyManager")
 
 
 func _ready() -> void:
@@ -23,12 +23,15 @@ func _on_player_health_depleted() -> void:
 	player.set_physics_process(false)
 	#player.get_node("CollisionShape2D").disabled = true
 	#player.get_node("player_hurtbox").get_node("CollisionShape2D").disabled = true
-	round_manager.active_mobs.clear()
-	round_manager.round_in_progress = false
-	round_manager.spawning_in_progress = false
-	
-	if round_manager.spawn_timer.is_inside_tree():
-		round_manager.spawn_timer.stop()
+	if difficulty_manager:
+		difficulty_manager.active_mobs.clear()
+		difficulty_manager.game_paused = true
+		difficulty_manager.spawning_in_progress = false
+		
+		if difficulty_manager.spawn_timer:
+			difficulty_manager.spawn_timer.stop()
+		if difficulty_manager.difficulty_timer:
+			difficulty_manager.difficulty_timer.stop()
 		
 	var stats_ui: CanvasLayer = load("res://scenes/game_stats_ui.tscn").instantiate()
 	add_child(stats_ui)

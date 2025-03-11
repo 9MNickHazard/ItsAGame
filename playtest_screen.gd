@@ -25,9 +25,9 @@ extends CanvasLayer
 @onready var get_gravity_well_button: Button = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer/MarginContainer/GridContainer/GravityWell/VBoxContainer/GetGravityWellButton
 @onready var upgrade_gravity_well_button: Button = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer/MarginContainer/GridContainer/GravityWell/VBoxContainer/UpgradeGravityWellButton
 
-@onready var previous_round_button: Button = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer2/VBoxContainer/HBoxContainer/PreviousRoundButton
-@onready var next_round_button: Button = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer2/VBoxContainer/HBoxContainer/NextRoundButton
-@onready var round_label: Label = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer2/VBoxContainer/RoundLabel
+@onready var previous_difficulty_button: Button = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer2/VBoxContainer/HBoxContainer/PreviousDifficultyButton
+@onready var next_difficulty_button: Button = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer2/VBoxContainer/HBoxContainer/NextDifficultButton
+@onready var difficulty_label: Label = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer2/VBoxContainer/DifficultyLabel
 
 @onready var glass_cannon_button: Button = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer/MarginContainer/GridContainer/CursedUpgrades/VBoxContainer/GlassCannonButton
 @onready var semi_pacifist_button: Button = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer/MarginContainer/GridContainer/CursedUpgrades/VBoxContainer/SemiPacifistButton
@@ -52,32 +52,32 @@ const MAX_GRAVITY_WELL_LEVEL = 5
 
 var gun1_improvements = {
 	"fire_rate": 0.02,
-	"damage_min": 3.0,
-	"damage_max": 5.0,
+	"damage_min": 3,
+	"damage_max": 5,
 	"bullet_speed": 100.0,
 	"range": 100.0
 }
 
 var gun2_improvements = {
 	"fire_rate": 0.015,
-	"damage_min": 2.0,
-	"damage_max": 4.0,
+	"damage_min": 2,
+	"damage_max": 4,
 	"bullet_speed": 125.0,
 	"range": 50.0
 }
 
 var sniper_improvements = {
 	"fire_rate": 0.03,
-	"damage_min": 5.0,
-	"damage_max": 10.0,
+	"damage_min": 5,
+	"damage_max": 10,
 	"bullet_speed": 200.0,
 	"range": 200.0
 }
 
 var rocket_launcher_improvements = {
 	"fire_rate": 0.015,
-	"damage_min": 25.0,
-	"damage_max": 50.0,
+	"damage_min": 25,
+	"damage_max": 50,
 	"bullet_speed": 100.0,
 	"range": 100.0
 }
@@ -88,7 +88,7 @@ var fire_blink_improvements = {
 }
 
 var gravity_well_improvements = {
-	"damage": 2.0,
+	"damage": 2,
 	"duration": 2.0,
 	"pull_radius": 15.0,
 	"damage_radius": 10.0
@@ -118,8 +118,10 @@ var has_rocket_launcher = false
 var has_fire_blink = false
 var has_gravity_well = false
 
-var selected_round = 1
-var max_round = 12
+var selected_difficulty: float = 1.0
+var min_difficulty: float = 1.0
+var max_difficulty: float = 10.0
+var difficulty_increment: float = 0.5
 
 var active_cursed_powerup = "none"
 
@@ -132,7 +134,7 @@ func _ready():
 	upgrade_fire_blink_button.disabled = true
 	upgrade_gravity_well_button.disabled = true
 	
-	update_round_label()
+	update_difficulty_label()
 
 func _on_upgrade_pistol_button_pressed():
 	if gun1_level < MAX_GUN1_LEVEL:
@@ -255,21 +257,10 @@ func _on_upgrade_gravity_well_button_pressed():
 			upgrade_gravity_well_button.text = "Upgrade to Level " + str(gravity_well_level + 1)
 
 
-func _on_previous_round_button_pressed():
-	if selected_round > 1:
-		selected_round -= 1
-		update_round_label()
 
-func _on_next_round_button_pressed():
-	if selected_round < max_round:
-		selected_round += 1
-		update_round_label()
+func update_difficulty_label():
+	difficulty_label.text = "Difficulty (1-10) you will start on: " + str(selected_difficulty)
 
-func update_round_label():
-	if selected_round == 4 or selected_round == 7 or selected_round == 12:
-		round_label.text = "Round you will start on: " + str(selected_round) + "(Boss Round)"
-	else:
-		round_label.text = "Round you will start on: " + str(selected_round)
 
 
 func _on_glass_cannon_button_pressed():
@@ -311,13 +302,10 @@ func _on_start_button_pressed():
 	
 	apply_cursed_powerup()
 	
-	var round_manager = get_node("/root/world/RoundManager")
-	if round_manager:
-		round_manager.current_round_index = selected_round - 1
-		round_manager.current_wave_index = 0
-		round_manager.round_in_progress = false
-		
-		round_manager.start_round()
+	var difficulty_manager = get_node("/root/world/DifficultyManager")
+	if difficulty_manager:
+		difficulty_manager.current_difficulty = selected_difficulty
+		difficulty_manager.start_game()
 	
 	get_tree().paused = false
 	queue_free()
@@ -492,3 +480,17 @@ func apply_cursed_powerup():
 			sniper_bullet_script.runforrestrun_multiplier = true
 			rocket_ammo_script.runforrestrun_multiplier = true
 			player_script.speed = 675.0
+
+
+func _on_previous_difficulty_button_pressed() -> void:
+	if selected_difficulty > min_difficulty:
+		selected_difficulty -= difficulty_increment
+		selected_difficulty = snappedf(selected_difficulty, 0.1)
+		update_difficulty_label()
+
+
+func _on_next_difficulty_button_pressed() -> void:
+	if selected_difficulty < max_difficulty:
+		selected_difficulty += difficulty_increment
+		selected_difficulty = snappedf(selected_difficulty, 0.1)
+		update_difficulty_label()
