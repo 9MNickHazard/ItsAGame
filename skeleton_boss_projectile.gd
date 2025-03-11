@@ -3,22 +3,22 @@ extends Area2D
 @onready var sprite: Sprite2D = $Projectile
 @onready var particles: CPUParticles2D = $CPUParticles2D
 
-var direction = Vector2.RIGHT
-var speed = 650.0
-var traveled_distance = 0
-var max_distance = 1200.0
-var damage = randi_range(15, 25)
-var rotation_speed = 5.0
+var direction: Vector2 = Vector2.RIGHT
+var speed: float = 650.0
+var traveled_distance: int = 0
+var max_distance: float = 1200.0
+var damage: int = randi_range(15, 25)
+var rotation_speed: float = 5.0
 
-func _ready():
+func _ready() -> void:
 	rotation = direction.angle()
 
 
-func _process(delta):
+func _process(delta: float) -> void:
 	particles.gravity = -direction * 100
 	particles.local_coords = false
 
-func _physics_process(delta):
+func _physics_process(delta: float) -> void:
 	position += direction * speed * delta
 	
 	sprite.rotation += rotation_speed * delta
@@ -27,9 +27,9 @@ func _physics_process(delta):
 	if traveled_distance >= max_distance:
 		queue_free()
 
-func _on_area_entered(area):
+func _on_area_entered(area: Area2D) -> void:
 	if area.is_in_group("player_hurtbox"):
-		var player = area.get_parent()
+		var player: CharacterBody2D = area.get_parent()
 		if player.has_method("take_damage_from_mob1"):
 			player.take_damage_from_mob1(damage)
 		queue_free()

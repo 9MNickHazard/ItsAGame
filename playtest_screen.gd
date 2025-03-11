@@ -37,6 +37,7 @@ extends CanvasLayer
 
 @onready var starting_power_ups: CanvasLayer = $"."
 
+var player
 
 const MAX_GUN1_LEVEL = 5
 const MAX_GUN2_LEVEL = 5
@@ -313,15 +314,10 @@ func _on_start_button_pressed():
 	var round_manager = get_node("/root/world/RoundManager")
 	if round_manager:
 		round_manager.current_round_index = selected_round - 1
+		round_manager.current_wave_index = 0
+		round_manager.round_in_progress = false
 		
-		if round_manager.current_round_index < round_manager.rounds.size():
-			round_manager.total_mobs_in_current_round = round_manager.calculate_total_mobs_in_round(round_manager.current_round_index)
-			round_manager.mobs_killed_in_current_round = 0
-			
-			round_manager.emit_signal("round_started", round_manager.rounds[round_manager.current_round_index].round_number)
-			round_manager.emit_signal("mobs_remaining_changed", round_manager.total_mobs_in_current_round)
-			
-			round_manager.current_wave_index = 0
+		round_manager.start_round()
 	
 	get_tree().paused = false
 	queue_free()
@@ -343,7 +339,7 @@ func apply_upgrades():
 		bullet_script.range_bonus += gun1_improvements.range
 	
 	if has_gun2:
-		var player = get_node("/root/world/player")
+		player = get_node("/root/world/player")
 		if player:
 			player.owns_gun2 = true
 			player.update_gun_states()
@@ -355,7 +351,7 @@ func apply_upgrades():
 			bullet2_script.range_bonus += gun2_improvements.range
 	
 	if has_sniper:
-		var player = get_node("/root/world/player")
+		player = get_node("/root/world/player")
 		if player:
 			player.owns_sniper1 = true
 			player.update_gun_states()
@@ -367,7 +363,7 @@ func apply_upgrades():
 			sniper_bullet_script.range_bonus += sniper_improvements.range
 	
 	if has_rocket_launcher:
-		var player = get_node("/root/world/player")
+		player = get_node("/root/world/player")
 		if player:
 			player.owns_rocketlauncher = true
 			player.update_gun_states()
@@ -379,12 +375,12 @@ func apply_upgrades():
 			rocket_ammo_script.range_bonus += rocket_launcher_improvements.range
 	
 	if blink_level > 1:
-		var player = get_node("/root/world/player")
+		player = get_node("/root/world/player")
 		if player:
 			player.blink_cooldown = blink_cooldown_upgrade[blink_level]
 	
 	if has_fire_blink:
-		var player = get_node("/root/world/player")
+		player = get_node("/root/world/player")
 		if player:
 			player.owns_fire_blink = true
 			
@@ -398,20 +394,20 @@ func apply_upgrades():
 	
 	for i in range(1, hp_level):
 		player_script.set_max_health(player_script.max_health + 25.0)
-		var player = get_node("/root/world/player")
+		player = get_node("/root/world/player")
 		if player:
 			player.health += 25.0
 			player.health_changed.emit(player.health)
 	
 	for i in range(1, mana_level):
 		player_script.set_max_mana(player_script.max_mana + 50.0)
-		var player = get_node("/root/world/player")
+		player = get_node("/root/world/player")
 		if player:
 			player.current_mana += 50.0
 			player.mana_changed.emit(player.current_mana)
 	
 	if has_gravity_well:
-		var player = get_node("/root/world/player")
+		player = get_node("/root/world/player")
 		if player:
 			player.owns_gravity_well = true
 			
@@ -422,7 +418,7 @@ func apply_upgrades():
 			gravity_well_script.damage_radius_bonus += gravity_well_improvements.damage_radius
 	
 	var pause_menu = get_node("/root/world/PauseMenu")
-	var player = get_node("/root/world/player")
+	player = get_node("/root/world/player")
 	
 	if player:
 		if has_gun2:

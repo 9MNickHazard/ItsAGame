@@ -1,25 +1,25 @@
 extends Area2D
 
-var travelled_distance = 0
+var travelled_distance: float = 0.0
 
-static var damage_min_bonus = 0.0
-static var damage_max_bonus = 0.0
+static var damage_min_bonus: int = 0
+static var damage_max_bonus: int = 0
 
-var minimum_damage = 4.0
-var maximum_damage = 7.0
-var damage = randf_range(minimum_damage + damage_min_bonus, maximum_damage + damage_max_bonus)
+var minimum_damage: int = 4
+var maximum_damage: int = 8
+var damage: int = randi_range(minimum_damage + damage_min_bonus, maximum_damage + damage_max_bonus)
 
-static var speed_bonus = 0.0
-static var range_bonus = 0.0
+static var speed_bonus: float = 0.0
+static var range_bonus: float = 0.0
 
-static var glass_cannon_multiplier = false
-static var runforrestrun_multiplier = false
+static var glass_cannon_multiplier: bool = false
+static var runforrestrun_multiplier: bool = false
 
-var BULLET_SPEED = 1500.0 + speed_bonus
-var RANGE = 1000.0 + range_bonus
+var BULLET_SPEED: float = 1500.0 + speed_bonus
+var RANGE: float = 1000.0 + range_bonus
 
 func _physics_process(delta: float) -> void:
-	var direction = Vector2.RIGHT.rotated(rotation)
+	var direction: Vector2 = Vector2.RIGHT.rotated(rotation)
 	position += direction * BULLET_SPEED * delta
 	
 	travelled_distance += BULLET_SPEED * delta
@@ -36,7 +36,7 @@ func _on_body_entered(body: Node2D) -> void:
 		if runforrestrun_multiplier:
 			damage = ceil(damage * 0.75)
 			
-		var knockback_dir = Vector2.ZERO
+		var knockback_dir: Vector2 = Vector2.ZERO
 		body.take_damage(damage)
 		
 	queue_free()

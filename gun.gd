@@ -1,24 +1,24 @@
 extends Node2D
 
 @onready var shooting_point: Marker2D = $"weapon pivot/Pistol/shooting point"
-@onready var weapon_pivot = $"weapon pivot"
+@onready var weapon_pivot: Marker2D = $"weapon pivot"
 @onready var pistol_shot: AudioStreamPlayer2D = $"pistol shot"
-@onready var stats_manager = get_node("/root/world/StatsManager")
+@onready var stats_manager: Node2D = get_node("/root/world/StatsManager")
 
 const BULLET = preload("res://scenes/bullet.tscn")
 
-var can_fire = true
-var fire_rate = 0.18
-var fire_timer = 0.0
+var can_fire: bool = true
+var fire_rate: float = 0.18
+var fire_timer: float = 0.0
 
-var weapon_name = "Pistol"
+var weapon_name: String = "Pistol"
 
 
-func _physics_process(delta):
-	var mouse_pos = get_global_mouse_position()
-	var direction = global_position.direction_to(mouse_pos)
+func _physics_process(delta: float) -> void:
+	var mouse_pos: Vector2 = get_global_mouse_position()
+	var direction: Vector2 = global_position.direction_to(mouse_pos)
 	
-	var angle = direction.angle()
+	var angle: float = direction.angle()
 	
 	weapon_pivot.rotation = angle
 	
@@ -39,9 +39,9 @@ func _physics_process(delta):
 			can_fire = true
 		
 		
-func shoot():
+func shoot() -> void:
 	pistol_shot.play()
-	var new_bullet = BULLET.instantiate()
+	var new_bullet: Area2D = BULLET.instantiate()
 	new_bullet.global_position = shooting_point.global_position
 	new_bullet.rotation = weapon_pivot.rotation
 	

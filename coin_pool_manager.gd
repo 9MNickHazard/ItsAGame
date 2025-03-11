@@ -1,14 +1,14 @@
 extends Node
 
-var coin_pool = []
-var target_pool_size = 600
-var initial_pool_size = 150
-var coins_per_batch = 5
-var coin_scene = preload("res://scenes/coin.tscn")
+var coin_pool: Array = []
+var target_pool_size: int = 600
+var initial_pool_size: int = 150
+var coins_per_batch: int = 5
+var coin_scene: PackedScene = preload("res://scenes/coin.tscn")
 var pool_timer: Timer
-var inactive_position = Vector2(10000, 10000)
+var inactive_position: Vector2 = Vector2(10000, 10000)
 
-func _ready():
+func _ready() -> void:
 	for i in range(initial_pool_size):
 		create_coin_for_pool()
 	
@@ -18,27 +18,27 @@ func _ready():
 	pool_timer.timeout.connect(_on_pool_timer_timeout)
 	pool_timer.start()
 	
-func _process(delta):
+func _process(delta: float) -> void:
 	if Engine.get_physics_frames() % 60 == 0:
-		var active_coins = 0
-		var inactive_coins = 0
+		var active_coins: int = 0
+		var inactive_coins: int = 0
 		
-		for coin in coin_pool:
+		for coin: Area2D in coin_pool:
 			if coin.visible:
 				active_coins += 1
 			else:
 				inactive_coins += 1
 				
 
-func _on_pool_timer_timeout():
+func _on_pool_timer_timeout() -> void:
 	for i in range(coins_per_batch):
 		create_coin_for_pool()
 	
 	if coin_pool.size() >= target_pool_size:
 		pool_timer.stop()
 
-func create_coin_for_pool():
-	var coin = coin_scene.instantiate()
+func create_coin_for_pool() -> void:
+	var coin: Area2D = coin_scene.instantiate()
 	add_child(coin)
 	
 	coin.visible = false
@@ -48,8 +48,8 @@ func create_coin_for_pool():
 	coin_pool.append(coin)
 
 
-func get_coin():
-	for c in coin_pool:
+func get_coin() -> Area2D:
+	for c: Area2D in coin_pool:
 		if c and not c.visible:
 			c.visible = true
 			c.set_physics_process(true)
@@ -59,7 +59,7 @@ func get_coin():
 			return c
 	
 	if coin_pool.size() < target_pool_size:
-		var addedcoin = coin_scene.instantiate()
+		var addedcoin: Area2D = coin_scene.instantiate()
 		add_child(addedcoin)
 		coin_pool.append(addedcoin)
 		if addedcoin.has_node("DespawnTimer"):
@@ -68,7 +68,7 @@ func get_coin():
 		return addedcoin
 	
 	if coin_pool.size() == 0:
-		var newcoin = coin_scene.instantiate()
+		var newcoin: Area2D = coin_scene.instantiate()
 		add_child(newcoin)
 		coin_pool.append(newcoin)
 		if newcoin.has_node("DespawnTimer"):
@@ -76,7 +76,7 @@ func get_coin():
 			newcoin.get_node("DespawnTimer").start()
 		return newcoin
 	
-	var coin = coin_pool[0]
+	var coin: Area2D = coin_pool[0]
 	
 	if not is_instance_valid(coin):
 		coin = coin_scene.instantiate()
@@ -93,7 +93,7 @@ func get_coin():
 	coin.set_physics_process(true)
 	return coin
 
-func release_coin(coin):
+func release_coin(coin: Area2D) -> void:
 	if coin:
 		if coin.has_node("DespawnTimer"):
 			coin.get_node("DespawnTimer").stop()
@@ -105,9 +105,9 @@ func release_coin(coin):
 	else:
 		print("WARNING: Tried to release null coin")
 		
-func reset_for_new_game():
+func reset_for_new_game() -> void:
 	# Hide all coins
-	for coin in coin_pool:
+	for coin: Area2D in coin_pool:
 		if is_instance_valid(coin):
 			coin.visible = false
 			coin.position = inactive_position

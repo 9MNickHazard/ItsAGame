@@ -14,13 +14,13 @@ extends CharacterBody2D
 @onready var hurtbox_collision: CollisionShape2D = $player_hurtbox/CollisionShape2D
 @onready var blink_cooldown_bar: ProgressBar = $BlinkCooldownBar
 @onready var player_health_bar: ProgressBar = $HealthBar
-@onready var stats_manager = get_node("/root/world/StatsManager")
+@onready var stats_manager: Node2D = get_node("/root/world/StatsManager")
 
-signal health_changed(new_health)
+signal health_changed(new_health: int)
 signal health_depleted
-signal max_health_changed(new_max_health)
-signal mana_changed(new_mana)
-signal max_mana_changed(new_max_mana)
+signal max_health_changed(new_max_health: int)
+signal mana_changed(new_mana: float)
+signal max_mana_changed(new_max_mana: float)
 
 const FloatingDamageScene = preload("res://scenes/player_floating_damage.tscn")
 const FireBlinkScene = preload("res://scenes/fire_blink.tscn")
@@ -30,60 +30,58 @@ const GravityWellScene = preload("res://scenes/gravity_well.tscn")
 #const PauseMenuScript = preload("res://scripts/pause_menu.gd")
 
 # gravity well ability
-var gravity_well_mana_cost = 75.0
-var gravity_well_cooldown = 8.0
-var gravity_well_timer = 0.0
+var gravity_well_mana_cost: float = 50.0
+var gravity_well_cooldown: float = 8.0
+var gravity_well_timer: float = 0.0
 
 
 # blink variables
-var can_blink = true
-var blink_cooldown = 5.0
-var blink_timer = 0.0
-var blink_cooldown_progress = 1.0
+var can_blink: bool = true
+var blink_cooldown: float = 5.0
+var blink_timer: float = 0.0
+var blink_cooldown_progress: float = 1.0
 
 
 const BLINK_DISTANCE = 400.0
-var blinking = false
+var blinking: bool = false
 const BLINK_SPEED = 1700.0
-var blink_target_position = Vector2.ZERO
-var blink_direction = Vector2.ZERO
+var blink_target_position: Vector2 = Vector2.ZERO
+var blink_direction: Vector2 = Vector2.ZERO
 
 # mana variables
 static var max_mana: int = 100
-var current_mana = 100.0
-var mana_cost_per_blink = 50.0
-var shockwave_mana_cost = 100.0
+var current_mana: float = 100.0
+var shockwave_mana_cost: float = 50.0
 
 static var max_health: int = 100
-var health = 100.0
+var health: int = 100
 static var speed: float = 450.0  
 var acceleration: float = 4000.0
 var friction: float = 4000.0
-var direction = "none"
+var direction: String = "none"
 
 # upgrade related variables
-var owns_gun1 = true
-var owns_gun2 = false
-var owns_sniper1 = false
-var owns_rocketlauncher = false
-var owns_fire_blink = false
-var owns_gravity_well = false
+var owns_gun1: bool = true
+var owns_gun2: bool = false
+var owns_sniper1: bool = false
+var owns_rocketlauncher: bool = false
+var owns_fire_blink: bool = false
+var owns_gravity_well: bool = false
 
-var equip_gun1 = true
-var equip_gun2 = false
-var equip_sniper1 = false
-var equip_rocketlauncher = false
+var equip_gun1: bool = true
+var equip_gun2: bool = false
+var equip_sniper1: bool = false
+var equip_rocketlauncher: bool = false
 
 # curesed powerup variables
-static var damage_multiplier = false
-static var weapon_restriction = false
-static var ability_mana_reduction = false
+static var damage_multiplier: bool = false
+static var weapon_restriction: bool = false
+static var ability_mana_reduction: bool = false
 
 func _ready() -> void:
 	update_gun_states()
 	mana_bar.max_value = int(max_mana)
 	mana_bar.value = int(current_mana)
-	mana_particles.emitting = current_mana >= mana_cost_per_blink
 	
 	blink_cooldown_bar.visible = false
 	blink_cooldown_bar.value = 0.0
@@ -124,7 +122,7 @@ func _physics_process(delta: float) -> void:
 		
 	
 	if blinking:
-		var distance_to_target = global_position.distance_to(blink_target_position)
+		var distance_to_target: float = global_position.distance_to(blink_target_position)
 		if distance_to_target > 10:
 			velocity = blink_direction * BLINK_SPEED
 			move_and_slide()
@@ -146,24 +144,24 @@ func _physics_process(delta: float) -> void:
 	elif Input.is_action_just_released("scroll_down"):
 		switch_weapon(1)
 		
-static func set_max_health(value: float):
+static func set_max_health(value: int) -> void:
 	max_health = int(value)
 	
-	var player = Engine.get_main_loop().get_root().get_node("world/player")
+	var player: CharacterBody2D = Engine.get_main_loop().get_root().get_node("world/player")
 	if player:
 		player.max_health_changed.emit(value)
 		
-static func set_max_mana(value: float):
+static func set_max_mana(value: float) -> void:
 	max_mana = int(value)
 	
-	var player = Engine.get_main_loop().get_root().get_node("world/player")
+	var player: CharacterBody2D = Engine.get_main_loop().get_root().get_node("world/player")
 	if player:
 		player.max_mana_changed.emit(value)
 		
-func _on_player_health_changed_local(new_health: float) -> void:
+func _on_player_health_changed_local(new_health: int) -> void:
 	player_health_bar.value = new_health
 
-func _on_player_max_health_changed_local(new_max_health: float) -> void:
+func _on_player_max_health_changed_local(new_max_health: int) -> void:
 	player_health_bar.max_value = int(new_max_health)
 		
 
@@ -174,9 +172,9 @@ func handle_gravity_well() -> void:
 	if Input.is_action_just_pressed("Ability 2") and current_mana >= gravity_well_mana_cost and gravity_well_timer <= 0 and owns_gravity_well:
 		stats_manager.total_gravity_wells_used += 1
 		
-		var gravity_well = GravityWellScene.instantiate()
+		var gravity_well: Node2D = GravityWellScene.instantiate()
 		
-		var mouse_pos = get_global_mouse_position()
+		var mouse_pos: Vector2 = get_global_mouse_position()
 		gravity_well.global_position = mouse_pos
 		
 		get_parent().add_child(gravity_well)
@@ -187,11 +185,11 @@ func handle_gravity_well() -> void:
 		gravity_well_timer = gravity_well_cooldown
 
 
-func switch_weapon(direction_num: int):
+func switch_weapon(direction_num: int) -> void:
 	if weapon_restriction:
 		return
 	
-	var owned_weapons = []
+	var owned_weapons: Array = []
 	if owns_gun1:
 		owned_weapons.append("gun1")
 	if owns_gun2:
@@ -204,7 +202,7 @@ func switch_weapon(direction_num: int):
 	if owned_weapons.size() <= 1:
 		return
 		
-	var current_index = -1
+	var current_index: int = -1
 	if equip_gun1:
 		current_index = owned_weapons.find("gun1")
 	elif equip_gun2:
@@ -239,7 +237,7 @@ func handle_shockwave() -> void:
 	if Input.is_action_just_pressed("Ability 1") and current_mana >= shockwave_mana_cost:
 		stats_manager.total_shockwaves_used += 1
 		
-		var shockwave = ShockwaveScene.instantiate()
+		var shockwave: Area2D = ShockwaveScene.instantiate()
 		shockwave.global_position = global_position
 		get_parent().add_child(shockwave)
 		shockwave.animated_sprite.play("shockwave")
@@ -259,7 +257,7 @@ func perform_blink() -> void:
 	if velocity.length() > 0:
 		blink_direction = velocity.normalized()
 	else:
-		var input_dir = Vector2.ZERO
+		var input_dir: Vector2 = Vector2.ZERO
 		
 		if Input.is_action_pressed("right"):
 			input_dir.x += 1
@@ -295,12 +293,12 @@ func perform_blink() -> void:
 		var anim_length = blink.current_animation_length
 		
 		for i in range(3):
-			var fire_blink = FireBlinkScene.instantiate()
+			var fire_blink: Area2D = FireBlinkScene.instantiate()
 			fire_blink.global_position = global_position + (blink_direction.normalized() * -30)
 			fire_blink.rotation = blink_direction.angle() + PI/2
 			get_parent().add_child(fire_blink)
 			
-			var tween = create_tween()
+			var tween: Tween = create_tween()
 			tween.tween_interval(0.1 * i)
 			tween.tween_property(fire_blink, "global_position", 
 				blink_target_position, 
@@ -308,7 +306,7 @@ func perform_blink() -> void:
 			tween.tween_callback(fire_blink.queue_free)
 
 	
-func update_gun_states():
+func update_gun_states() -> void:
 	if weapon_restriction:
 		return
 	
@@ -349,13 +347,13 @@ func update_gun_states():
 		rocket_launcher.process_mode = Node.PROCESS_MODE_INHERIT
 		rocket_launcher.visible = true
 
-func acquire_fire_blink():
+func acquire_fire_blink() -> void:
 	owns_fire_blink = true
 	
-func acquire_gravity_well():
+func acquire_gravity_well() -> void:
 	owns_gravity_well = true
 
-func acquire_gun2():
+func acquire_gun2() -> void:
 	owns_gun2 = true
 	
 	equip_gun1 = false
@@ -364,7 +362,7 @@ func acquire_gun2():
 	equip_rocketlauncher = false
 	update_gun_states()
 	
-func acquire_sniper1():
+func acquire_sniper1() -> void:
 	owns_sniper1 = true
 	
 	equip_gun1 = false
@@ -373,7 +371,7 @@ func acquire_sniper1():
 	equip_rocketlauncher = false
 	update_gun_states()
 	
-func acquire_rocketlauncher():
+func acquire_rocketlauncher() -> void:
 	owns_rocketlauncher = true
 	
 	equip_gun1 = false
@@ -382,8 +380,8 @@ func acquire_rocketlauncher():
 	equip_rocketlauncher = true
 	update_gun_states()
 
-func player_movement(delta):
-	var input_direction = Vector2.ZERO
+func player_movement(delta: float) -> void:
+	var input_direction: Vector2 = Vector2.ZERO
 
 	if Input.is_action_pressed("right"):
 		input_direction.x += 1
@@ -399,7 +397,7 @@ func player_movement(delta):
 	#if speed_multiplier:
 		#speed = speed * 1.5
 	
-	var target_velocity = input_direction * speed
+	var target_velocity: Vector2 = input_direction * speed
 
 	if input_direction != Vector2.ZERO:
 		velocity = velocity.move_toward(target_velocity, acceleration * delta)
@@ -417,12 +415,12 @@ func player_movement(delta):
 	else:
 		direction = "none"
 
-	var is_moving = input_direction != Vector2.ZERO
+	var is_moving: bool = input_direction != Vector2.ZERO
 	play_animation(direction, int(is_moving))
 
 	move_and_slide()
 
-func play_animation(dir, movement):
+func play_animation(dir: String, movement: int) -> void:
 	if dir == "right":
 		animated_sprite.flip_h = false
 	elif dir == "left":
@@ -433,11 +431,11 @@ func play_animation(dir, movement):
 	else:
 		animated_sprite.play("idle")
 		
-func take_damage_from_mob1(damage):
+func take_damage_from_mob1(damage: int) -> void:
 	if damage_multiplier:
 		damage = damage * 2
 		
-	var damage_number = FloatingDamageScene.instantiate()
+	var damage_number: Node2D = FloatingDamageScene.instantiate()
 	damage_number.damage_amount = damage
 	get_parent().add_child(damage_number)
 	damage_number.global_position = global_position + Vector2(0, -30)
@@ -447,9 +445,9 @@ func take_damage_from_mob1(damage):
 	if health <= 0:
 		health_depleted.emit()
 		
-	var camera = $Camera2D
+	var camera: Camera2D = $Camera2D
 	if camera and camera.has_method("add_trauma"):
-		var trauma_amount = clamp(damage / 40.0, 0.3, 0.6)
+		var trauma_amount: float = clamp(damage / 40.0, 0.3, 0.6)
 		camera.add_trauma(trauma_amount)
 	
 	animation_player.stop()

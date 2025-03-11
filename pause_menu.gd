@@ -5,7 +5,7 @@ extends CanvasLayer
 @onready var not_enough_coins_label: Label = $NotEnoughCoinsLabel
 @onready var level_requirement_label: Label = $LevelRequirementLabel
 @onready var pause_menu: CanvasLayer = $"."
-@onready var round_manager = get_node("/root/world/RoundManager")
+@onready var round_manager: Node2D = get_node("/root/world/RoundManager")
 
 @onready var gun_1_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/Gun1Container/VBoxContainer/Gun1UpgradeButton
 @onready var gun_1_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/Gun1Container/VBoxContainer/Gun1LevelReq
@@ -33,7 +33,7 @@ extends CanvasLayer
 
 @onready var semi_pacifist_label: Label = $SemiPacifistLabel
 
-@onready var stats_manager = get_node("/root/world/StatsManager")
+@onready var stats_manager: Node2D = get_node("/root/world/StatsManager")
 
 static var semi_pacifist = false
 
@@ -187,32 +187,32 @@ var shockwave_upgrade_level_requirements = {
 
 var gun1_improvements = {
 	"fire_rate": 0.02,  # reduce fire_rate by x
-	"damage_min": 3.0,      # increases minimum damage by x
-	"damage_max": 5.0,      # # increases maximum damage by x
+	"damage_min": 3,      # increases minimum damage by x
+	"damage_max": 5,      # # increases maximum damage by x
 	"bullet_speed": 100.0,
 	"range": 100.0
 }
 
 var gun2_improvements = {
 	"fire_rate": 0.01,
-	"damage_min": 2.0,
-	"damage_max": 4.0,
+	"damage_min": 2,
+	"damage_max": 4,
 	"bullet_speed": 100.0,
 	"range": 50.0
 }
 
 var sniper1_improvements = {
 	"fire_rate": 0.03,
-	"damage_min": 5.0,
-	"damage_max": 10.0,
+	"damage_min": 5,
+	"damage_max": 10,
 	"bullet_speed": 200.0,
 	"range": 200.0
 }
 
 var rocketlauncher_improvements = {
 	"fire_rate": 0.015,
-	"damage_min": 10.0,
-	"damage_max": 20.0,
+	"damage_min": 10,
+	"damage_max": 20,
 	"bullet_speed": 50.0,
 	"range": 100.0
 }
@@ -275,13 +275,13 @@ var gravity_well_level_requirements = {
 var gravity_well_level = 1
 
 var gravity_well_improvements = {
-	"damage": 2.0,
-	"duration": 2.0,
+	"damage": 2,
+	"duration": 2,
 	"pull_radius": 15.0, # percent increase
 	"damage_radius": 10.0
 }
 
-func _ready():
+func _ready() -> void:
 	pause_menu.hide()
 	not_enough_coins_label.hide()
 	level_requirement_label.hide()
@@ -471,61 +471,61 @@ func _on_quit_button_pressed() -> void:
 
 
 func _on_restart_button_pressed() -> void:
-	var BulletScript = load("res://scripts/bullet.gd")
-	BulletScript.damage_min_bonus = 0.0
-	BulletScript.damage_max_bonus = 0.0
+	var BulletScript: GDScript = load("res://scripts/bullet.gd")
+	BulletScript.damage_min_bonus = 0
+	BulletScript.damage_max_bonus = 0
 	BulletScript.speed_bonus = 0.0
 	BulletScript.range_bonus = 0.0
 	BulletScript.glass_cannon_multiplier = false
 	BulletScript.runforrestrun_multiplier = false
 	
-	var Bullet2Script = load("res://scripts/bullet_2.gd")
-	Bullet2Script.damage_min_bonus = 0.0
-	Bullet2Script.damage_max_bonus = 0.0
+	var Bullet2Script: GDScript = load("res://scripts/bullet_2.gd")
+	Bullet2Script.damage_min_bonus = 0
+	Bullet2Script.damage_max_bonus = 0
 	Bullet2Script.speed_bonus = 0.0
 	Bullet2Script.range_bonus = 0.0
 	Bullet2Script.glass_cannon_multiplier = false
 	Bullet2Script.runforrestrun_multiplier = false
 	
-	var SniperBulletScript = load("res://scripts/sniper_1_bullet.gd")
-	SniperBulletScript.damage_min_bonus = 0.0
-	SniperBulletScript.damage_max_bonus = 0.0
+	var SniperBulletScript: GDScript = load("res://scripts/sniper_1_bullet.gd")
+	SniperBulletScript.damage_min_bonus = 0
+	SniperBulletScript.damage_max_bonus = 0
 	SniperBulletScript.speed_bonus = 0.0
 	SniperBulletScript.range_bonus = 0.0
 	SniperBulletScript.glass_cannon_multiplier = false
 	SniperBulletScript.runforrestrun_multiplier = false
 	
-	var FireBlinkScript = load("res://scripts/fire_blink.gd")
+	var FireBlinkScript: GDScript = load("res://scripts/fire_blink.gd")
 	FireBlinkScript.damage_min_bonus = 0
 	FireBlinkScript.damage_max_bonus = 0
 	
-	var RocketAmmoScript = load("res://scripts/rocket_ammo.gd")
-	RocketAmmoScript.damage_min_bonus = 0.0
-	RocketAmmoScript.damage_max_bonus = 0.0
+	var RocketAmmoScript: GDScript = load("res://scripts/rocket_ammo.gd")
+	RocketAmmoScript.damage_min_bonus = 0
+	RocketAmmoScript.damage_max_bonus = 0
 	RocketAmmoScript.speed_bonus = 0.0
 	RocketAmmoScript.range_bonus = 0.0
 	RocketAmmoScript.glass_cannon_multiplier = false
 	RocketAmmoScript.runforrestrun_multiplier = false
 	
-	var ShockwaveScript = load("res://scripts/shockwave.gd")
-	ShockwaveScript.damage = 10.0
+	var ShockwaveScript: GDScript = load("res://scripts/shockwave.gd")
+	ShockwaveScript.damage = 10
 	ShockwaveScript.knockback_amount = 200.0
 	
-	var PlayerScript = load("res://scripts/player.gd")
+	var PlayerScript: GDScript = load("res://scripts/player.gd")
 	PlayerScript.max_mana = 100.0
-	PlayerScript.max_health = 100.0
+	PlayerScript.max_health = 100
 	PlayerScript.damage_multiplier = false
 	PlayerScript.weapon_restriction = false
 	PlayerScript.ability_mana_reduction = false
 	PlayerScript.speed = 450.0
 	
-	var GravityWellScript = load("res://scripts/gravity_well.gd")
-	GravityWellScript.damage_bonus = 0.0
+	var GravityWellScript: GDScript = load("res://scripts/gravity_well.gd")
+	GravityWellScript.damage_bonus = 0
 	GravityWellScript.duration_bonus = 0.0
 	GravityWellScript.pull_radius_bonus = 0.0
 	GravityWellScript.damage_radius_bonus = 0.0
 	
-	var PauseMenuScript = load("res://scripts/pause_menu.gd")
+	var PauseMenuScript: GDScript = load("res://scripts/pause_menu.gd")
 	PauseMenuScript.semi_pacifist = false
 	
 	stats_manager.reset_stats()
@@ -603,8 +603,8 @@ func _on_shockwave_upgrade_button_pressed() -> void:
 			shockwave_level += 1
 			
 			var ShockwaveScript = load("res://scripts/shockwave.gd")
-			ShockwaveScript.damage += 10.0
-			ShockwaveScript.knockback_amount += 75.0
+			ShockwaveScript.damage += 10
+			ShockwaveScript.knockback_amount += 100.0
 			
 			player_coins_label.text = "Coins: " + str(ui.coins_collected)
 			update_cost_labels()
@@ -650,8 +650,8 @@ func _on_hp_upgrade_button_pressed() -> void:
 			hp_level += 1
 			
 			var PlayerScript = load("res://scripts/player.gd")
-			PlayerScript.set_max_health(PlayerScript.max_health + 25.0)
-			player.health += 25.0
+			PlayerScript.set_max_health(PlayerScript.max_health + 25)
+			player.health += 25
 			player.health_changed.emit(player.health)
 			
 			player_coins_label.text = "Coins: " + str(ui.coins_collected)

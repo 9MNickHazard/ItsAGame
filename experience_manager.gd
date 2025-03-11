@@ -1,13 +1,13 @@
 extends Node
 
-@onready var stats_manager = get_node("/root/world/StatsManager")
+@onready var stats_manager: Node2D = get_node("/root/world/StatsManager")
 
-signal level_up(new_level)
-signal experience_gained(current_xp, xp_for_next_level)
+signal level_up(new_level: int)
+signal experience_gained(current_xp: int, xp_for_next_level: int)
 
-var current_level = 1
-var current_xp = 0
-var xp_table = {
+var current_level: int = 1
+var current_xp: int = 0
+var xp_table: Dictionary = {
 	1: 500,
 	2: 1100,
 	3: 1800,
@@ -60,7 +60,7 @@ var xp_table = {
 	50: 220000
 }
 
-func add_experience(amount: int):
+func add_experience(amount: int) -> void:
 	current_xp += amount
 	
 	while current_level < 50 and current_xp >= xp_table[current_level]:
@@ -70,7 +70,7 @@ func add_experience(amount: int):
 		if current_level > stats_manager.highest_level_reached:
 			stats_manager.highest_level_reached = current_level
 	
-	var xp_needed = xp_table[current_level] if current_level < 50 else 0
+	var xp_needed: int = xp_table[current_level] if current_level < 50 else 0
 	experience_gained.emit(current_xp, xp_needed)
 
 func get_current_level() -> int:

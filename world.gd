@@ -1,12 +1,12 @@
 extends Node2D
 
 @onready var player: CharacterBody2D = $player
-@onready var ui = get_node("/root/world/UI")
-@onready var round_manager = $RoundManager
-@onready var stats_manager = get_node("/root/world/StatsManager")
+@onready var ui: CanvasLayer = get_node("/root/world/UI")
+@onready var round_manager: Node2D = $RoundManager
+@onready var stats_manager: Node2D = get_node("/root/world/StatsManager")
 
 
-func _ready():
+func _ready() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_CONFINED)
 	
 	get_tree().paused = true
@@ -30,5 +30,5 @@ func _on_player_health_depleted() -> void:
 	if round_manager.spawn_timer.is_inside_tree():
 		round_manager.spawn_timer.stop()
 		
-	var stats_ui = load("res://scenes/game_stats_ui.tscn").instantiate()
+	var stats_ui: CanvasLayer = load("res://scenes/game_stats_ui.tscn").instantiate()
 	add_child(stats_ui)

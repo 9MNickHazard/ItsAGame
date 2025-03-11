@@ -29,7 +29,7 @@ func update_weapon_display():
 	if not player:
 		return
 		
-	var owned_weapons = []
+	var owned_weapons: Array = []
 	if player.owns_gun1:
 		owned_weapons.append("gun1")
 	if player.owns_gun2:
@@ -39,7 +39,7 @@ func update_weapon_display():
 	if player.owns_rocketlauncher:
 		owned_weapons.append("rocketlauncher")
 		
-	var current_index = -1
+	var current_index: int = -1
 	if player.equip_gun1:
 		current_index = owned_weapons.find("gun1")
 	elif player.equip_gun2:
@@ -53,11 +53,11 @@ func update_weapon_display():
 	if current_index != -1:
 		current_weapon.texture = get_weapon_texture(owned_weapons[current_index])
 		
-		var up_index = (current_index - 1)
+		var up_index: int = (current_index - 1)
 		if up_index < 0:
 			up_index = owned_weapons.size() - 1
 		
-		var down_index = (current_index + 1) % owned_weapons.size()
+		var down_index: int = (current_index + 1) % owned_weapons.size()
 		
 		next_weapon_up.texture = get_weapon_texture(owned_weapons[up_index])
 		next_weapon_down.texture = get_weapon_texture(owned_weapons[down_index])

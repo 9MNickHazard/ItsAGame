@@ -1,19 +1,19 @@
 extends Camera2D
 
-@onready var damage_vignette = get_node("/root/world/UI/DamageVignette")
+@onready var damage_vignette: ColorRect = get_node("/root/world/UI/DamageVignette")
 
-var shake_amount = 0
+var shake_amount: float = 0.0
 var default_offset = offset
-var trauma = 0.0
-var trauma_power = 2
-var decay = 0.8
-var max_offset = Vector2(32, 24)
+var trauma: float = 0.0
+var trauma_power: float = 2.0
+var decay: float = 0.8
+var max_offset: Vector2 = Vector2(32, 24)
 
-func _ready():
+func _ready() -> void:
 	if damage_vignette:
 		damage_vignette.modulate.a = 0
 
-func _process(delta):
+func _process(delta: float) -> void:
 	if trauma > 0:
 		trauma = max(trauma - decay * delta, 0)
 		shake()
@@ -27,8 +27,8 @@ func add_trauma(amount):
 	if damage_vignette:
 		damage_vignette.modulate.a = min(damage_vignette.modulate.a + amount, 0.5)
 
-func shake():
-	var amount = pow(trauma, trauma_power)
+func shake() -> void:
+	var amount: float = pow(trauma, trauma_power)
 	rotation = max_offset.x * amount * randf_range(-1, 1) * 0.01
 	offset.x = max_offset.x * amount * randf_range(-1, 1) 
 	offset.y = max_offset.y * amount * randf_range(-1, 1)

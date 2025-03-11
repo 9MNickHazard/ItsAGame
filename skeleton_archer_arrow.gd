@@ -1,12 +1,12 @@
 extends Area2D
 
-var travelled_distance: float = 0.0
+var travelled_distance: int = 0
 var minimum_damage: int = 10
-var maximum_damage: int = 15
+var maximum_damage: int = 22
 var damage: int = randi_range(minimum_damage, maximum_damage)
 
-var PROJECTILE_SPEED: float = 500.0
-var RANGE: float = 1100.0
+var PROJECTILE_SPEED: float = 800.0
+var RANGE: float = 1300.0
 var direction: Vector2 = Vector2.ZERO
 
 func fire_projectile(target_pos: Vector2) -> void:

@@ -1,24 +1,24 @@
 extends Area2D
 
-@onready var heal_timer = $HealTimer
-@onready var animated_sprite = $AnimatedSprite2D
-@onready var particles = $CPUParticles2D
+@onready var heal_timer: Timer = $HealTimer
+@onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
+@onready var particles: CPUParticles2D = $CPUParticles2D
 
-const HEAL_AMOUNT = 10.0
+const HEAL_AMOUNT: int = 10
 const HEAL_INTERVAL = 0.25
-var time_since_last_heal = 0.0
+var time_since_last_heal: float = 0.0
 
 func _ready() -> void:
 	animated_sprite.play("HealSpell")
 
-func _process(delta):
+func _process(delta: float) -> void:
 	time_since_last_heal += delta
 	
 	if time_since_last_heal >= HEAL_INTERVAL:
 		heal_nearby_mobs()
 		time_since_last_heal = 0.0
 
-func heal_nearby_mobs():
+func heal_nearby_mobs() -> void:
 	var bodies = get_overlapping_bodies()
 	
 	for body in bodies:
@@ -30,5 +30,5 @@ func heal_nearby_mobs():
 				body.heal(HEAL_AMOUNT)
 
 
-func _on_heal_timer_timeout():
+func _on_heal_timer_timeout() -> void:
 	queue_free()

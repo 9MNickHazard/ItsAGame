@@ -1,69 +1,69 @@
 extends CharacterBody2D
 
-@onready var animated_sprite = $AnimatedSprite2D
-@onready var animation_player = $AnimationPlayer
-@onready var hp_bar = $HpBar
+@onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
+@onready var animation_player: AnimationPlayer = $AnimationPlayer
+@onready var hp_bar: ProgressBar = $HpBar
 
-@onready var down_attack1 = $DownAttack1
-@onready var down_attack2_1 = $DownAttack2_1
-@onready var down_attack2_2 = $DownAttack2_2
-@onready var down_attack2_3 = $DownAttack2_3
-@onready var side_attack1 = $SideAttack1
-@onready var side_attack2_1 = $SideAttack2_1
-@onready var side_attack2_2 = $SideAttack2_2
-@onready var side_attack2_3 = $SideAttack2_3
-@onready var up_attack1 = $UpAttack1
-@onready var up_attack2_1 = $UpAttack2_1
-@onready var up_attack2_2 = $UpAttack2_2
-@onready var up_attack2_3 = $UpAttack2_3
-@onready var charge_attack = $ChargeAttack
+@onready var down_attack1: Area2D = $DownAttack1
+@onready var down_attack2_1: Area2D = $DownAttack2_1
+@onready var down_attack2_2: Area2D = $DownAttack2_2
+@onready var down_attack2_3: Area2D = $DownAttack2_3
+@onready var side_attack1: Area2D = $SideAttack1
+@onready var side_attack2_1: Area2D = $SideAttack2_1
+@onready var side_attack2_2: Area2D = $SideAttack2_2
+@onready var side_attack2_3: Area2D = $SideAttack2_3
+@onready var up_attack1: Area2D = $UpAttack1
+@onready var up_attack2_1: Area2D = $UpAttack2_1
+@onready var up_attack2_2: Area2D = $UpAttack2_2
+@onready var up_attack2_3: Area2D = $UpAttack2_3
+@onready var charge_attack: Area2D = $ChargeAttack
 
-@onready var stats_manager = get_node("/root/world/StatsManager")
+@onready var stats_manager: Node2D = get_node("/root/world/StatsManager")
 
-const CoinScene = preload("res://scenes/coin.tscn")
-const FloatingDamageScene = preload("res://scenes/floating_damage.tscn")
-const HeartScene = preload("res://scenes/heart_pickup.tscn")
-const ManaBallScene = preload("res://scenes/mana_ball.tscn")
-const SkeletonProjectile = preload("res://scenes/skeleton_boss_projectile.tscn")
-const DiamondScene = preload("res://scenes/diamond.tscn")
-const fivecoin_scene = preload("res://scenes/5_coin.tscn")
-const twentyfivecoin_scene = preload("res://scenes/25_coin.tscn")
-const FloatingHealScene = preload("res://scenes/floating_heal.tscn")
+const CoinScene: PackedScene = preload("res://scenes/coin.tscn")
+const FloatingDamageScene: PackedScene = preload("res://scenes/floating_damage.tscn")
+const HeartScene: PackedScene = preload("res://scenes/heart_pickup.tscn")
+const ManaBallScene: PackedScene = preload("res://scenes/mana_ball.tscn")
+const SkeletonProjectile: PackedScene = preload("res://scenes/skeleton_boss_projectile.tscn")
+const DiamondScene: PackedScene = preload("res://scenes/diamond.tscn")
+const fivecoin_scene: PackedScene = preload("res://scenes/5_coin.tscn")
+const twentyfivecoin_scene: PackedScene = preload("res://scenes/25_coin.tscn")
+const FloatingHealScene: PackedScene = preload("res://scenes/floating_heal.tscn")
 
-var health = 5000.0
-var max_health = 5000.0
-var is_dead = false
+var health: int = 5000
+var max_health: int = 5000
+var is_dead: bool = false
 
-var is_attacking = false
-var attack_range = 300
-var attack3_range = 700
-var attack_cooldown = 1.5
-var attack_timer = 0.0
-var attack1_minimum_damage = 30.0
-var attack1_maximum_damage = 60.0
-var attack2_minimum_damage = 20.0
-var attack2_maximum_damage = 40.0
-var damage
-var overlapping_player = false
-var damage_cooldown = 1.5
-var damage_timer = 0.0
+var is_attacking: bool = false
+var attack_range: int = 300
+var attack3_range: int = 700
+var attack_cooldown: float = 1.5
+var attack_timer: float = 0.0
+var attack1_minimum_damage: int = 30
+var attack1_maximum_damage: int = 60
+var attack2_minimum_damage: int = 20
+var attack2_maximum_damage: int = 40
+var damage: int
+var overlapping_player: bool = false
+var damage_cooldown: float = 1.5
+var damage_timer: float = 0.0
 
-const SPEED = 500.0
-const CHARGE_SPEED = 1200.0
+const SPEED: float = 500.0
+const CHARGE_SPEED: float = 1200.0
 
 enum State {CHASE, CHARGING, CHARGE_ATTACK}
-var current_state = State.CHASE
-var state_timer = 0.0
-var player = null
+var current_state: State = State.CHASE
+var state_timer: float = 0.0
+var player: CharacterBody2D = null
 
-var charge_cooldown = 6.0
-var charge_timer = 0.0
-var is_charging = false
-var charge_prep_time = 1.0
-var charge_prep_timer = 0.0
-var charge_direction = Vector2.ZERO
-var charge_duration = 1.0
-var charge_active_timer = 0.0
+var charge_cooldown: float = 6.0
+var charge_timer: float = 0.0
+var is_charging: bool = false
+var charge_prep_time: float = 1.0
+var charge_prep_timer: float = 0.0
+var charge_direction: Vector2 = Vector2.ZERO
+var charge_duration: float = 1.0
+var charge_active_timer: float = 0.0
 
 func _ready() -> void:
 	player = get_node("/root/world/player")
@@ -77,7 +77,7 @@ func _ready() -> void:
 	
 	disable_all_hitboxes()
 
-func _physics_process(delta):
+func _physics_process(delta: float) -> void:
 	if is_dead:
 		return
 	
@@ -107,7 +107,7 @@ func _physics_process(delta):
 	attack_timer += delta
 	charge_timer += delta
 	
-	var direction
+	var direction: Vector2
 	
 	if not is_inside_play_area():
 		direction = global_position.direction_to(Vector2.ZERO)
@@ -115,7 +115,7 @@ func _physics_process(delta):
 		direction = global_position.direction_to(player.global_position)
 
 	
-	var distance_to_player = global_position.distance_to(player.global_position)
+	var distance_to_player: float = global_position.distance_to(player.global_position)
 	
 	if not is_attacking and charge_timer >= charge_cooldown and distance_to_player <= 700 and distance_to_player > 300 and randf() <= 0.6:
 		start_charge()
@@ -132,7 +132,7 @@ func _physics_process(delta):
 			attack_timer = 0.0
 			return
 	
-	var optimal_distance = 150.0
+	var optimal_distance: float = 150.0
 	
 	if not is_attacking and current_state != State.CHARGING and current_state != State.CHARGE_ATTACK:
 		if distance_to_player > optimal_distance:
@@ -150,7 +150,7 @@ func _physics_process(delta):
 				player.take_damage_from_mob1(damage)
 			damage_timer = 0.0
 
-func update_animation(direction):
+func update_animation(direction: Vector2) -> void:
 	if direction.length() > 0.1:
 		if abs(direction.y) > abs(direction.x):
 			if direction.y > 0:
@@ -161,7 +161,7 @@ func update_animation(direction):
 			animated_sprite.play("SideWalk")
 			animated_sprite.flip_h = direction.x < 0
 	else:
-		var current_anim = animated_sprite.animation
+		var current_anim: String = animated_sprite.animation
 		if current_anim.begins_with("Down"):
 			animated_sprite.play("DownIdle")
 		elif current_anim.begins_with("Up"):
@@ -169,7 +169,7 @@ func update_animation(direction):
 		else:
 			animated_sprite.play("SideIdle")
 
-func choose_attack(force_attack_type = null):
+func choose_attack(force_attack_type: int = -1) -> void:
 	if is_dead:
 		return
 		
@@ -177,9 +177,9 @@ func choose_attack(force_attack_type = null):
 	
 	disable_all_hitboxes()
 	
-	var attack_type
+	var attack_type: int
 	
-	if force_attack_type != null:
+	if force_attack_type >= 0:
 		attack_type = force_attack_type
 	else:
 		if randf() < 0.5:
@@ -189,7 +189,7 @@ func choose_attack(force_attack_type = null):
 		else:
 			attack_type = 3
 	
-	var to_player = player.global_position - global_position
+	var to_player: Vector2 = player.global_position - global_position
 	
 	if abs(to_player.y) > abs(to_player.x):
 		if to_player.y > 0:
@@ -212,12 +212,12 @@ func choose_attack(force_attack_type = null):
 			
 		play_attack_animation("Side", attack_type)
 
-func play_attack_animation(direction, attack_type):
+func play_attack_animation(direction: String, attack_type: int) -> void:
 	animated_sprite.play(direction + "Attack" + str(attack_type))
 	await animated_sprite.animation_finished
 	end_attack()
 
-func end_attack():
+func end_attack() -> void:
 	if is_dead:
 		return
 		
@@ -225,7 +225,7 @@ func end_attack():
 	disable_all_hitboxes()
 	attack_timer = 0.0
 	
-	var current_anim = animated_sprite.animation
+	var current_anim: String = animated_sprite.animation
 	if current_anim.begins_with("Down"):
 		animated_sprite.play("DownIdle")
 	elif current_anim.begins_with("Up"):
@@ -233,7 +233,7 @@ func end_attack():
 	else:
 		animated_sprite.play("SideIdle")
 
-func disable_all_hitboxes():
+func disable_all_hitboxes() -> void:
 	down_attack1.monitoring = false
 	down_attack2_1.monitoring = false
 	down_attack2_2.monitoring = false
@@ -248,12 +248,12 @@ func disable_all_hitboxes():
 	up_attack2_3.monitoring = false
 	charge_attack.monitoring = false
 
-func _on_frame_changed():
+func _on_frame_changed() -> void:
 	if not is_attacking:
 		return
 		
-	var current_anim = animated_sprite.animation
-	var current_frame = animated_sprite.frame
+	var current_anim: String = animated_sprite.animation
+	var current_frame: int = animated_sprite.frame
 	
 	if current_frame == 5:
 		if current_anim == "DownAttack1":
@@ -301,8 +301,8 @@ func _on_frame_changed():
 			elif current_anim == "UpAttack2":
 				up_attack2_3.monitoring = false
 
-func spawn_projectiles():
-	var directions = [
+func spawn_projectiles() -> void:
+	var directions: Array[Vector2] = [
 		Vector2.RIGHT,                # E
 		Vector2(1, -1).normalized(),  # NE
 		Vector2.UP,                   # N
@@ -314,12 +314,12 @@ func spawn_projectiles():
 	]
 	
 	for dir in directions:
-		var projectile = SkeletonProjectile.instantiate()
+		var projectile: Node2D = SkeletonProjectile.instantiate()
 		projectile.global_position = global_position
 		projectile.direction = dir
 		get_parent().add_child(projectile)
 
-func start_charge():
+func start_charge() -> void:
 	if is_dead:
 		return
 		
@@ -332,14 +332,14 @@ func is_inside_play_area() -> bool:
 	return global_position.x >= -1570 and global_position.x <= 1570 and \
 		   global_position.y >= -970 and global_position.y <= 950
 
-func take_damage(damage_dealt: float = 10.0, knockback_amount: float = 250.0, knockback_dir: Vector2 = Vector2.ZERO):
+func take_damage(damage_dealt: int, knockback_amount: float = 250.0, knockback_dir: Vector2 = Vector2.ZERO) -> void:
 	if is_dead:
 		return
 		
 	health -= damage_dealt
 	hp_bar.value = health
 	
-	var damage_number = FloatingDamageScene.instantiate()
+	var damage_number: Node2D = FloatingDamageScene.instantiate()
 	damage_number.damage_amount = damage_dealt
 	get_parent().add_child(damage_number)
 	damage_number.global_position = global_position + Vector2(0, -50)
@@ -352,7 +352,7 @@ func take_damage(damage_dealt: float = 10.0, knockback_amount: float = 250.0, kn
 	if health <= 0:
 		die()
 
-func die():
+func die() -> void:
 	is_dead = true
 	is_attacking = false
 	
@@ -360,7 +360,7 @@ func die():
 	
 	disable_all_hitboxes()
 	
-	var current_anim = animated_sprite.animation
+	var current_anim: String = animated_sprite.animation
 	if current_anim.begins_with("Down"):
 		animated_sprite.play("DownDeath")
 	elif current_anim.begins_with("Up"):
@@ -368,27 +368,27 @@ func die():
 	else:
 		animated_sprite.play("SideDeath")
 	
-	var diamond_number = randi_range(2, 5)
+	var diamond_number: int = randi_range(2, 5)
 	for i in range(diamond_number):
-		var diamond = DiamondScene.instantiate()
-		var offset = Vector2(randf_range(-80, 80), randf_range(-80, 80))
+		var diamond: Node2D = DiamondScene.instantiate()
+		var offset: Vector2 = Vector2(randf_range(-80, 80), randf_range(-80, 80))
 		diamond.global_position = global_position + offset
 		get_parent().call_deferred("add_child", diamond)
 	
-	var coin_number = randi_range(15, 60)
-	var x_offset
-	var y_offset
+	var coin_number: int = randi_range(15, 60)
+	var x_offset: int
+	var y_offset: int
 	
-	var twentyfive_count = int(coin_number / 25)
-	var remainder = coin_number % 25
-	var five_count = int(remainder / 5)
-	var one_count = remainder % 5
+	var twentyfive_count: int = int(coin_number / 25)
+	var remainder: int = coin_number % 25
+	var five_count: int = int(remainder / 5)
+	var one_count: int = remainder % 5
 	
 	if twentyfive_count != 0:
 		for i in range(twentyfive_count):
 			x_offset = randi_range(-80, 80)
 			y_offset = randi_range(-80, 80)
-			var twentyfivecoin = twentyfivecoin_scene.instantiate()
+			var twentyfivecoin: Node2D = twentyfivecoin_scene.instantiate()
 			twentyfivecoin.global_position = global_position + Vector2(x_offset, y_offset)
 			get_parent().call_deferred("add_child", twentyfivecoin)
 			
@@ -396,7 +396,7 @@ func die():
 		for i in range(five_count):
 			x_offset = randi_range(-80, 80)
 			y_offset = randi_range(-80, 80)
-			var fivecoin = fivecoin_scene.instantiate()
+			var fivecoin: Node2D = fivecoin_scene.instantiate()
 			fivecoin.global_position = global_position + Vector2(x_offset, y_offset)
 			get_parent().call_deferred("add_child", fivecoin)
 			
@@ -404,21 +404,21 @@ func die():
 		for i in range(one_count):
 			x_offset = randi_range(-80, 80)
 			y_offset = randi_range(-80, 80)
-			var coin = CoinPoolManager.get_coin()
+			var coin: Node2D = CoinPoolManager.get_coin()
 			coin.global_position = global_position + Vector2(x_offset, y_offset)
 	
 	for i in range(3):
-		var heart = HeartScene.instantiate()
+		var heart: Node2D = HeartScene.instantiate()
 		heart.global_position = global_position + Vector2(randf_range(-40, 40), randf_range(-40, 40))
 		get_parent().call_deferred("add_child", heart)
 	
 	for i in range(2):
-		var manaball = ManaBallScene.instantiate()
+		var manaball: Node2D = ManaBallScene.instantiate()
 		manaball.global_position = global_position + Vector2(randf_range(-40, 40), randf_range(-40, 40))
 		get_parent().call_deferred("add_child", manaball)
 	
-	var xp_amount = 6000
-	var ui = get_node("/root/world/UI")
+	var xp_amount: int = 6000
+	var ui: Node = get_node("/root/world/UI")
 	if ui and ui.experience_manager:
 		ui.experience_manager.add_experience(xp_amount)
 		ui.increase_score(100)
@@ -426,14 +426,14 @@ func die():
 	await animated_sprite.animation_finished
 	queue_free()
 	
-func heal(amount: float):
+func heal(amount: int) -> void:
 	if not is_instance_valid(self) or is_dead or health >= max_health:
 		return
 	
-	var actual_heal = min(amount, max_health - health)
+	var actual_heal: int = min(amount, max_health - health)
 	health += actual_heal
 	
-	var heal_number = FloatingHealScene.instantiate()
+	var heal_number: Node2D = FloatingHealScene.instantiate()
 	heal_number.heal_amount = actual_heal
 	get_parent().add_child(heal_number)
 	heal_number.global_position = global_position + Vector2(0, -30)
@@ -513,12 +513,9 @@ func _on_up_attack2_3_area_entered(area: Area2D) -> void:
 
 func _on_charge_attack_area_entered(area: Area2D) -> void:
 	if area.is_in_group("player_hurtbox"):
-		var charge_damage = randi_range(45, 75)
+		var charge_damage: int = randi_range(45, 75)
 		if area.get_parent().has_method("take_damage_from_mob1"):
 			area.get_parent().take_damage_from_mob1(charge_damage)
-			
-			
-			
 			
 func _on_down_attack1_area_exited(area: Area2D) -> void:
 	if area.is_in_group("player_hurtbox"):

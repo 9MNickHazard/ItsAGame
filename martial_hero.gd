@@ -1,6 +1,6 @@
 extends CharacterBody2D
 
-@onready var animated_sprite = $AnimatedSprite2D
+@onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var hit_flash: AnimationPlayer = $HitFlash
 @onready var attack_1_hitbox: Area2D = $Attack1Hitbox
 @onready var attack_2_hitbox: Area2D = $Attack2Hitbox
@@ -8,52 +8,52 @@ extends CharacterBody2D
 @onready var attack_2_facing_away_hitbox: Area2D = $Attack2FacingAwayHitbox
 @onready var attack_1_facing_camera: Area2D = $Attack1FacingCamera
 @onready var attack_2_facing_camera: Area2D = $Attack2FacingCamera
-@onready var stats_manager = get_node("/root/world/StatsManager")
+@onready var stats_manager: Node2D = get_node("/root/world/StatsManager")
 
-const CoinScene = preload("res://scenes/coin.tscn")
-const FloatingDamageScene = preload("res://scenes/floating_damage.tscn")
-const HeartScene = preload("res://scenes/heart_pickup.tscn")
-const ManaBallScene = preload("res://scenes/mana_ball.tscn")
-const fivecoin_scene = preload("res://scenes/5_coin.tscn")
-const twentyfivecoin_scene = preload("res://scenes/25_coin.tscn")
-const FloatingHealScene = preload("res://scenes/floating_heal.tscn")
+const CoinScene: PackedScene = preload("res://scenes/coin.tscn")
+const FloatingDamageScene: PackedScene = preload("res://scenes/floating_damage.tscn")
+const HeartScene: PackedScene = preload("res://scenes/heart_pickup.tscn")
+const ManaBallScene: PackedScene = preload("res://scenes/mana_ball.tscn")
+const fivecoin_scene: PackedScene = preload("res://scenes/5_coin.tscn")
+const twentyfivecoin_scene: PackedScene = preload("res://scenes/25_coin.tscn")
+const FloatingHealScene: PackedScene = preload("res://scenes/floating_heal.tscn")
 
 # gravity well variables
-var is_being_pulled_by_gravity_well = false
-var gravity_well_position = Vector2.ZERO
-var gravity_well_strength = 0.0
-var gravity_well_factor = 0.0
+var is_being_pulled_by_gravity_well: bool = false
+var gravity_well_position: Vector2 = Vector2.ZERO
+var gravity_well_strength: float = 0.0
+var gravity_well_factor: float = 0.0
 
 # player pushback variables
-var push_direction = Vector2.ZERO
-var is_being_pushed = false
+var push_direction: Vector2 = Vector2.ZERO
+var is_being_pushed: bool = false
 const PUSH_SPEED = 100.0
 
-var player
-var is_attacking = false
-var attack_range = 135
-var attack_cooldown = 1.0
-var attack_timer = 0.0
-var max_health = 300.0
-var health = 300.0
-var overlapping_player = false
-var damage_cooldown = 1.0
-var damage_timer = 0.0
-var minimum_damage = 20.0
-var maximum_damage = 40.0
-var damage
-var is_dead = false
+var player: CharacterBody2D
+var is_attacking: bool = false
+var attack_range: int = 135
+var attack_cooldown: float = 1.0
+var attack_timer: float = 0.0
+var max_health: int = 300
+var health: int = 300
+var overlapping_player: bool = false
+var damage_cooldown: float = 1.0
+var damage_timer: float = 0.0
+var minimum_damage: int = 20
+var maximum_damage: int = 40
+var damage: int
+var is_dead: bool = false
 
-var knockback_timer = 0.0
-var knockback_duration = 0.15
+var knockback_timer: float = 0.0
+var knockback_duration: float = 0.15
 const KNOCKBACK_AMOUNT = 250
 
 const SPEED = 450.0
 
 enum State {CHASE, WANDER}
-var current_state = State.CHASE
-var state_timer = 0.0
-var wander_direction = Vector2.ZERO
+var current_state: State = State.CHASE
+var state_timer: float = 0.0
+var wander_direction: Vector2 = Vector2.ZERO
 
 
 func _ready() -> void:
@@ -71,12 +71,12 @@ func _ready() -> void:
 	
 	
 			
-func _physics_process(delta):
+func _physics_process(delta: float) -> void:
 	if is_dead:
 		return
 	
 	if is_being_pushed and player:
-		var push_velocity = push_direction * PUSH_SPEED
+		var push_velocity: Vector2 = push_direction * PUSH_SPEED
 		velocity = push_velocity
 		move_and_slide()
 		return
@@ -98,7 +98,7 @@ func _physics_process(delta):
 	
 	attack_timer += delta
 	
-	var ai_direction
+	var ai_direction: Vector2
 	if not is_inside_play_area():
 		ai_direction = global_position.direction_to(Vector2.ZERO)
 	elif current_state == State.CHASE:
@@ -107,25 +107,25 @@ func _physics_process(delta):
 		ai_direction = wander_direction
 	
 	
-	var distance_to_player = global_position.distance_to(player.global_position)
+	var distance_to_player: float = global_position.distance_to(player.global_position)
 	
 	if not is_attacking and distance_to_player <= attack_range and attack_timer >= attack_cooldown:
 		start_attack()
 		attack_timer = 0.0
 	
-	var optimal_distance = 100.0
+	var optimal_distance: float = 100.0
 	
-	var ai_velocity = Vector2.ZERO
+	var ai_velocity: Vector2 = Vector2.ZERO
 	if not is_attacking:
 		if distance_to_player > optimal_distance:
 			ai_velocity = ai_direction * SPEED
 		
 		if is_being_pulled_by_gravity_well:
-			var pull_direction = global_position.direction_to(gravity_well_position)
+			var pull_direction: Vector2 = global_position.direction_to(gravity_well_position)
 			
-			var pull_velocity = pull_direction * gravity_well_strength * gravity_well_factor
+			var pull_velocity: Vector2 = pull_direction * gravity_well_strength * gravity_well_factor
 			
-			var pull_dominance = pow(gravity_well_factor, 1.5)
+			var pull_dominance: float = pow(gravity_well_factor, 1.5)
 			velocity = ai_velocity * (1.0 - pull_dominance) + pull_velocity * pull_dominance
 		else:
 			velocity = ai_velocity
@@ -149,7 +149,7 @@ func _physics_process(delta):
 			
 			
 			
-func _on_frame_changed():
+func _on_frame_changed() -> void:
 	if is_attacking and animated_sprite.frame == 3:  # frame 5, index 4
 		match animated_sprite.animation:
 			"attack1":
@@ -174,7 +174,7 @@ func _on_frame_changed():
 		attack_2_facing_camera.monitoring = false
 		
 
-func start_attack():
+func start_attack() -> void:
 	if is_dead:
 		return
 	
@@ -187,8 +187,8 @@ func start_attack():
 	attack_1_facing_camera.monitoring = false
 	attack_2_facing_camera.monitoring = false
 	
-	var to_player = player.global_position - global_position
-	var distance_to_player
+	var to_player: Vector2 = player.global_position - global_position
+	var distance_to_player: float
 		
 	if abs(to_player.y) > abs(to_player.x):
 		if to_player.y > 0:
@@ -227,7 +227,7 @@ func start_attack():
 	
 
 
-func end_attack():
+func end_attack() -> void:
 	if is_dead:
 		return
 		
@@ -241,11 +241,11 @@ func end_attack():
 	attack_timer = 0.0
 	animated_sprite.play("run")
 
-func play_attack_animation(which_attack: int):
+func play_attack_animation(which_attack: int) -> void:
 	if is_dead:
 		return
 	
-	var to_player = player.global_position - global_position
+	var to_player: Vector2 = player.global_position - global_position
 		
 	if abs(to_player.y) > abs(to_player.x):
 		if to_player.y > 0:
@@ -279,13 +279,13 @@ func is_inside_play_area() -> bool:
 			
 
 
-func take_damage(damage_dealt: float = 10.0, knockback_amount: float = 250.0, knockback_dir: Vector2 = Vector2.ZERO):
+func take_damage(damage_dealt: int, knockback_amount: float = 250.0, knockback_dir: Vector2 = Vector2.ZERO) -> void:
 	if is_dead:
 		return
 		
 	health -= damage_dealt
 	
-	var damage_number = FloatingDamageScene.instantiate()
+	var damage_number: Node2D = FloatingDamageScene.instantiate()
 	damage_number.damage_amount = damage_dealt
 	get_parent().add_child(damage_number)
 	damage_number.global_position = global_position + Vector2(0, -30)
@@ -302,20 +302,20 @@ func take_damage(damage_dealt: float = 10.0, knockback_amount: float = 250.0, kn
 		
 		stats_manager.add_enemy_kill("Samurai")
 		
-		var coin_number = randi_range(13, 25)
-		var x_offset = randi_range(5, 25)
-		var y_offset = randi_range(5, 25)
+		var coin_number: int = randi_range(13, 25)
+		var x_offset: int = randi_range(5, 25)
+		var y_offset: int = randi_range(5, 25)
 		
-		var twentyfive_count = int(coin_number / 25)
-		var remainder = coin_number % 25
-		var five_count = int(remainder / 5)
-		var one_count = remainder % 5
+		var twentyfive_count: int = int(coin_number / 25)
+		var remainder: int = coin_number % 25
+		var five_count: int = int(remainder / 5)
+		var one_count: int = remainder % 5
 		
 		if twentyfive_count != 0:
 			for i in range(twentyfive_count):
 				x_offset = randi_range(-25, 25)
 				y_offset = randi_range(-25, 25)
-				var twentyfivecoin = twentyfivecoin_scene.instantiate()
+				var twentyfivecoin: Area2D = twentyfivecoin_scene.instantiate()
 				twentyfivecoin.global_position = global_position + Vector2(x_offset, y_offset)
 				get_parent().call_deferred("add_child", twentyfivecoin)
 				
@@ -323,7 +323,7 @@ func take_damage(damage_dealt: float = 10.0, knockback_amount: float = 250.0, kn
 			for i in range(five_count):
 				x_offset = randi_range(-25, 25)
 				y_offset = randi_range(-25, 25)
-				var fivecoin = fivecoin_scene.instantiate()
+				var fivecoin: Area2D = fivecoin_scene.instantiate()
 				fivecoin.global_position = global_position + Vector2(x_offset, y_offset)
 				get_parent().call_deferred("add_child", fivecoin)
 				
@@ -331,26 +331,26 @@ func take_damage(damage_dealt: float = 10.0, knockback_amount: float = 250.0, kn
 			for i in range(one_count):
 				x_offset = randi_range(-25, 25)
 				y_offset = randi_range(-25, 25)
-				var coin = CoinPoolManager.get_coin()
+				var coin: Area2D = CoinPoolManager.get_coin()
 				coin.global_position = global_position + Vector2(x_offset, y_offset)
 
 			
 		if randf() < 0.09:
 			x_offset = randi_range(1, 25)
 			y_offset = randi_range(1, 25)
-			var heart = HeartScene.instantiate()
+			var heart: Area2D = HeartScene.instantiate()
 			heart.global_position = global_position + Vector2(x_offset, y_offset)
 			get_parent().call_deferred("add_child", heart)
 			
 		if randf() < 0.08:
 			x_offset = randi_range(1, 25)
 			y_offset = randi_range(1, 25)
-			var manaball = ManaBallScene.instantiate()
+			var manaball: Area2D = ManaBallScene.instantiate()
 			manaball.global_position = global_position + Vector2(x_offset, y_offset)
 			get_parent().call_deferred("add_child", manaball)
 			
-		var xp_amount = 200
-		var ui = get_node("/root/world/UI")
+		var xp_amount: int = 200
+		var ui: CanvasLayer = get_node("/root/world/UI")
 		if ui and ui.experience_manager:
 			ui.experience_manager.add_experience(xp_amount)
 			ui.increase_score(5)
@@ -361,14 +361,14 @@ func take_damage(damage_dealt: float = 10.0, knockback_amount: float = 250.0, kn
 	hit_flash.stop()
 	hit_flash.play("hit_flash")
 
-func heal(amount: float):
+func heal(amount: int) -> void:
 	if not is_instance_valid(self) or is_dead or health >= max_health:
 		return
 	
-	var actual_heal = min(amount, max_health - health)
+	var actual_heal: int = min(amount, max_health - health)
 	health += actual_heal
 	
-	var heal_number = FloatingHealScene.instantiate()
+	var heal_number: Node2D = FloatingHealScene.instantiate()
 	heal_number.heal_amount = actual_heal
 	get_parent().add_child(heal_number)
 	heal_number.global_position = global_position + Vector2(0, -30)
@@ -464,3 +464,11 @@ func _on_player_detector_area_entered(area: Area2D) -> void:
 func _on_player_detector_area_exited(area: Area2D) -> void:
 	if area.is_in_group("player_hurtbox"):
 		is_being_pushed = false
+
+
+func _on_visible_on_screen_notifier_2d_screen_entered() -> void:
+	show()
+
+
+func _on_visible_on_screen_notifier_2d_screen_exited() -> void:
+	hide()

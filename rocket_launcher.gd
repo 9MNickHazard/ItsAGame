@@ -3,22 +3,22 @@ extends Area2D
 @onready var weapon_pivot: Marker2D = $"weapon pivot"
 @onready var shooting_point: Marker2D = $"weapon pivot/Sprite2D/shooting point"
 @onready var audio_stream_player: AudioStreamPlayer2D = $AudioStreamPlayer2D
-@onready var stats_manager = get_node("/root/world/StatsManager")
+@onready var stats_manager: Node2D = get_node("/root/world/StatsManager")
 
 const ROCKET = preload("res://scenes/rocket_ammo.tscn")
 
-var can_fire = true
-var fire_rate = 0.9
-var fire_timer = 0.0
+var can_fire: bool = true
+var fire_rate: float = 0.9
+var fire_timer: float = 0.0
 
-var weapon_name = "Nuke Launcher"
+var weapon_name: String = "Nuke Launcher"
 
 
-func _physics_process(delta):
-	var mouse_pos = get_global_mouse_position()
-	var direction = global_position.direction_to(mouse_pos)
+func _physics_process(delta: float) -> void:
+	var mouse_pos: Vector2 = get_global_mouse_position()
+	var direction: Vector2 = global_position.direction_to(mouse_pos)
 	
-	var angle = direction.angle()
+	var angle: float = direction.angle()
 	
 	weapon_pivot.rotation = angle
 	
@@ -39,9 +39,9 @@ func _physics_process(delta):
 			can_fire = true
 		
 		
-func shoot():
+func shoot() -> void:
 	audio_stream_player.play()
-	var new_bullet = ROCKET.instantiate()
+	var new_bullet: Area2D = ROCKET.instantiate()
 	new_bullet.global_position = shooting_point.global_position
 	new_bullet.rotation = weapon_pivot.rotation
 	

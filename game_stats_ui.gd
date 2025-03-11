@@ -2,69 +2,69 @@ extends CanvasLayer
 
 @onready var stats_container: VBoxContainer = $MarginContainer/PanelContainer/MarginContainer/VBoxContainer/ScrollContainer/StatsContainer
 @onready var restart_button: Button = $MarginContainer/PanelContainer/MarginContainer/VBoxContainer/RestartButton
-@onready var stats_manager = get_node("/root/world/StatsManager")
+@onready var stats_manager: Node2D = get_node("/root/world/StatsManager")
 
-var pixel_font = preload("res://assets/fonts/PixelOperator8.ttf")
+var pixel_font: FontFile = preload("res://assets/fonts/PixelOperator8.ttf")
 
-func _ready():
+func _ready() -> void:
 	populate_stats()
 	
-func _on_restart_button_pressed():
-	var BulletScript = load("res://scripts/bullet.gd")
-	BulletScript.damage_min_bonus = 0.0
-	BulletScript.damage_max_bonus = 0.0
+func _on_restart_button_pressed() -> void:
+	var BulletScript: GDScript = load("res://scripts/bullet.gd")
+	BulletScript.damage_min_bonus = 0
+	BulletScript.damage_max_bonus = 0
 	BulletScript.speed_bonus = 0.0
 	BulletScript.range_bonus = 0.0
 	BulletScript.glass_cannon_multiplier = false
 	BulletScript.runforrestrun_multiplier = false
 	
-	var Bullet2Script = load("res://scripts/bullet_2.gd")
-	Bullet2Script.damage_min_bonus = 0.0
-	Bullet2Script.damage_max_bonus = 0.0
+	var Bullet2Script: GDScript = load("res://scripts/bullet_2.gd")
+	Bullet2Script.damage_min_bonus = 0
+	Bullet2Script.damage_max_bonus = 0
 	Bullet2Script.speed_bonus = 0.0
 	Bullet2Script.range_bonus = 0.0
 	Bullet2Script.glass_cannon_multiplier = false
 	Bullet2Script.runforrestrun_multiplier = false
 	
-	var SniperBulletScript = load("res://scripts/sniper_1_bullet.gd")
-	SniperBulletScript.damage_min_bonus = 0.0
-	SniperBulletScript.damage_max_bonus = 0.0
+	var SniperBulletScript: GDScript = load("res://scripts/sniper_1_bullet.gd")
+	SniperBulletScript.damage_min_bonus = 0
+	SniperBulletScript.damage_max_bonus = 0
 	SniperBulletScript.speed_bonus = 0.0
 	SniperBulletScript.range_bonus = 0.0
 	SniperBulletScript.glass_cannon_multiplier = false
 	SniperBulletScript.runforrestrun_multiplier = false
 	
-	var FireBlinkScript = load("res://scripts/fire_blink.gd")
+	var FireBlinkScript: GDScript = load("res://scripts/fire_blink.gd")
 	FireBlinkScript.damage_min_bonus = 0
 	FireBlinkScript.damage_max_bonus = 0
 	
-	var RocketAmmoScript = load("res://scripts/rocket_ammo.gd")
-	RocketAmmoScript.damage_min_bonus = 0.0
-	RocketAmmoScript.damage_max_bonus = 0.0
+	var RocketAmmoScript: GDScript = load("res://scripts/rocket_ammo.gd")
+	RocketAmmoScript.damage_min_bonus = 0
+	RocketAmmoScript.damage_max_bonus = 0
 	RocketAmmoScript.speed_bonus = 0.0
 	RocketAmmoScript.range_bonus = 0.0
 	RocketAmmoScript.glass_cannon_multiplier = false
 	RocketAmmoScript.runforrestrun_multiplier = false
 	
-	var ShockwaveScript = load("res://scripts/shockwave.gd")
-	ShockwaveScript.damage = 10.0
+	var ShockwaveScript: GDScript = load("res://scripts/shockwave.gd")
+	ShockwaveScript.damage = 10
 	ShockwaveScript.knockback_amount = 200.0
 	
-	var PlayerScript = load("res://scripts/player.gd")
+	var PlayerScript: GDScript = load("res://scripts/player.gd")
 	PlayerScript.max_mana = 100.0
-	PlayerScript.max_health = 100.0
+	PlayerScript.max_health = 100
 	PlayerScript.damage_multiplier = false
 	PlayerScript.weapon_restriction = false
 	PlayerScript.ability_mana_reduction = false
 	PlayerScript.speed = 450.0
 	
-	var GravityWellScript = load("res://scripts/gravity_well.gd")
-	GravityWellScript.damage_bonus = 0.0
+	var GravityWellScript: GDScript = load("res://scripts/gravity_well.gd")
+	GravityWellScript.damage_bonus = 0
 	GravityWellScript.duration_bonus = 0.0
 	GravityWellScript.pull_radius_bonus = 0.0
 	GravityWellScript.damage_radius_bonus = 0.0
 	
-	var PauseMenuScript = load("res://scripts/pause_menu.gd")
+	var PauseMenuScript: GDScript = load("res://scripts/pause_menu.gd")
 	PauseMenuScript.semi_pacifist = false
 	
 	stats_manager.reset_stats()
@@ -74,10 +74,7 @@ func _on_restart_button_pressed():
 	get_tree().reload_current_scene()
 
 
-func populate_stats():
-	add_stat_label("Game Statistics", true)
-	add_stat_label("")
-	
+func populate_stats() -> void:
 	# time stats
 	add_stat_label("Time Stats", true)
 	add_stat_label("Total Play Time: " + stats_manager.get_formatted_time())

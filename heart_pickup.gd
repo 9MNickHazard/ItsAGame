@@ -3,13 +3,13 @@ extends Area2D
 @onready var pickup_area: Area2D = $PickupArea
 @onready var cpu_particles_2d: CPUParticles2D = $CPUParticles2D
 @onready var despawn_timer: Timer = $DespawnTimer
-@onready var stats_manager = get_node("/root/world/StatsManager")
+@onready var stats_manager: Node2D = get_node("/root/world/StatsManager")
 
 var player = null
-var max_speed = 600
-var current_speed = 0
-var acceleration = 800
-var is_being_pulled = false
+var max_speed: float = 600.0
+var current_speed: float = 0.0
+var acceleration: float = 800.0
+var is_being_pulled: bool = false
 
 func _ready() -> void:
 	cpu_particles_2d.emitting = true
@@ -25,7 +25,7 @@ func _physics_process(delta: float) -> void:
 		
 		current_speed = move_toward(current_speed, max_speed, acceleration * delta)
 		
-		var direction = global_position.direction_to(player.global_position)
+		var direction: Vector2 = global_position.direction_to(player.global_position)
 		
 		global_position += direction * current_speed * delta
 
@@ -35,7 +35,7 @@ func _on_body_entered(body: Node2D) -> void:
 	if player.health >= player.max_health:
 		return
 	else:
-		var heal_amount = min(10.0, player.max_health - player.health)
+		var heal_amount: int = min(10, player.max_health - player.health)
 		player.health += heal_amount
 		player.health_changed.emit(player.health)
 		
