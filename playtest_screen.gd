@@ -26,8 +26,8 @@ extends CanvasLayer
 @onready var upgrade_gravity_well_button: Button = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer/MarginContainer/GridContainer/GravityWell/VBoxContainer/UpgradeGravityWellButton
 
 @onready var previous_difficulty_button: Button = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer2/VBoxContainer/HBoxContainer/PreviousDifficultyButton
-@onready var next_difficulty_button: Button = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer2/VBoxContainer/HBoxContainer/NextDifficultButton
 @onready var difficulty_label: Label = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer2/VBoxContainer/DifficultyLabel
+@onready var next_difficulty_button: Button = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer2/VBoxContainer/HBoxContainer/NextDifficultyButton
 
 @onready var glass_cannon_button: Button = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer/MarginContainer/GridContainer/CursedUpgrades/VBoxContainer/GlassCannonButton
 @onready var semi_pacifist_button: Button = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer/MarginContainer/GridContainer/CursedUpgrades/VBoxContainer/SemiPacifistButton
@@ -75,9 +75,9 @@ var sniper_improvements = {
 }
 
 var rocket_launcher_improvements = {
-	"fire_rate": 0.015,
-	"damage_min": 25,
-	"damage_max": 50,
+	"fire_rate": 0.01,
+	"damage_min": 10,
+	"damage_max": 20,
 	"bullet_speed": 100.0,
 	"range": 100.0
 }

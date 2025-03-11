@@ -22,22 +22,19 @@ var minotaur_scene: PackedScene = preload("res://scenes/minotaur.tscn")
 var healer_scene: PackedScene = preload("res://scenes/healer.tscn")
 var skeleton_archer_scene: PackedScene = preload("res://scenes/skeleton_archer.tscn")
 
-# Difficulty settings
 var base_difficulty: float = 1.0
 var current_difficulty: float = 1.0
 var difficulty_increment: float = 0.1
-var difficulty_increment_time: float = 20.0  # Seconds between difficulty increases
+var difficulty_increment_time: float = 20.0  # seconds
 var max_difficulty: float = 10.0
 
-# Spawn settings
 var base_spawn_delay: float = 0.6
 var min_spawn_delay: float = 0.05
 var active_mobs: Array[Node] = []
 var spawning_in_progress: bool = false
 var game_paused: bool = false
 
-# Enemy weights based on difficulty
-# Structure: {scene: {min_difficulty: X, max_difficulty: Y, weight_at_min: W1, weight_at_max: W2}}
+
 var enemy_weights: Dictionary = {
 	"goblin": {"scene": goblin_scene, "min_difficulty": 1.0, "max_difficulty": 10.0, "weight_at_min": 100, "weight_at_max": 30},
 	"tnt_goblin": {"scene": tnt_goblin_scene, "min_difficulty": 1.1, "max_difficulty": 10.0, "weight_at_min": 15, "weight_at_max": 30},
@@ -48,33 +45,36 @@ var enemy_weights: Dictionary = {
 	"minotaur": {"scene": minotaur_scene, "min_difficulty": 3.5, "max_difficulty": 10.0, "weight_at_min": 5, "weight_at_max": 15}
 }
 
-# Special spawn events (mini-bosses, boss waves, etc.)
+
 var special_spawns: Array[Dictionary] = [
+	# Difficulty 1.0
 	{"type": "horde", "difficulty_trigger": 1.0, "enemies": [
 		{"scene": "goblin", "count": 10}
 	], "pattern": SpawnPattern.CIRCLE, "radius": 900.0},
 	
+	# Difficulty 1.3
 	{"type": "horde", "difficulty_trigger": 1.3, "enemies": [
 		{"scene": "goblin", "count": 25}
 	], "pattern": SpawnPattern.CIRCLE, "radius": 1100.0},
-	# Difficulty 1.5 - Basic goblin horde
+	
+	# Difficulty 1.5
 	{"type": "horde", "difficulty_trigger": 1.5, "enemies": [
 		{"scene": "goblin", "count": 30}
 	], "pattern": SpawnPattern.CIRCLE, "radius": 1000.0},
 	
-	# Difficulty 2.0 - Goblins with TNT goblins
+	# Difficulty 2.0
 	{"type": "horde", "difficulty_trigger": 2.0, "enemies": [
 		{"scene": "goblin", "count": 30},
 		{"scene": "tnt_goblin", "count": 10}
 	], "pattern": SpawnPattern.CIRCLE, "radius": 1100.0},
 	
-	# Difficulty 2.5 - Goblins with archers
+	# Difficulty 2.5
 	{"type": "horde", "difficulty_trigger": 2.5, "enemies": [
 		{"scene": "goblin", "count": 30},
 		{"scene": "skeleton_archer", "count": 6}
 	], "pattern": SpawnPattern.CIRCLE, "radius": 1200.0},
 	
-	# Difficulty 3.0 - Mixed horde with minotaur
+	# Difficulty 3.0
 	{"type": "horde", "difficulty_trigger": 3.0, "enemies": [
 		{"scene": "goblin", "count": 35},
 		{"scene": "tnt_goblin", "count": 8},
@@ -82,7 +82,7 @@ var special_spawns: Array[Dictionary] = [
 		{"scene": "minotaur", "count": 2}
 	], "pattern": SpawnPattern.CIRCLE, "radius": 1100.0},
 	
-	# Difficulty 3.5 - First double circle (inner/outer)
+	# Difficulty 3.5
 	{"type": "double_circle", "difficulty_trigger": 3.5, "circles": [
 		{"enemies": [
 			{"scene": "goblin", "count": 25}
@@ -93,27 +93,27 @@ var special_spawns: Array[Dictionary] = [
 		], "radius": 1300.0}
 	]},
 	
-	# Difficulty 4.0 - Stronger mixed horde with wizard
+	# Difficulty 4.0
 	{"type": "horde", "difficulty_trigger": 4.0, "enemies": [
 		{"scene": "goblin", "count": 35},
 		{"scene": "tnt_goblin", "count": 10},
 		{"scene": "wizard", "count": 4}
 	], "pattern": SpawnPattern.CIRCLE, "radius": 1200.0},
 	
-	# Difficulty 4.5 - First boss appearance
+	# Difficulty 4.5
 	{"type": "boss_wave", "difficulty_trigger": 4.5, "enemies": [
 		{"scene": "goblin", "count": 30},
 		{"scene": "skeleton_boss", "count": 1}
 	], "pattern": SpawnPattern.CIRCLE, "radius": 1100.0},
 	
-	# Difficulty 5.0 - Mixed martial horde
+	# Difficulty 5.0
 	{"type": "horde", "difficulty_trigger": 5.0, "enemies": [
 		{"scene": "goblin", "count": 40},
 		{"scene": "martial_hero", "count": 3},
 		{"scene": "wizard", "count": 2}
 	], "pattern": SpawnPattern.CIRCLE, "radius": 1200.0},
 	
-	# Difficulty 5.5 - Double circle with minotaurs and archers
+	# Difficulty 5.5
 	{"type": "double_circle", "difficulty_trigger": 5.5, "circles": [
 		{"enemies": [
 			{"scene": "minotaur", "count": 2}
@@ -123,7 +123,7 @@ var special_spawns: Array[Dictionary] = [
 		], "radius": 1400.0}
 	]},
 	
-	# Difficulty 6.0 - Advanced mixed horde
+	# Difficulty 6.0
 	{"type": "horde", "difficulty_trigger": 6.0, "enemies": [
 		{"scene": "goblin", "count": 45},
 		{"scene": "tnt_goblin", "count": 15},
@@ -131,21 +131,21 @@ var special_spawns: Array[Dictionary] = [
 		{"scene": "wizard", "count": 3}
 	], "pattern": SpawnPattern.CIRCLE, "radius": 1200.0},
 	
-	# Difficulty 6.5 - Healer introduction
+	# Difficulty 6.5
 	{"type": "horde", "difficulty_trigger": 6.5, "enemies": [
 		{"scene": "goblin", "count": 40},
 		{"scene": "tnt_goblin", "count": 10},
 		{"scene": "healer", "count": 2}
 	], "pattern": SpawnPattern.CIRCLE, "radius": 1100.0},
 	
-	# Difficulty 7.0 - Double boss wave
+	# Difficulty 7.0
 	{"type": "boss_wave", "difficulty_trigger": 7.0, "enemies": [
 		{"scene": "goblin", "count": 35},
 		{"scene": "minotaur", "count": 3},
 		{"scene": "skeleton_boss", "count": 1}
 	], "pattern": SpawnPattern.CIRCLE, "radius": 1200.0},
 	
-	# Difficulty 7.5 - Triple circle hardcore wave
+	# Difficulty 7.5
 	{"type": "triple_circle", "difficulty_trigger": 7.5, "circles": [
 		{"enemies": [
 			{"scene": "martial_hero", "count": 6}
@@ -158,14 +158,14 @@ var special_spawns: Array[Dictionary] = [
 		], "radius": 1600.0}
 	]},
 	
-	# Difficulty 8.0 - Advanced boss with healers
+	# Difficulty 8.0
 	{"type": "boss_wave", "difficulty_trigger": 8.0, "enemies": [
 		{"scene": "goblin", "count": 50},
 		{"scene": "healer", "count": 3},
 		{"scene": "skeleton_boss", "count": 1}
 	], "pattern": SpawnPattern.CIRCLE, "radius": 1300.0},
 	
-	# Difficulty 8.5 - Double circle mixed elite
+	# Difficulty 8.5
 	{"type": "double_circle", "difficulty_trigger": 8.5, "circles": [
 		{"enemies": [
 			{"scene": "minotaur", "count": 4},
@@ -177,7 +177,7 @@ var special_spawns: Array[Dictionary] = [
 		], "radius": 1400.0}
 	]},
 	
-	# Difficulty 9.0 - Elite horde
+	# Difficulty 9.0
 	{"type": "horde", "difficulty_trigger": 9.0, "enemies": [
 		{"scene": "goblin", "count": 55},
 		{"scene": "tnt_goblin", "count": 20},
@@ -187,14 +187,14 @@ var special_spawns: Array[Dictionary] = [
 		{"scene": "skeleton_archer", "count": 10}
 	], "pattern": SpawnPattern.CIRCLE, "radius": 1500.0},
 	
-	# Difficulty 9.5 - Double boss wave 
+	# Difficulty 9.5
 	{"type": "boss_wave", "difficulty_trigger": 9.5, "enemies": [
 		{"scene": "goblin", "count": 40},
 		{"scene": "healer", "count": 3},
 		{"scene": "skeleton_boss", "count": 2}
 	], "pattern": SpawnPattern.CIRCLE, "radius": 1300.0},
 	
-	# Difficulty 10.0 - Ultimate double circle challenge
+	# Difficulty 10.0
 	{"type": "double_circle", "difficulty_trigger": 10.0, "circles": [
 		{"enemies": [
 			{"scene": "goblin", "count": 25},
@@ -215,7 +215,7 @@ var special_spawns: Array[Dictionary] = [
 	]}
 ]
 
-var triggered_special_spawns: Array[int] = []
+
 var total_mobs_spawned: int = 0
 
 func _ready() -> void:
@@ -225,20 +225,17 @@ func _ready() -> void:
 	difficulty_timer.wait_time = difficulty_increment_time
 	difficulty_timer.timeout.connect(_on_difficulty_timer_timeout)
 	
-	# Connect to player level up signal
 	if ui and ui.experience_manager:
 		ui.experience_manager.level_up.connect(_on_player_level_up)
 	
 	call_deferred("start_game")
 
-func _process(delta: float) -> void:
-	if game_paused:
-		return
+#func _process(delta: float) -> void:
+	#if game_paused:
+		#return
+	#
+	#check_special_spawns()
 	
-	# Check for special spawn events
-	check_special_spawns()
-	
-	## Update UI if needed
 	#if active_mobs.size() % 5 == 0:  # Only update every 5 mob changes to reduce overhead
 		#emit_signal("mobs_remaining_changed", active_mobs.size())
 
@@ -248,10 +245,11 @@ func start_game() -> void:
 	difficulty_timer.start()
 	game_paused = false
 	
-	triggered_special_spawns.clear()
 	total_mobs_spawned = 0
 	
 	emit_signal("difficulty_increased", current_difficulty)
+	
+	check_special_spawns()
 
 func pause_game() -> void:
 	game_paused = true
@@ -268,16 +266,16 @@ func _on_difficulty_timer_timeout() -> void:
 		current_difficulty += difficulty_increment
 		current_difficulty = min(current_difficulty, max_difficulty)
 		
-		# Adjust spawn rate based on new difficulty
 		spawn_timer.wait_time = calculate_spawn_delay()
 		
 		emit_signal("difficulty_increased", current_difficulty)
+		
+		check_special_spawns()
 		
 		print("Difficulty increased to: ", current_difficulty)
 		print("New spawn delay: ", spawn_timer.wait_time)
 
 func calculate_spawn_delay() -> float:
-	# Logarithmic decrease in spawn delay as difficulty increases
 	var difficulty_factor: float = (current_difficulty - base_difficulty) / (max_difficulty - base_difficulty)
 	return max(min_spawn_delay, base_spawn_delay * (1.0 - 0.7 * difficulty_factor))
 
@@ -293,7 +291,6 @@ func select_enemy_based_on_difficulty() -> PackedScene:
 	var total_weight: float = 0.0
 	var available_enemies: Array[Dictionary] = []
 	
-	# Calculate weights for all enemies at current difficulty
 	for enemy_key in enemy_weights:
 		var enemy: Dictionary = enemy_weights[enemy_key]
 		
@@ -303,7 +300,6 @@ func select_enemy_based_on_difficulty() -> PackedScene:
 				available_enemies.append({"scene": enemy["scene"], "weight": weight})
 				total_weight += weight
 	
-	# Select an enemy based on weight
 	if total_weight > 0:
 		var random_value: float = randf() * total_weight
 		var cumulative_weight: float = 0.0
@@ -313,7 +309,6 @@ func select_enemy_based_on_difficulty() -> PackedScene:
 			if random_value <= cumulative_weight:
 				return enemy["scene"]
 	
-	# Fallback to goblin if something went wrong
 	return goblin_scene
 
 func calculate_weight(enemy_config: Dictionary, difficulty: float) -> float:
@@ -359,13 +354,11 @@ func spawn_group(pattern: int, enemies: Array, radius: float = 900.0) -> void:
 		total_enemies += count
 	
 	if pattern == SpawnPattern.CIRCLE:
-		# Spawn in a circle around the player
 		for i in range(total_enemies):
 			var enemy_index: int = 0
 			var enemy_count: int = 0
 			var current_count: int = 0
 			
-			# Find which enemy type to spawn based on the current index
 			for enemy_idx in range(enemies.size()):
 				var count: int = enemies[enemy_idx]["count"]
 				if i >= current_count && i < (current_count + count):
@@ -387,7 +380,6 @@ func spawn_group(pattern: int, enemies: Array, radius: float = 900.0) -> void:
 			#new_mob.tree_exiting.connect(_on_mob_tree_exiting.bind(new_mob))
 			total_mobs_spawned += 1
 	else:
-		# Spawn randomly
 		for enemy_config in enemies:
 			var scene_key: String = enemy_config["scene"]
 			var count: int = enemy_config["count"]
@@ -413,24 +405,32 @@ func get_enemy_scene_by_key(key: String) -> PackedScene:
 		"minotaur": return minotaur_scene
 		"healer": return healer_scene
 		"skeleton_archer": return skeleton_archer_scene
-		_: return goblin_scene # Default fallback
+		_: return goblin_scene
 
 func check_special_spawns() -> void:
-	for i in range(special_spawns.size()):
-		var spawn_event: Dictionary = special_spawns[i]
-		
-		if not triggered_special_spawns.has(i) and current_difficulty >= spawn_event["difficulty_trigger"]:
-			print("Triggering special spawn: ", spawn_event["type"])
-			spawn_group(spawn_event["pattern"], spawn_event["enemies"], spawn_event["radius"])
-			triggered_special_spawns.append(i)
+	for spawn_event in special_spawns:
+		if spawn_event["difficulty_trigger"] == current_difficulty:
+			
+			match spawn_event["type"]:
+				"horde":
+					spawn_group(spawn_event["pattern"], spawn_event["enemies"], spawn_event["radius"])
+				
+				"double_circle":
+					for circle in spawn_event["circles"]:
+						spawn_group(SpawnPattern.CIRCLE, circle["enemies"], circle["radius"])
+				
+				"triple_circle":
+					for circle in spawn_event["circles"]:
+						spawn_group(SpawnPattern.CIRCLE, circle["enemies"], circle["radius"])
+				
+				"boss_wave":
+					spawn_group(spawn_event["pattern"], spawn_event["enemies"], spawn_event["radius"])
 
 func _on_player_level_up(new_level: int) -> void:
-	# Pause the game
 	pause_game()
 	
 	get_tree().paused = true
 	
-	# Update needed statistics
 	if stats_manager:
 		if new_level > stats_manager.highest_level_reached:
 			stats_manager.highest_level_reached = new_level

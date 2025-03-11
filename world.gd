@@ -2,7 +2,6 @@ extends Node2D
 
 @onready var player: CharacterBody2D = $player
 @onready var ui: CanvasLayer = get_node("/root/world/UI")
-@onready var round_manager: Node2D = $RoundManager
 @onready var difficulty_manager: Node2D = get_node("/root/world/DifficultyManager")
 
 

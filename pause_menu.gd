@@ -5,7 +5,6 @@ extends CanvasLayer
 @onready var not_enough_coins_label: Label = $NotEnoughCoinsLabel
 @onready var level_requirement_label: Label = $LevelRequirementLabel
 @onready var pause_menu: CanvasLayer = $"."
-@onready var round_manager: Node2D = get_node("/root/world/RoundManager")
 
 @onready var gun_1_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/Gun1Container/VBoxContainer/Gun1UpgradeButton
 @onready var gun_1_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/Gun1Container/VBoxContainer/Gun1LevelReq
@@ -41,11 +40,11 @@ var player = null
 
 # buy costs
 var gun2_buy_cost = 125
-var gun2_buy_level_req = 5
+var gun2_buy_level_req = 3
 var sniper1_buy_cost = 75
-var sniper1_buy_level_req = 5
+var sniper1_buy_level_req = 2
 var rocketlauncher_buy_cost = 150
-var rocketlauncher_buy_level_req = 7
+var rocketlauncher_buy_level_req = 4
 
 var gun1_costs = {
 	2: 25,
@@ -122,67 +121,67 @@ var mana_level = 1
 var shockwave_level = 1
 
 var gun1_level_requirements = {
-	2: 4,  
-	3: 6,  
-	4: 10,  
-	5: 14
+	2: 2,  
+	3: 3,  
+	4: 4,  
+	5: 5
 }
 
 var gun2_level_requirements = {
-	2: 8,  
-	3: 12,  
-	4: 16,  
-	5: 25
+	2: 5,  
+	3: 7,  
+	4: 9,  
+	5: 11
 }
 
 var sniper1_level_requirements = {
-	2: 7,  
-	3: 10,  
-	4: 14,  
-	5: 20
+	2: 3,  
+	3: 4,  
+	4: 5,  
+	5: 6
 }
 
 var rocketlauncher_level_requirements = {
-	2: 10,  
-	3: 15,  
-	4: 20,  
-	5: 25
+	2: 6,  
+	3: 8,  
+	4: 10,  
+	5: 12
 }
 
 var blink_level_requirements = {
-	2: 5,
-	3: 10,
-	4: 20,
-	5: 30
+	2: 2,
+	3: 4,
+	4: 7,
+	5: 11
 }
 
 var hp_upgrade_level_requirements = {
 	2: 2,
-	3: 4,
-	4: 6,
-	5: 8,
-	6: 10,
-	7: 12,
-	8: 14,
-	9: 16,
-	10: 18,
-	11: 20
+	3: 2,
+	4: 3,
+	5: 3,
+	6: 4,
+	7: 4,
+	8: 5,
+	9: 6,
+	10: 7,
+	11: 8
 }
 
 var mana_upgrade_level_requirements = {
-	2: 5,
-	3: 10,
-	4: 15,
-	5: 20,
-	6: 25,
-	7: 30
+	2: 2,
+	3: 3,
+	4: 4,
+	5: 5,
+	6: 7,
+	7: 9
 }
 
 var shockwave_upgrade_level_requirements = {
-	2: 5,
-	3: 10,
-	4: 15,
-	5: 20
+	2: 3,
+	3: 5,
+	4: 7,
+	5: 9
 }
 
 var gun1_improvements = {
@@ -210,7 +209,7 @@ var sniper1_improvements = {
 }
 
 var rocketlauncher_improvements = {
-	"fire_rate": 0.015,
+	"fire_rate": 0.01,
 	"damage_min": 10,
 	"damage_max": 20,
 	"bullet_speed": 50.0,
@@ -225,8 +224,8 @@ var blink_cooldown_upgrade = {
 }
 
 # fire blink
-var fire_blink_buy_cost = 300
-var fire_blink_buy_level_req = 10
+var fire_blink_buy_cost = 250
+var fire_blink_buy_level_req = 3
 
 var fire_blink_costs = {
 	2: 300,
@@ -237,10 +236,10 @@ var fire_blink_costs = {
 
 
 var fire_blink_level_requirements = {
-	2: 15,
-	3: 20,
-	4: 25,
-	5: 30
+	2: 4,
+	3: 6,
+	4: 8,
+	5: 10
 }
 
 var fire_blink_improvements = {
@@ -256,7 +255,7 @@ var rocketlauncher = null
 
 # gravity well
 var gravity_well_buy_cost = 300
-var gravity_well_buy_level_req = 10
+var gravity_well_buy_level_req = 4
 
 var gravity_well_costs = {
 	2: 400,
@@ -266,10 +265,10 @@ var gravity_well_costs = {
 }
 
 var gravity_well_level_requirements = {
-	2: 14,
-	3: 20,
-	4: 26,
-	5: 32
+	2: 5,
+	3: 6,
+	4: 8,
+	5: 10
 }
 
 var gravity_well_level = 1
