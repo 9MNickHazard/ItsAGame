@@ -47,7 +47,7 @@ func _ready() -> void:
 	duration_timer.start()
 	
 	minimum_damage += (2 * (ability_level - 1))
-	maximum_damage += (4 * (ability_level - 1))
+	maximum_damage += (2 * (ability_level - 1))
 	
 	active_orbs = ability_level
 	
@@ -110,10 +110,10 @@ func disable_all_sprites_and_hitboxes() -> void:
 func _on_area_2d_body_entered(body: Node2D) -> void:
 	if body.has_method("take_damage"):
 		damage = randi_range(minimum_damage, maximum_damage)
-		#if glass_cannon_multiplier:
-			#damage = damage * 2
-		#if runforrestrun_multiplier:
-			#damage = ceil(damage * 0.75)
+		if glass_cannon_multiplier:
+			damage = damage * 2
+		if runforrestrun_multiplier:
+			damage = ceil(damage * 0.75)
 			
 		knockback_dir = (body.global_position - global_position).normalized()
 		body.take_damage(damage, knockback_amount, knockback_dir)

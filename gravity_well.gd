@@ -79,10 +79,10 @@ func _on_damage_timer_timeout() -> void:
 	for enemy in damage_affected_enemies:
 		if is_instance_valid(enemy) and enemy.has_method("take_damage"):
 			var damage_dealt: int = damage_per_tick + damage_bonus
-			#if glass_cannon_multiplier:
-				#damage_dealt = damage_dealt * 2
-			#if runforrestrun_multiplier:
-				#damage_dealt = ceil(damage_dealt * 0.75)
+			if glass_cannon_multiplier:
+				damage_dealt = damage_dealt * 2
+			if runforrestrun_multiplier:
+				damage_dealt = ceil(damage_dealt * 0.75)
 			enemy.take_damage(damage_dealt)
 
 func _on_pull_area_body_entered(body: CharacterBody2D) -> void:

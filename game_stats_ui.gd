@@ -47,7 +47,7 @@ func _on_restart_button_pressed() -> void:
 	RocketAmmoScript.runforrestrun_multiplier = false
 	
 	var ShockwaveScript: GDScript = load("res://scripts/shockwave.gd")
-	ShockwaveScript.damage = 10
+	ShockwaveScript.damage = 20
 	ShockwaveScript.knockback_amount = 200.0
 	
 	var OrbitalAbilityScript: GDScript = load("res://scripts/orbital_ability.gd")

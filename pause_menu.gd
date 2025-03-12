@@ -472,10 +472,10 @@ func update_cost_labels():
 		gravity_well_upgrade_button.text = "MAX LEVEL"
 		gravity_well_level_req.text = "MAX LEVEL"
 		
-	if player.owns_orbital_ability == true and gravity_well_level < 8:
+	if player.owns_orbital_ability == true and orbital_level < 8:
 		orbital_ability_upgrade_button.text = "Level " + str(orbital_level + 1) + ": " + str(orbital_costs[orbital_level + 1])
 		orbital_ability_level_req.text = "Level Req: " + str(orbital_level_requirements[orbital_level + 1])
-	elif fire_blink_level >= 8:
+	elif orbital_level >= 8:
 		orbital_ability_upgrade_button.text = "MAX LEVEL"
 		orbital_ability_level_req.text = "MAX LEVEL"
 		
@@ -547,7 +547,7 @@ func _on_restart_button_pressed() -> void:
 	RocketAmmoScript.runforrestrun_multiplier = false
 	
 	var ShockwaveScript: GDScript = load("res://scripts/shockwave.gd")
-	ShockwaveScript.damage = 10
+	ShockwaveScript.damage = 20
 	ShockwaveScript.knockback_amount = 200.0
 	
 	var OrbitalAbilityScript: GDScript = load("res://scripts/orbital_ability.gd")

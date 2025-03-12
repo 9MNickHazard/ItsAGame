@@ -46,12 +46,12 @@ func _on_body_entered(body: CharacterBody2D) -> void:
 		hit_enemies[body_id] = true
 		
 		var knockback_dir: Vector2 = (body.global_position - global_position).normalized()
-		#damage_dealt = damage
-		#if glass_cannon_multiplier:
-			#damage_dealt = damage_dealt * 2
-		#if runforrestrun_multiplier:
-			#damage_dealt = ceil(damage_dealt * 0.75)
-		body.take_damage(damage, knockback_amount, knockback_dir)
+		damage_dealt = damage
+		if glass_cannon_multiplier:
+			damage_dealt = damage_dealt * 2
+		if runforrestrun_multiplier:
+			damage_dealt = ceil(damage_dealt * 0.75)
+		body.take_damage(damage_dealt, knockback_amount, knockback_dir)
 
 func _on_animation_finished() -> void:
 	queue_free()

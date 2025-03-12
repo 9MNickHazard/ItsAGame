@@ -72,9 +72,9 @@ var ai_velocity: Vector2 = Vector2.ZERO
 var distance_to_player: float
 var ai_direction: Vector2
 var push_velocity: Vector2
-var pull_direction: Vector2
-var pull_velocity: Vector2
-var pull_dominance: float
+var pull_direction: Vector2 = Vector2.ZERO
+var pull_velocity: Vector2 = Vector2.ZERO
+var pull_dominance: float = 0.0
 
 #var physics_frame_counter: int = 0
 
@@ -89,9 +89,12 @@ func _ready() -> void:
 	facing_camera_hitbox.monitoring = false
 	side_hitbox.monitoring = false
 	
+	#print("MOB1 SPAWN - Position: ", global_position)
+	
 	
 			
 func _physics_process(delta: float) -> void:
+	#print("MOB1 DEBUG - Position: ", global_position, " Velocity: ", velocity)
 	if is_dead:
 		return
 		
@@ -144,8 +147,10 @@ func _physics_process(delta: float) -> void:
 	
 	if not is_inside_play_area():
 		ai_direction = global_position.direction_to(Vector2.ZERO)
+		#print("MOB1 DIRECTION - AI Direction (if outside play area): ", ai_direction, " Current state: ", current_state)
 	elif current_state == State.CHASE:
 		ai_direction = global_position.direction_to(player.global_position)
+		#print("MOB1 DIRECTION - AI Direction (if in CHASE state): ", ai_direction, " Current state: ", current_state)
 	#elif current_state == State.FLANK:
 		#ai_direction = flank_direction
 	#else:
@@ -164,12 +169,16 @@ func _physics_process(delta: float) -> void:
 			ai_velocity = ai_direction * SPEED
 		
 		if is_being_pulled_by_gravity_well:
+			#print("MOB1 PULLED (before new calc) - Factor: ", gravity_well_factor, " Pull direction: ", pull_direction)
+			#print("MOB1 PULLED (before new calc) - Pull velocity: ", pull_velocity, " Pull dominance: ", pull_dominance)
 			pull_direction = global_position.direction_to(gravity_well_position)
 			
 			pull_velocity = pull_direction * gravity_well_strength * gravity_well_factor
 			
 			pull_dominance = pow(gravity_well_factor, 1.5)
 			velocity = ai_velocity * (1.0 - pull_dominance) + pull_velocity * pull_dominance
+			#print("MOB1 PULLED (AFTER new calc)- Factor: ", gravity_well_factor, " Pull direction: ", pull_direction)
+			#print("MOB1 PULLED (AFTER new calc)- Pull velocity: ", pull_velocity, " Pull dominance: ", pull_dominance)
 		else:
 			velocity = ai_velocity
 			
@@ -180,7 +189,8 @@ func _physics_process(delta: float) -> void:
 			animated_sprite.play("run")
 		else:
 			animated_sprite.play("idle")
-			
+		
+		#print("MOB1 FINAL VELOCITY: ", velocity, " Length: ", velocity.length())
 		move_and_slide()
 		
 	if overlapping_player:

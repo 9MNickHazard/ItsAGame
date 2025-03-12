@@ -480,6 +480,9 @@ func apply_cursed_powerup():
 	var rocket_ammo_script = load("res://scripts/rocket_ammo.gd")
 	var player_script = load("res://scripts/player.gd")
 	var pause_menu_script = load("res://scripts/pause_menu.gd")
+	var shockwave_script = load("res://scripts/shockwave.gd")
+	var gravity_well_script = load("res://scripts/gravity_well.gd")
+	var magic_orbital_script = load("res://scripts/orbital_ability.gd")
 	
 	bullet_script.glass_cannon_multiplier = false
 	bullet_script.runforrestrun_multiplier = false
@@ -492,6 +495,12 @@ func apply_cursed_powerup():
 	player_script.damage_multiplier = false
 	player_script.weapon_restriction = false
 	pause_menu_script.semi_pacifist = false
+	shockwave_script.glass_cannon_multiplier = false
+	shockwave_script.runforrestrun_multiplier = false
+	gravity_well_script.glass_cannon_multiplier = false
+	gravity_well_script.runforrestrun_multiplier = false
+	magic_orbital_script.glass_cannon_multiplier = false
+	magic_orbital_script.runforrestrun_multiplier = false
 	player_script.speed = 450.0
 	
 	match active_cursed_powerup:
@@ -501,6 +510,9 @@ func apply_cursed_powerup():
 			sniper_bullet_script.glass_cannon_multiplier = true
 			rocket_ammo_script.glass_cannon_multiplier = true
 			player_script.damage_multiplier = true
+			shockwave_script.glass_cannon_multiplier = true
+			gravity_well_script.glass_cannon_multiplier = true
+			magic_orbital_script.glass_cannon_multiplier = true
 			
 		"semi_pacifist":
 			pause_menu_script.semi_pacifist = true
@@ -513,6 +525,9 @@ func apply_cursed_powerup():
 			sniper_bullet_script.runforrestrun_multiplier = true
 			rocket_ammo_script.runforrestrun_multiplier = true
 			player_script.speed = 675.0
+			shockwave_script.runforrestrun_multiplier = true
+			gravity_well_script.runforrestrun_multiplier = true
+			magic_orbital_script.runforrestrun_multiplier = true
 
 
 func _on_previous_difficulty_button_pressed() -> void:

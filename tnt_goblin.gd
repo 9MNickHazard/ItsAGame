@@ -63,9 +63,9 @@ var ai_velocity: Vector2 = Vector2.ZERO
 var distance_to_player: float
 var ai_direction: Vector2
 var push_velocity: Vector2
-var pull_direction: Vector2 = global_position.direction_to(gravity_well_position)
-var pull_velocity: Vector2 = pull_direction * gravity_well_strength * gravity_well_factor
-var pull_dominance: float = pow(gravity_well_factor, 1.5)
+var pull_direction: Vector2 = Vector2.ZERO
+var pull_velocity: Vector2 = Vector2.ZERO
+var pull_dominance: float = 0.0
 
 func _ready() -> void:
 	player = get_node("/root/world/player")

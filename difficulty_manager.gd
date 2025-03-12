@@ -51,7 +51,7 @@ var enemy_weights: Dictionary = {
 
 var special_spawns: Array[Dictionary] = [
 	# Difficulty 1.0
-	{"type": "horde", "difficulty_trigger": 1.0, "enemies": [
+	{"type": "horde", "difficulty_trigger": 1.1, "enemies": [
 		{"scene": "goblin", "count": 10}
 	], "pattern": SpawnPattern.CIRCLE, "radius": 900.0},
 	
@@ -252,6 +252,7 @@ func start_game() -> void:
 	
 	emit_signal("difficulty_increased", current_difficulty)
 	
+	await get_tree().process_frame
 	check_special_spawns()
 
 func pause_game() -> void:
