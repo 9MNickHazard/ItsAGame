@@ -50,6 +50,9 @@ func _on_restart_button_pressed() -> void:
 	ShockwaveScript.damage = 10
 	ShockwaveScript.knockback_amount = 200.0
 	
+	var OrbitalAbilityScript: GDScript = load("res://scripts/orbital_ability.gd")
+	OrbitalAbilityScript.ability_level = 1
+	
 	var PlayerScript: GDScript = load("res://scripts/player.gd")
 	PlayerScript.max_mana = 100.0
 	PlayerScript.max_health = 100
@@ -107,6 +110,7 @@ func populate_stats() -> void:
 	add_stat_label("Total Blinks Used: " + str(stats_manager.total_blinks_used))
 	add_stat_label("Total Shockwaves Used: " + str(stats_manager.total_shockwaves_used))
 	add_stat_label("Total Gravity Wells Used: " + str(stats_manager.total_gravity_wells_used))
+	add_stat_label("Total Magic Orbitals Used: " + str(stats_manager.total_orbital_abilities_used))
 	add_stat_label("Total Shots Fired: " + str(stats_manager.total_shots_fired))
 	add_stat_label("")
 	

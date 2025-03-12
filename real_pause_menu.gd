@@ -11,7 +11,7 @@ extends CanvasLayer
 
 var pixel_font: FontFile = preload("res://assets/fonts/PixelOperator8.ttf")
 
-var actions: Array = ["left", "right", "up", "down", "left_click", "Blink", "Ability 1", "Ability 2", "pause", "scroll_up", "scroll_down"]
+var actions: Array = ["left", "right", "up", "down", "left_click", "Blink", "Ability 1", "Ability 2", "Ability 3", "pause", "scroll_up", "scroll_down"]
 var action_display_names: Dictionary = {
 	"left": "Move Left",
 	"right": "Move Right", 
@@ -21,6 +21,7 @@ var action_display_names: Dictionary = {
 	"Blink": "Blink",
 	"Ability 1": "Shockwave",
 	"Ability 2": "Gravity Well",
+	"Ability 3": "Magic Orbital",
 	"pause": "Pause",
 	"scroll_up": "Next Weapon",
 	"scroll_down": "Previous Weapon"
@@ -197,6 +198,9 @@ func _on_restart_button_pressed() -> void:
 	ShockwaveScript.damage = 10
 	ShockwaveScript.knockback_amount = 200.0
 	
+	var OrbitalAbilityScript: GDScript = load("res://scripts/orbital_ability.gd")
+	OrbitalAbilityScript.ability_level = 1
+	
 	var PlayerScript: GDScript = load("res://scripts/player.gd")
 	PlayerScript.max_mana = 100.0
 	PlayerScript.max_health = 100
@@ -259,6 +263,7 @@ func update_stats_display() -> void:
 	add_stat_label("Total Blinks Used: " + str(stats_manager.total_blinks_used))
 	add_stat_label("Total Shockwaves Used: " + str(stats_manager.total_shockwaves_used))
 	add_stat_label("Total Gravity Wells Used: " + str(stats_manager.total_gravity_wells_used))
+	add_stat_label("Total Magic Orbitals Used: " + str(stats_manager.total_orbital_abilities_used))
 	add_stat_label("Total Shots Fired: " + str(stats_manager.total_shots_fired))
 	add_stat_label("")
 	

@@ -6,7 +6,10 @@ extends Node2D
 @onready var duration_timer: Timer = $DurationTimer
 @onready var damage_timer: Timer = $DamageTimer
 
-var damage_per_tick: int = 5
+static var glass_cannon_multiplier: bool = false
+static var runforrestrun_multiplier: bool = false
+
+var damage_per_tick: int = 10
 var pull_strength: float = 300.0
 var max_pull_strength: float = 600.0
 var lifetime: float = 12.0
@@ -76,6 +79,10 @@ func _on_damage_timer_timeout() -> void:
 	for enemy in damage_affected_enemies:
 		if is_instance_valid(enemy) and enemy.has_method("take_damage"):
 			var damage_dealt: int = damage_per_tick + damage_bonus
+			#if glass_cannon_multiplier:
+				#damage_dealt = damage_dealt * 2
+			#if runforrestrun_multiplier:
+				#damage_dealt = ceil(damage_dealt * 0.75)
 			enemy.take_damage(damage_dealt)
 
 func _on_pull_area_body_entered(body: CharacterBody2D) -> void:

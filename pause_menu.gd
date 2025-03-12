@@ -26,9 +26,12 @@ extends CanvasLayer
 @onready var mana_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/ManaContainer/VBoxContainer/ManaLevelReq
 @onready var gravity_well_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/GravityWellContainer/VBoxContainer/GravityWellUpgradeButton
 @onready var gravity_well_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/GravityWellContainer/VBoxContainer/GravityWellLevelReq
+@onready var orbital_ability_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/OrbitalAbilityContainer/VBoxContainer/OrbitalAbilityUpgradeButton
+@onready var orbital_ability_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/OrbitalAbilityContainer/VBoxContainer/OrbitalAbilityLevelReq
 
 @onready var continue_button: Button = $MainMargin/MainPanel/VBoxMain/BottomRow/MarginContainer/HBoxContainer/ContinueButton
 @onready var player_coins_label: Label = $MainMargin/MainPanel/VBoxMain/TopRow/VBoxContainer/CoinsLabel
+@onready var player_level_label: Label = $MainMargin/MainPanel/VBoxMain/TopRow/VBoxContainer/LevelLabel
 
 @onready var semi_pacifist_label: Label = $SemiPacifistLabel
 
@@ -254,8 +257,8 @@ var sniper1 = null
 var rocketlauncher = null
 
 # gravity well
-var gravity_well_buy_cost = 300
-var gravity_well_buy_level_req = 4
+var gravity_well_buy_cost = 200
+var gravity_well_buy_level_req = 3
 
 var gravity_well_costs = {
 	2: 400,
@@ -279,6 +282,32 @@ var gravity_well_improvements = {
 	"pull_radius": 15.0, # percent increase
 	"damage_radius": 10.0
 }
+
+# orbital ability
+var orbital_buy_cost = 200
+var orbital_buy_level_req = 3
+
+var orbital_costs = {
+	2: 300,
+	3: 550,
+	4: 700,
+	5: 850,
+	6: 1000,
+	7: 1222,
+	8: 1200
+}
+
+var orbital_level_requirements = {
+	2: 4,
+	3: 5,
+	4: 6,
+	5: 7,
+	6: 8,
+	7: 9,
+	8: 11
+}
+
+var orbital_level = 1
 
 func _ready() -> void:
 	pause_menu.hide()
@@ -307,6 +336,9 @@ func _ready() -> void:
 	
 	gravity_well_upgrade_button.text = "Buy: " + str(gravity_well_buy_cost)
 	
+	orbital_ability_upgrade_button.text = "Buy: " + str(orbital_buy_cost)
+	
+	orbital_ability_level_req.text = "Level Req: " + str(orbital_level_requirements[orbital_level + 1])
 	gun_1_level_req.text = "Level Req: " + str(gun1_level_requirements[gun1_level + 1])
 	gun_2_level_req.text = "Level Req: " + str(gun2_buy_level_req)
 	sniper_level_req.text = "Level Req: " + str(sniper1_buy_level_req)
@@ -326,6 +358,7 @@ func _ready() -> void:
 	player = get_node("/root/world/player")
 	
 	player_coins_label.text = "Coins: " + str(ui.coins_collected)
+	player_level_label.text = "Level: " + str(ui.experience_manager.get_current_level())
 		
 	update_cost_labels()
 
@@ -344,6 +377,7 @@ func toggle_pause():
 		pause_menu.show()
 		update_cost_labels()
 		player_coins_label.text = "Coins: " + str(ui.coins_collected)
+		player_level_label.text = "Level: " + str(ui.experience_manager.get_current_level())
 		
 		continue_button.visible = true
 			
@@ -438,6 +472,13 @@ func update_cost_labels():
 		gravity_well_upgrade_button.text = "MAX LEVEL"
 		gravity_well_level_req.text = "MAX LEVEL"
 		
+	if player.owns_orbital_ability == true and gravity_well_level < 8:
+		orbital_ability_upgrade_button.text = "Level " + str(orbital_level + 1) + ": " + str(orbital_costs[orbital_level + 1])
+		orbital_ability_level_req.text = "Level Req: " + str(orbital_level_requirements[orbital_level + 1])
+	elif fire_blink_level >= 8:
+		orbital_ability_upgrade_button.text = "MAX LEVEL"
+		orbital_ability_level_req.text = "MAX LEVEL"
+		
 func disable_enable_buttons(disabled: bool = true):
 	if disabled:
 		gun_1_upgrade_button.disabled = true
@@ -450,6 +491,7 @@ func disable_enable_buttons(disabled: bool = true):
 		shockwave_upgrade_button.disabled = true
 		mana_upgrade_button.disabled = true
 		gravity_well_upgrade_button.disabled = true
+		orbital_ability_upgrade_button.disabled = true
 	else:
 		gun_1_upgrade_button.disabled = false
 		gun_2_upgrade_button.disabled = false
@@ -461,6 +503,7 @@ func disable_enable_buttons(disabled: bool = true):
 		shockwave_upgrade_button.disabled = false
 		mana_upgrade_button.disabled = false
 		gravity_well_upgrade_button.disabled = false
+		orbital_ability_upgrade_button.disabled = false
 
 func _on_quit_button_pressed() -> void:
 	get_tree().quit()
@@ -506,6 +549,9 @@ func _on_restart_button_pressed() -> void:
 	var ShockwaveScript: GDScript = load("res://scripts/shockwave.gd")
 	ShockwaveScript.damage = 10
 	ShockwaveScript.knockback_amount = 200.0
+	
+	var OrbitalAbilityScript: GDScript = load("res://scripts/orbital_ability.gd")
+	OrbitalAbilityScript.ability_level = 1
 	
 	var PlayerScript: GDScript = load("res://scripts/player.gd")
 	PlayerScript.max_mana = 100.0
@@ -1235,6 +1281,60 @@ func _on_gravity_well_upgrade_button_pressed() -> void:
 				GravityWellScript.duration_bonus += gravity_well_improvements["duration"]
 				GravityWellScript.pull_radius_bonus += gravity_well_improvements["pull_radius"]
 				GravityWellScript.damage_radius_bonus += gravity_well_improvements["damage_radius"]
+				
+				player_coins_label.text = "Coins: " + str(ui.coins_collected)
+				update_cost_labels()
+			else:
+				level_requirement_label.text = "Required Level: " + str(level_req)
+				level_requirement_label.show()
+				await get_tree().create_timer(1.2).timeout
+				level_requirement_label.hide()
+		else:
+			not_enough_coins_label.show()
+			await get_tree().create_timer(1.2).timeout
+			not_enough_coins_label.hide()
+
+
+func _on_orbital_ability_upgrade_button_pressed() -> void:
+	if player.owns_orbital_ability == false:
+		if ui.coins_collected >= orbital_buy_cost:
+			if ui.experience_manager.current_level >= orbital_buy_level_req:
+				ui.coins_collected -= orbital_buy_cost
+				ui.coin_label.text = "Coins: " + str(ui.coins_collected)
+				
+				if player:
+					player.acquire_orbital_ability()
+				else:
+					print("Player reference is null!")
+				
+				player_coins_label.text = "Coins: " + str(ui.coins_collected)
+				update_cost_labels()
+			else:
+				level_requirement_label.text = "Required Level: " + str(orbital_buy_level_req)
+				level_requirement_label.show()
+				await get_tree().create_timer(1.2).timeout
+				level_requirement_label.hide()
+		else:
+			not_enough_coins_label.show()
+			await get_tree().create_timer(1.2).timeout
+			not_enough_coins_label.hide()
+	else:
+		if orbital_level >= 8:
+			return
+			
+		var next_level = orbital_level + 1
+		var cost = orbital_costs[next_level]
+		var level_req = orbital_level_requirements[next_level]
+		
+		if ui.coins_collected >= cost:
+			if ui.experience_manager.current_level >= level_req:
+				ui.coins_collected -= cost
+				ui.coin_label.text = "Coins: " + str(ui.coins_collected)
+				
+				orbital_level += 1
+				
+				var OrbitalAbilityScript = load("res://scenes/orbital_ability.tscn")
+				OrbitalAbilityScript.ability_level += 1
 				
 				player_coins_label.text = "Coins: " + str(ui.coins_collected)
 				update_cost_labels()

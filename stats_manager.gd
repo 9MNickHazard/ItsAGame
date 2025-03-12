@@ -20,6 +20,7 @@ var enemy_kills_by_type: Dictionary = {}
 var total_blinks_used: int = 0
 var total_shockwaves_used: int = 0
 var total_gravity_wells_used: int = 0
+var total_orbital_abilities_used: int = 0
 var total_shots_fired: int = 0
 var shots_fired_by_weapon: Dictionary = {}
 
@@ -54,6 +55,7 @@ func reset_stats() -> void:
 	total_blinks_used = 0
 	total_shockwaves_used = 0
 	total_gravity_wells_used = 0
+	total_orbital_abilities_used = 0
 	total_shots_fired = 0
 	shots_fired_by_weapon = {}
 	highest_difficulty_reached = 1.0

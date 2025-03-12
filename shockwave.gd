@@ -4,6 +4,9 @@ extends Area2D
 @onready var collision_shape: CollisionShape2D = $SingleArea/CollisionShape2D
 @onready var single_area: Area2D = $SingleArea
 
+static var glass_cannon_multiplier: bool = false
+static var runforrestrun_multiplier: bool = false
+
 static var damage: int = 20
 static var knockback_amount: float = 200.0
 
@@ -13,6 +16,8 @@ var current_radius: float
 var max_radius: float = 465.0
 var expansion_rate: float = 930.0
 
+var damage_dealt: int
+
 func _ready() -> void:
 	animated_sprite.animation_finished.connect(_on_animation_finished)
 	
@@ -20,6 +25,8 @@ func _ready() -> void:
 	
 	current_radius = 68.0
 	collision_shape.shape.set_radius(current_radius)
+	
+	
 
 func _process(delta: float) -> void:
 	if current_radius < max_radius:
@@ -33,13 +40,17 @@ func _on_body_entered(body: CharacterBody2D) -> void:
 	
 	if is_instance_valid(body) and body.has_method("take_damage"):
 		var body_id: int = body.get_instance_id()
-		print(body_id)
 		if hit_enemies.has(body_id):
 			return
 			
 		hit_enemies[body_id] = true
 		
 		var knockback_dir: Vector2 = (body.global_position - global_position).normalized()
+		#damage_dealt = damage
+		#if glass_cannon_multiplier:
+			#damage_dealt = damage_dealt * 2
+		#if runforrestrun_multiplier:
+			#damage_dealt = ceil(damage_dealt * 0.75)
 		body.take_damage(damage, knockback_amount, knockback_dir)
 
 func _on_animation_finished() -> void:

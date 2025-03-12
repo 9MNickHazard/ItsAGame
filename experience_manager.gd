@@ -8,7 +8,6 @@ signal experience_gained(current_xp: int, xp_for_next_level: int)
 var current_level: int = 1
 var current_xp: int = 0
 var xp_table: Dictionary = {
-	1: 500,
 	2: 3500,
 	3: 9500,
 	4: 18000,
@@ -26,7 +25,7 @@ func add_experience(amount: int) -> void:
 	current_xp += amount
 	
 	var level_up_occurred: bool = false
-	while current_level < 12 and current_xp >= xp_table[current_level]:
+	while current_level < 12 and current_xp >= xp_table[current_level + 1]:
 		current_level += 1
 		level_up_occurred = true
 		level_up.emit(current_level)
@@ -34,14 +33,14 @@ func add_experience(amount: int) -> void:
 		if current_level > stats_manager.highest_level_reached:
 			stats_manager.highest_level_reached = current_level
 	
-	var xp_needed: int = xp_table[current_level] if current_level < 12 else 0
+	var xp_needed: int = xp_table[current_level + 1] if current_level < 12 else 0
 	experience_gained.emit(current_xp, xp_needed)
 
 func get_current_level() -> int:
 	return current_level
 
 func get_xp_for_next_level() -> int:
-	return xp_table[current_level] if current_level < 12 else 0
+	return xp_table[current_level + 1] if current_level < 12 else 0
 
 func get_current_xp() -> int:
 	return current_xp

@@ -58,6 +58,15 @@ var current_state: State = State.CHASE
 var state_timer: float = 0.0
 var wander_direction: Vector2 = Vector2.ZERO
 
+var optimal_distance: float = 400.0
+var ai_velocity: Vector2 = Vector2.ZERO
+var distance_to_player: float
+var ai_direction: Vector2
+var push_velocity: Vector2
+var pull_direction: Vector2 = global_position.direction_to(gravity_well_position)
+var pull_velocity: Vector2 = pull_direction * gravity_well_strength * gravity_well_factor
+var pull_dominance: float = pow(gravity_well_factor, 1.5)
+
 func _ready() -> void:
 	player = get_node("/root/world/player")
 	animated_sprite.play("run")
@@ -69,7 +78,7 @@ func _physics_process(delta: float) -> void:
 		return
 		
 	if is_being_pushed and player:
-		var push_velocity: Vector2 = push_direction * PUSH_SPEED
+		push_velocity = push_direction * PUSH_SPEED
 		velocity = push_velocity
 		move_and_slide()
 		return
@@ -79,46 +88,44 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 	
-	state_timer += delta
-	
-	if state_timer >= 2.0:
-		state_timer = 0
-		if current_state == State.CHASE and randf() <= 0.2:
-			current_state = State.WANDER
-			wander_direction = Vector2(randf_range(-1, 1), randf_range(-1, 1)).normalized()
-		
-		elif current_state == State.WANDER and randf() <= 0.8:
-			current_state = State.CHASE
+	#state_timer += delta
+	#
+	#if state_timer >= 2.0:
+		#state_timer = 0
+		#if current_state == State.CHASE and randf() <= 0.2:
+			#current_state = State.WANDER
+			#wander_direction = Vector2(randf_range(-1, 1), randf_range(-1, 1)).normalized()
+		#
+		#elif current_state == State.WANDER and randf() <= 0.8:
+			#current_state = State.CHASE
 			
 	throw_timer += delta
 			
-	var ai_direction: Vector2
+	
 	if not is_inside_play_area():
 		ai_direction = global_position.direction_to(Vector2.ZERO)
 	elif current_state == State.CHASE:
 		ai_direction = global_position.direction_to(player.global_position)
-	else:
-		ai_direction = wander_direction
+	#else:
+		#ai_direction = wander_direction
 	
-	var distance_to_player: float = global_position.distance_to(player.global_position)
+	distance_to_player = global_position.distance_to(player.global_position)
 	
 	if distance_to_player <= throw_range and throw_timer >= throw_cooldown:
 		throw_tnt()
 		throw_timer = 0.0
 	
-	var optimal_distance: float = 400.0
-	var ai_velocity: Vector2 = Vector2.ZERO
 	
 	if not is_throwing:
 		if distance_to_player > optimal_distance:
 			ai_velocity = ai_direction * SPEED
 		
 		if is_being_pulled_by_gravity_well:
-			var pull_direction: Vector2 = global_position.direction_to(gravity_well_position)
+			pull_direction = global_position.direction_to(gravity_well_position)
 			
-			var pull_velocity: Vector2 = pull_direction * gravity_well_strength * gravity_well_factor
+			pull_velocity = pull_direction * gravity_well_strength * gravity_well_factor
 			
-			var pull_dominance: float = pow(gravity_well_factor, 1.5)
+			pull_dominance = pow(gravity_well_factor, 1.5)
 			velocity = ai_velocity * (1.0 - pull_dominance) + pull_velocity * pull_dominance
 		else:
 			velocity = ai_velocity
@@ -160,8 +167,8 @@ func _on_frame_changed() -> void:
 			new_tnt.throw(player.global_position)
 			
 func is_inside_play_area() -> bool:
-	return global_position.x >= -1570 and global_position.x <= 1570 and \
-		   global_position.y >= -970 and global_position.y <= 950
+	return global_position.x >= -2050 and global_position.x <= 2050 and \
+		   global_position.y >= -1470 and global_position.y <= 1430
 
 func take_damage(damage_dealt: float = 10.0, knockback_amount: float = 250.0, knockback_dir: Vector2 = Vector2.ZERO) -> void:
 	if is_dead:

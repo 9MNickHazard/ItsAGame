@@ -25,24 +25,27 @@ var skeleton_archer_scene: PackedScene = preload("res://scenes/skeleton_archer.t
 var base_difficulty: float = 1.0
 var current_difficulty: float = 1.0
 var difficulty_increment: float = 0.1
-var difficulty_increment_time: float = 20.0  # seconds
+var difficulty_increment_time: float = 12.0  # seconds
 var max_difficulty: float = 10.0
 
-var base_spawn_delay: float = 0.6
+var base_spawn_delay: float = 0.8
 var min_spawn_delay: float = 0.05
 var active_mobs: Array[Node] = []
 var spawning_in_progress: bool = false
 var game_paused: bool = false
 
+var current_group_size: float = 1.0
+var max_group_size: float = 10.0
+
 
 var enemy_weights: Dictionary = {
 	"goblin": {"scene": goblin_scene, "min_difficulty": 1.0, "max_difficulty": 10.0, "weight_at_min": 100, "weight_at_max": 30},
 	"tnt_goblin": {"scene": tnt_goblin_scene, "min_difficulty": 1.1, "max_difficulty": 10.0, "weight_at_min": 15, "weight_at_max": 30},
-	"wizard": {"scene": wizard_scene, "min_difficulty": 1.5, "max_difficulty": 10.0, "weight_at_min": 10, "weight_at_max": 25},
-	"martial_hero": {"scene": martial_hero_scene, "min_difficulty": 2.0, "max_difficulty": 10.0, "weight_at_min": 5, "weight_at_max": 20},
-	"skeleton_archer": {"scene": skeleton_archer_scene, "min_difficulty": 2.2, "max_difficulty": 10.0, "weight_at_min": 10, "weight_at_max": 25},
-	"healer": {"scene": healer_scene, "min_difficulty": 3.0, "max_difficulty": 10.0, "weight_at_min": 5, "weight_at_max": 15},
-	"minotaur": {"scene": minotaur_scene, "min_difficulty": 3.5, "max_difficulty": 10.0, "weight_at_min": 5, "weight_at_max": 15}
+	"wizard": {"scene": wizard_scene, "min_difficulty": 1.5, "max_difficulty": 10.0, "weight_at_min": 2, "weight_at_max": 25},
+	"martial_hero": {"scene": martial_hero_scene, "min_difficulty": 2.0, "max_difficulty": 10.0, "weight_at_min": 2, "weight_at_max": 20},
+	"skeleton_archer": {"scene": skeleton_archer_scene, "min_difficulty": 2.2, "max_difficulty": 10.0, "weight_at_min": 3, "weight_at_max": 25},
+	"healer": {"scene": healer_scene, "min_difficulty": 3.0, "max_difficulty": 10.0, "weight_at_min": 2, "weight_at_max": 15},
+	"minotaur": {"scene": minotaur_scene, "min_difficulty": 3.5, "max_difficulty": 10.0, "weight_at_min": 2, "weight_at_max": 15}
 }
 
 
@@ -271,9 +274,11 @@ func _on_difficulty_timer_timeout() -> void:
 		emit_signal("difficulty_increased", current_difficulty)
 		
 		check_special_spawns()
+	
+	if abs(current_difficulty - floor(current_difficulty)) < .01 and current_difficulty <= 10.0:
+		current_group_size = current_difficulty
 		
-		print("Difficulty increased to: ", current_difficulty)
-		print("New spawn delay: ", spawn_timer.wait_time)
+
 
 func calculate_spawn_delay() -> float:
 	var difficulty_factor: float = (current_difficulty - base_difficulty) / (max_difficulty - base_difficulty)
@@ -285,7 +290,11 @@ func _on_spawn_timer_timeout() -> void:
 	
 	var mob_scene: PackedScene = select_enemy_based_on_difficulty()
 	if mob_scene:
-		spawn_enemy(mob_scene, SpawnPattern.RANDOM)
+		if current_group_size > 1.0:
+			if randf() <= 0.33:
+				current_group_size = float(randi_range(1, int(current_group_size)))
+		for i in range(current_group_size):
+			spawn_enemy(mob_scene, SpawnPattern.RANDOM)
 
 func select_enemy_based_on_difficulty() -> PackedScene:
 	var total_weight: float = 0.0

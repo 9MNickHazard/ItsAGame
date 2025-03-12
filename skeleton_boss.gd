@@ -65,6 +65,15 @@ var charge_direction: Vector2 = Vector2.ZERO
 var charge_duration: float = 1.0
 var charge_active_timer: float = 0.0
 
+var optimal_distance: float = 225.0
+var ai_velocity: Vector2 = Vector2.ZERO
+var distance_to_player: float
+var ai_direction: Vector2
+#var push_velocity: Vector2
+#var pull_direction: Vector2
+#var pull_velocity: Vector2
+#var pull_dominance: float
+
 func _ready() -> void:
 	player = get_node("/root/world/player")
 	
@@ -107,15 +116,14 @@ func _physics_process(delta: float) -> void:
 	attack_timer += delta
 	charge_timer += delta
 	
-	var direction: Vector2
 	
 	if not is_inside_play_area():
-		direction = global_position.direction_to(Vector2.ZERO)
+		ai_direction = global_position.direction_to(Vector2.ZERO)
 	else:
-		direction = global_position.direction_to(player.global_position)
+		ai_direction = global_position.direction_to(player.global_position)
 
 	
-	var distance_to_player: float = global_position.distance_to(player.global_position)
+	distance_to_player = global_position.distance_to(player.global_position)
 	
 	if not is_attacking and charge_timer >= charge_cooldown and distance_to_player <= 700 and distance_to_player > 300 and randf() <= 0.6:
 		start_charge()
@@ -132,15 +140,13 @@ func _physics_process(delta: float) -> void:
 			attack_timer = 0.0
 			return
 	
-	var optimal_distance: float = 150.0
-	
 	if not is_attacking and current_state != State.CHARGING and current_state != State.CHARGE_ATTACK:
 		if distance_to_player > optimal_distance:
-			velocity = direction * SPEED
+			velocity = ai_direction * SPEED
 		else:
 			velocity = Vector2.ZERO
 			
-		update_animation(direction)
+		update_animation(ai_direction)
 		move_and_slide()
 	
 	if overlapping_player:
@@ -329,8 +335,8 @@ func start_charge() -> void:
 	
 
 func is_inside_play_area() -> bool:
-	return global_position.x >= -1570 and global_position.x <= 1570 and \
-		   global_position.y >= -970 and global_position.y <= 950
+	return global_position.x >= -2050 and global_position.x <= 2050 and \
+		   global_position.y >= -1470 and global_position.y <= 1430
 
 func take_damage(damage_dealt: int, knockback_amount: float = 250.0, knockback_dir: Vector2 = Vector2.ZERO) -> void:
 	if is_dead:

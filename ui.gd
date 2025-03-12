@@ -35,6 +35,7 @@ func _ready() -> void:
 	
 	xp_bar.max_value = experience_manager.get_xp_for_next_level()
 	xp_bar.value = 0
+	xp_label.text = "0/" + str(experience_manager.get_xp_for_next_level())
 
 	
 	experience_manager.level_up.connect(_on_level_up)
@@ -89,7 +90,7 @@ func _on_experience_gained(current_xp: int, xp_for_next: int) -> void:
 	if xp_for_next > 0:
 		var prev_level_xp: int = 0
 		if experience_manager.current_level > 1:
-			prev_level_xp = experience_manager.xp_table[experience_manager.current_level - 1]
+			prev_level_xp = experience_manager.xp_table[experience_manager.current_level]
 		
 		var level_progress: int = current_xp - prev_level_xp
 		var level_total: int = xp_for_next - prev_level_xp

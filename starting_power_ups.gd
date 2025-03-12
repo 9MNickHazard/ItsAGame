@@ -35,11 +35,17 @@ func apply_glass_cannon() -> void:
 	var Bullet2Script: GDScript = load("res://scripts/bullet_2.gd")
 	var RocketAmmoScript: GDScript = load("res://scripts/rocket_ammo.gd")
 	var Sniper1BulletScript: GDScript = load("res://scripts/sniper_1_bullet.gd")
+	var ShockwaveScript: GDScript = load("res://scripts/shockwave.gd")
+	var GravityWellScript: GDScript = load("res://scripts/gravity_well.gd")
+	var OrbitalAbilityScript: GDScript = load("res://scripts/orbital_ability.gd")
 	
 	Bullet1Script.glass_cannon_multiplier = true
 	Bullet2Script.glass_cannon_multiplier = true
 	RocketAmmoScript.glass_cannon_multiplier = true
 	Sniper1BulletScript.glass_cannon_multiplier = true
+	ShockwaveScript.glass_cannon_multiplier = true
+	GravityWellScript.glass_cannon_multiplier = true
+	OrbitalAbilityScript.glass_cannon_multiplier = true
 
 func apply_semi_pacifist() -> void:
 	var PlayerScript: GDScript = load("res://scripts/player.gd")
@@ -57,11 +63,17 @@ func apply_run_forrest_run() -> void:
 	var Bullet2Script: GDScript = load("res://scripts/bullet_2.gd")
 	var RocketAmmoScript: GDScript = load("res://scripts/rocket_ammo.gd")
 	var Sniper1BulletScript: GDScript = load("res://scripts/sniper_1_bullet.gd")
+	var ShockwaveScript: GDScript = load("res://scripts/shockwave.gd")
+	var GravityWellScript: GDScript = load("res://scripts/gravity_well.gd")
+	var OrbitalAbilityScript: GDScript = load("res://scripts/orbital_ability.gd")
 	
 	Bullet1Script.runforrestrun_multiplier = true
 	Bullet2Script.runforrestrun_multiplier = true
 	RocketAmmoScript.runforrestrun_multiplier = true
 	Sniper1BulletScript.runforrestrun_multiplier = true
+	ShockwaveScript.runforrestrun_multiplier = true
+	GravityWellScript.runforrestrun_multiplier = true
+	OrbitalAbilityScript.runforrestrun_multiplier = true
 
 
 func _on_playtest_button_pressed() -> void:

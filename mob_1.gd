@@ -67,6 +67,17 @@ var state_timer: float = 0.0
 var wander_direction: Vector2 = Vector2.ZERO
 var flank_direction: Vector2 = Vector2.ZERO
 
+var optimal_distance: float = 50.0
+var ai_velocity: Vector2 = Vector2.ZERO
+var distance_to_player: float
+var ai_direction: Vector2
+var push_velocity: Vector2
+var pull_direction: Vector2
+var pull_velocity: Vector2
+var pull_dominance: float
+
+#var physics_frame_counter: int = 0
+
 
 func _ready() -> void:
 	player = get_node("/root/world/player")
@@ -84,10 +95,12 @@ func _physics_process(delta: float) -> void:
 	if is_dead:
 		return
 		
-	var movement_velocity: Vector2 = Vector2.ZERO
+	#physics_frame_counter = (physics_frame_counter + 1) % 3
+	#if physics_frame_counter != 0:
+		#return
 	
 	if is_being_pushed and player:
-		var push_velocity: Vector2 = push_direction * PUSH_SPEED
+		push_velocity = push_direction * PUSH_SPEED
 		velocity = push_velocity
 		move_and_slide()
 		return
@@ -97,68 +110,65 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 	
-	state_timer += delta
-	
-	if state_timer >= 2.0:
-		state_timer = 0
-		
-		if current_state == State.CHASE:
-			var rand_value: float = randf()
-			if rand_value <= 0.15:
-				current_state = State.WANDER
-				wander_direction = Vector2(randf_range(-1, 1), randf_range(-1, 1)).normalized()
-			elif rand_value <= 0.35:
-				current_state = State.FLANK
-				flank_direction = calculate_flank_direction()
-		
-		elif current_state == State.WANDER:
-			var rand_value: float = randf()
-			if rand_value <= 0.70:
-				current_state = State.CHASE
-			elif rand_value <= 0.85:
-				current_state = State.FLANK
-				flank_direction = calculate_flank_direction()
-		
-		elif current_state == State.FLANK:
-			var rand_value: float = randf()
-			if rand_value <= 0.70:
-				current_state = State.CHASE
-			elif rand_value <= 0.80:
-				current_state = State.WANDER
-				wander_direction = Vector2(randf_range(-1, 1), randf_range(-1, 1)).normalized()
+	#state_timer += delta
+	#
+	#if state_timer >= 2.0:
+		#state_timer = 0
+		#
+		#if current_state == State.CHASE:
+			#var rand_value: float = randf()
+			#if rand_value <= 0.15:
+				#current_state = State.WANDER
+				#wander_direction = Vector2(randf_range(-1, 1), randf_range(-1, 1)).normalized()
+			#elif rand_value <= 0.35:
+				#current_state = State.FLANK
+				#flank_direction = calculate_flank_direction()
+		#
+		#elif current_state == State.WANDER:
+			#var rand_value: float = randf()
+			#if rand_value <= 0.70:
+				#current_state = State.CHASE
+			#elif rand_value <= 0.85:
+				#current_state = State.FLANK
+				#flank_direction = calculate_flank_direction()
+		#
+		#elif current_state == State.FLANK:
+			#var rand_value: float = randf()
+			#if rand_value <= 0.70:
+				#current_state = State.CHASE
+			#elif rand_value <= 0.80:
+				#current_state = State.WANDER
+				#wander_direction = Vector2(randf_range(-1, 1), randf_range(-1, 1)).normalized()
 	
 	attack_timer += delta
 	
-	var ai_direction: Vector2
 	if not is_inside_play_area():
 		ai_direction = global_position.direction_to(Vector2.ZERO)
 	elif current_state == State.CHASE:
 		ai_direction = global_position.direction_to(player.global_position)
-	elif current_state == State.FLANK:
-		ai_direction = flank_direction
-	else:
-		ai_direction = wander_direction
+	#elif current_state == State.FLANK:
+		#ai_direction = flank_direction
+	#else:
+		#ai_direction = wander_direction
 	
 	
-	var distance_to_player: float = global_position.distance_to(player.global_position)
+	distance_to_player = global_position.distance_to(player.global_position)
 	
 	if not is_attacking and distance_to_player <= attack_range and attack_timer >= attack_cooldown:
 		start_attack()
 		attack_timer = 0.0
 	
-	var optimal_distance: float = 50.0
 	
-	var ai_velocity: Vector2 = Vector2.ZERO
 	if not is_attacking:
 		if distance_to_player > optimal_distance:
 			ai_velocity = ai_direction * SPEED
 		
 		if is_being_pulled_by_gravity_well:
-			var pull_direction: Vector2 = global_position.direction_to(gravity_well_position)
+			pull_direction = global_position.direction_to(gravity_well_position)
 			
-			var pull_velocity: Vector2 = pull_direction * gravity_well_strength * gravity_well_factor
+			pull_velocity = pull_direction * gravity_well_strength * gravity_well_factor
 			
-			var pull_dominance: float= pow(gravity_well_factor, 1.5)
+			pull_dominance = pow(gravity_well_factor, 1.5)
 			velocity = ai_velocity * (1.0 - pull_dominance) + pull_velocity * pull_dominance
 		else:
 			velocity = ai_velocity
@@ -176,8 +186,9 @@ func _physics_process(delta: float) -> void:
 	if overlapping_player:
 		damage_timer += delta
 		if damage_timer >= damage_cooldown:
+			damage = randi_range(minimum_damage, maximum_damage)
 			if player.has_method("take_damage_from_mob1"):
-				player.take_damage_from_mob1(20)
+				player.take_damage_from_mob1(damage)
 			damage_timer = 0.0
 	
 	
@@ -245,8 +256,8 @@ func play_attack_animation() -> void:
 			side_hitbox.scale.x = 1
 			
 func is_inside_play_area() -> bool:
-	return global_position.x >= -1570 and global_position.x <= 1570 and \
-		   global_position.y >= -970 and global_position.y <= 950
+	return global_position.x >= -2050 and global_position.x <= 2050 and \
+		   global_position.y >= -1470 and global_position.y <= 1430
 		
 func calculate_flank_direction() -> Vector2:
 	var to_player: Vector2 = player.global_position - global_position

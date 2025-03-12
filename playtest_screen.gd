@@ -25,6 +25,9 @@ extends CanvasLayer
 @onready var get_gravity_well_button: Button = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer/MarginContainer/GridContainer/GravityWell/VBoxContainer/GetGravityWellButton
 @onready var upgrade_gravity_well_button: Button = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer/MarginContainer/GridContainer/GravityWell/VBoxContainer/UpgradeGravityWellButton
 
+@onready var get_magic_orbital_button: Button = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer/MarginContainer/GridContainer/MagicOrbital/VBoxContainer/GetMagicOrbitalButton
+@onready var upgrade_magic_orbital_button: Button = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer/MarginContainer/GridContainer/MagicOrbital/VBoxContainer/UpgradeMagicOrbitalButton
+
 @onready var previous_difficulty_button: Button = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer2/VBoxContainer/HBoxContainer/PreviousDifficultyButton
 @onready var difficulty_label: Label = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer2/VBoxContainer/DifficultyLabel
 @onready var next_difficulty_button: Button = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer2/VBoxContainer/HBoxContainer/NextDifficultyButton
@@ -49,6 +52,7 @@ const MAX_SHOCKWAVE_LEVEL = 5
 const MAX_HP_LEVEL = 11
 const MAX_MANA_LEVEL = 7
 const MAX_GRAVITY_WELL_LEVEL = 5
+const MAX_MAGIC_ORBITAL_LEVEL = 8
 
 var gun1_improvements = {
 	"fire_rate": 0.02,
@@ -111,12 +115,14 @@ var shockwave_level = 1
 var hp_level = 1
 var mana_level = 1
 var gravity_well_level = 1
+var magic_orbital_level = 1
 
 var has_gun2 = false
 var has_sniper = false
 var has_rocket_launcher = false
 var has_fire_blink = false
 var has_gravity_well = false
+var has_magic_orbital = false
 
 var selected_difficulty: float = 1.0
 var min_difficulty: float = 1.0
@@ -133,6 +139,7 @@ func _ready():
 	upgrade_rocket_launcher_button.disabled = true
 	upgrade_fire_blink_button.disabled = true
 	upgrade_gravity_well_button.disabled = true
+	upgrade_magic_orbital_button.disabled = true
 	
 	update_difficulty_label()
 
@@ -256,7 +263,21 @@ func _on_upgrade_gravity_well_button_pressed():
 		else:
 			upgrade_gravity_well_button.text = "Upgrade to Level " + str(gravity_well_level + 1)
 
+func _on_get_magic_orbital_button_pressed() -> void:
+	has_magic_orbital = true
+	get_magic_orbital_button.text = "ACQUIRED"
+	get_magic_orbital_button.disabled = true
+	upgrade_magic_orbital_button.disabled = false
 
+
+func _on_upgrade_magic_orbital_button_pressed() -> void:
+	if magic_orbital_level < MAX_MAGIC_ORBITAL_LEVEL:
+		magic_orbital_level += 1
+		if magic_orbital_level == MAX_MAGIC_ORBITAL_LEVEL:
+			upgrade_magic_orbital_button.text = "MAX LEVEL"
+			upgrade_magic_orbital_button.disabled = true
+		else:
+			upgrade_magic_orbital_button.text = "Upgrade to Level " + str(magic_orbital_level + 1)
 
 func update_difficulty_label():
 	difficulty_label.text = "Difficulty (1-10) you will start on: " + str(selected_difficulty)
@@ -319,6 +340,7 @@ func apply_upgrades():
 	var player_script = load("res://scripts/player.gd")
 	var shockwave_script = load("res://scripts/shockwave.gd")
 	var gravity_well_script = load("res://scripts/gravity_well.gd")
+	var magic_orbital_script = load("res://scripts/orbital_ability.gd")
 	
 	for i in range(1, gun1_level):
 		bullet_script.damage_min_bonus += gun1_improvements.damage_min
@@ -405,6 +427,14 @@ func apply_upgrades():
 			gravity_well_script.pull_radius_bonus += gravity_well_improvements.pull_radius
 			gravity_well_script.damage_radius_bonus += gravity_well_improvements.damage_radius
 	
+	if has_magic_orbital:
+		player = get_node("/root/world/player")
+		if player:
+			player.owns_orbital_ability = true
+			
+		for i in range(1, magic_orbital_level):
+			magic_orbital_script.ability_level += 1
+			
 	var pause_menu = get_node("/root/world/PauseMenu")
 	player = get_node("/root/world/player")
 	
@@ -419,6 +449,8 @@ func apply_upgrades():
 			player.owns_fire_blink = true
 		if has_gravity_well:
 			player.owns_gravity_well = true
+		if has_magic_orbital:
+			player.owns_orbital_ability = true
 	
 	if pause_menu:
 		pause_menu.gun1_level = gun1_level
@@ -431,6 +463,7 @@ func apply_upgrades():
 		pause_menu.hp_level = hp_level
 		pause_menu.mana_level = mana_level
 		pause_menu.gravity_well_level = gravity_well_level
+		pause_menu.orbital_level = magic_orbital_level
 		
 		pause_menu.update_cost_labels()
 	

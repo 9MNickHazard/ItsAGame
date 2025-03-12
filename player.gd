@@ -22,10 +22,11 @@ signal max_health_changed(new_max_health: int)
 signal mana_changed(new_mana: float)
 signal max_mana_changed(new_max_mana: float)
 
-const FloatingDamageScene = preload("res://scenes/player_floating_damage.tscn")
-const FireBlinkScene = preload("res://scenes/fire_blink.tscn")
-const ShockwaveScene = preload("res://scenes/shockwave.tscn")
-const GravityWellScene = preload("res://scenes/gravity_well.tscn")
+const FloatingDamageScene: PackedScene = preload("res://scenes/player_floating_damage.tscn")
+const FireBlinkScene: PackedScene = preload("res://scenes/fire_blink.tscn")
+const ShockwaveScene: PackedScene = preload("res://scenes/shockwave.tscn")
+const GravityWellScene: PackedScene = preload("res://scenes/gravity_well.tscn")
+const OrbitalAbilityScene: PackedScene = preload("res://scenes/orbital_ability.tscn")
 
 #const PauseMenuScript = preload("res://scripts/pause_menu.gd")
 
@@ -52,6 +53,8 @@ var blink_direction: Vector2 = Vector2.ZERO
 static var max_mana: int = 100
 var current_mana: float = 100.0
 var shockwave_mana_cost: float = 50.0
+var orbital_ability_mana_cost: float = 50.0
+var orbital_ability_active: bool = false
 
 static var max_health: int = 100
 var health: int = 100
@@ -67,6 +70,7 @@ var owns_sniper1: bool = false
 var owns_rocketlauncher: bool = false
 var owns_fire_blink: bool = false
 var owns_gravity_well: bool = false
+var owns_orbital_ability: bool = true
 
 var equip_gun1: bool = true
 var equip_gun2: bool = false
@@ -138,6 +142,7 @@ func _physics_process(delta: float) -> void:
 		handle_blink()
 		handle_shockwave()
 		handle_gravity_well()
+		handle_orbital_ability()
 	
 	if Input.is_action_just_released("scroll_up"):
 		switch_weapon(-1)
@@ -245,6 +250,26 @@ func handle_shockwave() -> void:
 		current_mana -= shockwave_mana_cost
 		mana_bar.value = current_mana
 		mana_changed.emit(current_mana)
+
+func handle_orbital_ability() -> void:
+	if ability_mana_reduction:
+		orbital_ability_mana_cost = 20.0
+		
+	if Input.is_action_just_pressed("Ability 3") and current_mana >= orbital_ability_mana_cost and owns_orbital_ability and not orbital_ability_active:
+		stats_manager.total_orbital_abilities_used += 1
+		
+		var orbital_ability: Node2D = OrbitalAbilityScene.instantiate()
+		orbital_ability_active = true
+		orbital_ability.get_node("DurationTimer").timeout.connect(_on_orbital_ability_finished)
+		
+		get_parent().add_child(orbital_ability)
+		
+		current_mana -= orbital_ability_mana_cost
+		mana_bar.value = current_mana
+		mana_changed.emit(current_mana)
+
+func _on_orbital_ability_finished() -> void:
+	orbital_ability_active = false
 	
 func handle_blink() -> void:
 	if Input.is_action_just_pressed("Blink") and can_blink:
@@ -352,6 +377,9 @@ func acquire_fire_blink() -> void:
 	
 func acquire_gravity_well() -> void:
 	owns_gravity_well = true
+	
+func acquire_orbital_ability() -> void:
+	owns_orbital_ability = true
 
 func acquire_gun2() -> void:
 	owns_gun2 = true
