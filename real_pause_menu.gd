@@ -182,6 +182,15 @@ func _on_restart_button_pressed() -> void:
 	SniperBulletScript.glass_cannon_multiplier = false
 	SniperBulletScript.runforrestrun_multiplier = false
 	
+	var ShotgunBulletScript: GDScript = load("res://scripts/shotgun_bullet.gd")
+	ShotgunBulletScript.damage_min_bonus = 0
+	ShotgunBulletScript.damage_max_bonus = 0
+	ShotgunBulletScript.speed_bonus = 0.0
+	ShotgunBulletScript.range_bonus = 0.0
+	ShotgunBulletScript.knockback_amount = 400.0
+	ShotgunBulletScript.glass_cannon_multiplier = false
+	ShotgunBulletScript.runforrestrun_multiplier = false
+	
 	var FireBlinkScript: GDScript = load("res://scripts/fire_blink.gd")
 	FireBlinkScript.damage_min_bonus = 0
 	FireBlinkScript.damage_max_bonus = 0

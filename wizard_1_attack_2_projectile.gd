@@ -5,8 +5,8 @@ var minimum_damage: int = 10
 var maximum_damage: int = 15
 var damage: int = randi_range(minimum_damage, maximum_damage)
 
-var PROJECTILE_SPEED: float = 500.0
-var RANGE: float = 1100.0
+var PROJECTILE_SPEED: float = 350.0
+var RANGE: float = 1000.0
 var direction: Vector2 = Vector2.ZERO
 
 func fire_projectile(target_pos: Vector2) -> void:

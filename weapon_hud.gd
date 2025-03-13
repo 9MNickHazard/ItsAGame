@@ -9,6 +9,7 @@ var gun1_texture: Texture
 var gun2_texture: Texture
 var sniper_texture: Texture
 var rocket_launcher_texture: Texture
+var shotgun_texture: Texture
 
 var player = null
 
@@ -17,6 +18,7 @@ func _ready():
 	gun2_texture = preload("res://assets/adjusted guns/Gun2WeaponHUD.png")
 	sniper_texture = preload("res://assets/adjusted guns/sniperWeaponHUD.png")
 	rocket_launcher_texture = preload("res://assets/adjusted guns/RocketLauncherWeaponHUD.png")
+	shotgun_texture = preload("res://assets/adjusted guns/adjusted shotgun.png")
 	
 	player = get_node("/root/world/player")
 	
@@ -38,6 +40,8 @@ func update_weapon_display():
 		owned_weapons.append("sniper1")
 	if player.owns_rocketlauncher:
 		owned_weapons.append("rocketlauncher")
+	if player.owns_shotgun:
+		owned_weapons.append("shotgun")
 		
 	var current_index: int = -1
 	if player.equip_gun1:
@@ -48,6 +52,8 @@ func update_weapon_display():
 		current_index = owned_weapons.find("sniper1")
 	elif player.equip_rocketlauncher:
 		current_index = owned_weapons.find("rocketlauncher")
+	elif player.equip_shotgun:
+		current_index = owned_weapons.find("shotgun")
 	
 
 	if current_index != -1:
@@ -79,4 +85,6 @@ func get_weapon_texture(weapon_name):
 			return sniper_texture
 		"rocketlauncher":
 			return rocket_launcher_texture
+		"shotgun":
+			return shotgun_texture
 	return null

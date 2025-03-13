@@ -28,6 +28,8 @@ extends CanvasLayer
 @onready var gravity_well_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/GravityWellContainer/VBoxContainer/GravityWellLevelReq
 @onready var orbital_ability_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/OrbitalAbilityContainer/VBoxContainer/OrbitalAbilityUpgradeButton
 @onready var orbital_ability_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/OrbitalAbilityContainer/VBoxContainer/OrbitalAbilityLevelReq
+@onready var shotgun_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/ShotgunContainer/VBoxContainer/ShotgunUpgradeButton
+@onready var shotgun_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/ShotgunContainer/VBoxContainer/ShotgunLevelReq
 
 @onready var continue_button: Button = $MainMargin/MainPanel/VBoxMain/BottomRow/MarginContainer/HBoxContainer/ContinueButton
 @onready var player_coins_label: Label = $MainMargin/MainPanel/VBoxMain/TopRow/VBoxContainer/CoinsLabel
@@ -40,50 +42,123 @@ extends CanvasLayer
 static var semi_pacifist = false
 
 var player = null
+var ui = null
 
-# buy costs
-var gun2_buy_cost = 125
-var gun2_buy_level_req = 3
-var sniper1_buy_cost = 75
-var sniper1_buy_level_req = 2
-var rocketlauncher_buy_cost = 150
-var rocketlauncher_buy_level_req = 4
-
-var gun1_costs = {
-	2: 25,
-	3: 50,
-	4: 80,
-	5: 120
-}
-
-var gun2_costs = {
-	2: 100,
-	3: 175,
-	4: 300,
-	5: 500
-}
-
-var sniper1_costs = {
-	2: 50,
-	3: 75,
-	4: 100,
-	5: 125
-}
-
-var rocketlauncher_costs = {
-	2: 200,
-	3: 250,
-	4: 300,
-	5: 350
-}
-
+# BLINK VARIABLES
 var blink_costs = {
 	2: 250,
 	3: 500,
 	4: 1000,
 	5: 1750
 }
+var blink_cooldown_upgrade = {
+	2: 4,
+	3: 3,
+	4: 2,
+	5: 1.5
+}
+var blink_level = 1
+var blink_level_requirements = {
+	2: 2,
+	3: 4,
+	4: 7,
+	5: 11
+}
 
+# FIRE BLINK VARIABLES
+var fire_blink_buy_cost = 250
+var fire_blink_buy_level_req = 3
+var fire_blink_costs = {
+	2: 300,
+	3: 450,
+	4: 600,
+	5: 750
+}
+var fire_blink_improvements = {
+	"damage_min": 8,
+	"damage_max": 14
+}
+var fire_blink_level = 1
+var fire_blink_level_requirements = {
+	2: 4,
+	3: 6,
+	4: 8,
+	5: 10
+}
+
+# GRAVITY WELL VARIABLES
+var gravity_well_buy_cost = 200
+var gravity_well_buy_level_req = 3
+var gravity_well_costs = {
+	2: 400,
+	3: 550,
+	4: 700,
+	5: 850
+}
+var gravity_well_improvements = {
+	"damage": 2,
+	"duration": 2,
+	"pull_radius": 15.0, # percent increase
+	"damage_radius": 10.0
+}
+var gravity_well_level = 1
+var gravity_well_level_requirements = {
+	2: 5,
+	3: 6,
+	4: 8,
+	5: 10
+}
+
+# GUN1 VARIABLES
+var gun1 = null
+var gun1_costs = {
+	2: 25,
+	3: 50,
+	4: 80,
+	5: 120
+}
+var gun1_improvements = {
+	"fire_rate": 0.02,  # reduce fire_rate by x
+	"damage_min": 3,      # increases minimum damage by x
+	"damage_max": 5,      # # increases maximum damage by x
+	"bullet_speed": 100.0,
+	"range": 100.0
+}
+var gun1_level = 1
+var gun1_level_requirements = {
+	2: 2,  
+	3: 3,  
+	4: 4,  
+	5: 5
+}
+
+# GUN2 VARIABLES
+var gun2 = null
+var gun2_buy_cost = 200
+var gun2_buy_level_req = 3
+var gun2_costs = {
+	2: 100,
+	3: 175,
+	4: 300,
+	5: 500
+}
+var gun2_improvements = {
+	"fire_rate": 0.01,
+	"damage_min": 2,
+	"damage_max": 4,
+	"bullet_speed": 100.0,
+	"range": 50.0
+}
+var gun2_level = 1
+var gun2_level_requirements = {
+	2: 5,  
+	3: 7,  
+	4: 9,  
+	5: 11
+}
+
+# HP VARIABLES
+var hp_level = 1
 var hp_upgrade_costs = {
 	2: 50,
 	3: 100,
@@ -96,68 +171,6 @@ var hp_upgrade_costs = {
 	10: 1000,
 	11: 1500
 }
-
-var mana_upgrade_costs = {
-	2: 100,
-	3: 200,
-	4: 300,
-	5: 400,
-	6: 500,
-	7: 600
-}
-
-var shockwave_upgrade_costs = {
-	2: 150,
-	3: 300,
-	4: 450,
-	5: 600
-}
-
-var gun1_level = 1
-var gun2_level = 1
-var sniper1_level = 1
-var rocketlauncher_level = 1
-var blink_level = 1
-var hp_level = 1
-var fire_blink_level = 1
-var mana_level = 1
-var shockwave_level = 1
-
-var gun1_level_requirements = {
-	2: 2,  
-	3: 3,  
-	4: 4,  
-	5: 5
-}
-
-var gun2_level_requirements = {
-	2: 5,  
-	3: 7,  
-	4: 9,  
-	5: 11
-}
-
-var sniper1_level_requirements = {
-	2: 3,  
-	3: 4,  
-	4: 5,  
-	5: 6
-}
-
-var rocketlauncher_level_requirements = {
-	2: 6,  
-	3: 8,  
-	4: 10,  
-	5: 12
-}
-
-var blink_level_requirements = {
-	2: 2,
-	3: 4,
-	4: 7,
-	5: 11
-}
-
 var hp_upgrade_level_requirements = {
 	2: 2,
 	3: 2,
@@ -171,6 +184,16 @@ var hp_upgrade_level_requirements = {
 	11: 8
 }
 
+# MANA VARIABLES
+var mana_level = 1
+var mana_upgrade_costs = {
+	2: 100,
+	3: 200,
+	4: 300,
+	5: 400,
+	6: 500,
+	7: 600
+}
 var mana_upgrade_level_requirements = {
 	2: 2,
 	3: 3,
@@ -180,113 +203,9 @@ var mana_upgrade_level_requirements = {
 	7: 9
 }
 
-var shockwave_upgrade_level_requirements = {
-	2: 3,
-	3: 5,
-	4: 7,
-	5: 9
-}
-
-var gun1_improvements = {
-	"fire_rate": 0.02,  # reduce fire_rate by x
-	"damage_min": 3,      # increases minimum damage by x
-	"damage_max": 5,      # # increases maximum damage by x
-	"bullet_speed": 100.0,
-	"range": 100.0
-}
-
-var gun2_improvements = {
-	"fire_rate": 0.01,
-	"damage_min": 2,
-	"damage_max": 4,
-	"bullet_speed": 100.0,
-	"range": 50.0
-}
-
-var sniper1_improvements = {
-	"fire_rate": 0.03,
-	"damage_min": 5,
-	"damage_max": 10,
-	"bullet_speed": 200.0,
-	"range": 200.0
-}
-
-var rocketlauncher_improvements = {
-	"fire_rate": 0.01,
-	"damage_min": 10,
-	"damage_max": 20,
-	"bullet_speed": 50.0,
-	"range": 100.0
-}
-
-var blink_cooldown_upgrade = {
-	2: 4,
-	3: 3,
-	4: 2,
-	5: 1.5
-}
-
-# fire blink
-var fire_blink_buy_cost = 250
-var fire_blink_buy_level_req = 3
-
-var fire_blink_costs = {
-	2: 300,
-	3: 450,
-	4: 600,
-	5: 750
-}
-
-
-var fire_blink_level_requirements = {
-	2: 4,
-	3: 6,
-	4: 8,
-	5: 10
-}
-
-var fire_blink_improvements = {
-	"damage_min": 8,
-	"damage_max": 14
-}
-
-var ui = null
-var gun1 = null
-var gun2 = null
-var sniper1 = null
-var rocketlauncher = null
-
-# gravity well
-var gravity_well_buy_cost = 200
-var gravity_well_buy_level_req = 3
-
-var gravity_well_costs = {
-	2: 400,
-	3: 550,
-	4: 700,
-	5: 850
-}
-
-var gravity_well_level_requirements = {
-	2: 5,
-	3: 6,
-	4: 8,
-	5: 10
-}
-
-var gravity_well_level = 1
-
-var gravity_well_improvements = {
-	"damage": 2,
-	"duration": 2,
-	"pull_radius": 15.0, # percent increase
-	"damage_radius": 10.0
-}
-
-# orbital ability
+# ORBITAL ABILITY VARIABLES
 var orbital_buy_cost = 200
 var orbital_buy_level_req = 3
-
 var orbital_costs = {
 	2: 300,
 	3: 550,
@@ -296,7 +215,7 @@ var orbital_costs = {
 	7: 1222,
 	8: 1200
 }
-
+var orbital_level = 1
 var orbital_level_requirements = {
 	2: 4,
 	3: 5,
@@ -307,7 +226,97 @@ var orbital_level_requirements = {
 	8: 11
 }
 
-var orbital_level = 1
+# ROCKET LAUNCHER VARIABLES
+var rocketlauncher = null
+var rocketlauncher_buy_cost = 150
+var rocketlauncher_buy_level_req = 4
+var rocketlauncher_costs = {
+	2: 200,
+	3: 250,
+	4: 300,
+	5: 350
+}
+var rocketlauncher_improvements = {
+	"fire_rate": 0.02,
+	"damage_min": 8,
+	"damage_max": 16,
+	"bullet_speed": 50.0,
+	"range": 100.0
+}
+var rocketlauncher_level = 1
+var rocketlauncher_level_requirements = {
+	2: 6,  
+	3: 8,  
+	4: 10,  
+	5: 12
+}
+
+# SHOCKWAVE VARIABLES
+var shockwave_level = 1
+var shockwave_upgrade_costs = {
+	2: 150,
+	3: 300,
+	4: 450,
+	5: 600
+}
+var shockwave_upgrade_level_requirements = {
+	2: 3,
+	3: 5,
+	4: 7,
+	5: 9
+}
+
+# SHOTGUN VARIABLES
+var shotgun = null
+var shotgun_buy_cost = 150
+var shotgun_buy_level_req = 3
+var shotgun_costs = {
+	2: 200,
+	3: 300,
+	4: 400,
+	5: 600
+}
+var shotgun_improvements = {
+	"fire_rate": 0.05,
+	"damage_min": 5,
+	"damage_max": 10,
+	"bullet_speed": 50.0,
+	"range": 40.0,
+	"knockback_amount": 50.0
+}
+var shotgun_level = 1
+var shotgun_level_requirements = {
+	2: 5,  
+	3: 7,  
+	4: 9,  
+	5: 11
+}
+
+# SNIPER VARIABLES
+var sniper1 = null
+var sniper1_buy_cost = 75
+var sniper1_buy_level_req = 2
+var sniper1_costs = {
+	2: 50,
+	3: 75,
+	4: 100,
+	5: 125
+}
+var sniper1_improvements = {
+	"fire_rate": 0.03,
+	"damage_min": 6,
+	"damage_max": 12,
+	"bullet_speed": 200.0,
+	"range": 200.0
+}
+var sniper1_level = 1
+var sniper1_level_requirements = {
+	2: 3,  
+	3: 4,  
+	4: 5,  
+	5: 6
+}
+
 
 func _ready() -> void:
 	pause_menu.hide()
@@ -338,6 +347,8 @@ func _ready() -> void:
 	
 	orbital_ability_upgrade_button.text = "Buy: " + str(orbital_buy_cost)
 	
+	shotgun_upgrade_button.text = "Buy: " + str(shotgun_buy_cost)
+	
 	orbital_ability_level_req.text = "Level Req: " + str(orbital_level_requirements[orbital_level + 1])
 	gun_1_level_req.text = "Level Req: " + str(gun1_level_requirements[gun1_level + 1])
 	gun_2_level_req.text = "Level Req: " + str(gun2_buy_level_req)
@@ -349,12 +360,14 @@ func _ready() -> void:
 	mana_level_req.text = "Level Req: " + str(mana_upgrade_level_requirements[mana_level + 1])
 	shockwave_level_req.text = "Level Req: " + str(shockwave_upgrade_level_requirements[shockwave_level + 1])
 	gravity_well_level_req.text = "Level Req: " + str(gravity_well_buy_level_req)
+	shotgun_level_req.text = "Level Req: " + str(shotgun_buy_level_req)
 	
 	ui = get_node("/root/world/UI")
 	gun1 = get_node("/root/world/player/gun")
 	gun2 = get_node("/root/world/player/gun2")
 	sniper1 = get_node("/root/world/player/sniper1")
 	rocketlauncher = get_node("/root/world/player/RocketLauncher")
+	shotgun = get_node("/root/world/player/Shotgun")
 	player = get_node("/root/world/player")
 	
 	player_coins_label.text = "Coins: " + str(ui.coins_collected)
@@ -394,6 +407,9 @@ func update_cost_labels():
 		
 		rocket_launcher_upgrade_button.text = "UNPURCHASABLE"
 		rocket_launcher_level_req.text = "UNPURCHASABLE"
+		
+		shotgun_upgrade_button.text = "UNPURCHASABLE"
+		shotgun_level_req.text = "UNPURCHASABLE"
 	else:
 		if player.owns_gun2 == true and gun2_level < 5:
 			gun_2_upgrade_button.text = "Level " + str(gun2_level + 1) + ": " + str(gun2_costs[gun2_level + 1])
@@ -402,7 +418,6 @@ func update_cost_labels():
 			gun_2_upgrade_button.text = "MAX LEVEL"
 			gun_2_level_req.text = "MAX LEVEL"
 			
-			
 		if player.owns_sniper1 == true and sniper1_level < 5:
 			sniper_upgrade_button.text = "Level: " + str(sniper1_level + 1) + ": " + str(sniper1_costs[sniper1_level + 1])
 			sniper_level_req.text = "Level Req: " + str(sniper1_level_requirements[sniper1_level + 1])
@@ -410,13 +425,19 @@ func update_cost_labels():
 			sniper_upgrade_button.text = "MAX LEVEL"
 			sniper_level_req.text = "MAX LEVEL"
 			
-			
 		if player.owns_rocketlauncher == true and rocketlauncher_level < 5:
 			rocket_launcher_upgrade_button.text = "Level: " + str(rocketlauncher_level + 1) + ": " + str(rocketlauncher_costs[rocketlauncher_level + 1])
 			rocket_launcher_level_req.text = "Level Req: " + str(rocketlauncher_level_requirements[rocketlauncher_level + 1])
 		elif rocketlauncher_level >= 5:
 			rocket_launcher_upgrade_button.text = "MAX LEVEL"
 			rocket_launcher_level_req.text = "MAX LEVEL"
+			
+		if player.owns_shotgun == true and shotgun_level < 5:
+			shotgun_upgrade_button.text = "Level: " + str(shotgun_level + 1) + ": " + str(shotgun_costs[shotgun_level + 1])
+			shotgun_level_req.text = "Level Req: " + str(shotgun_level_requirements[shotgun_level + 1])
+		elif shotgun_level >= 5:
+			shotgun_upgrade_button.text = "MAX LEVEL"
+			shotgun_level_req.text = "MAX LEVEL"
 			
 	
 	if player.owns_gun1 == true and gun1_level < 5:
@@ -492,6 +513,7 @@ func disable_enable_buttons(disabled: bool = true):
 		mana_upgrade_button.disabled = true
 		gravity_well_upgrade_button.disabled = true
 		orbital_ability_upgrade_button.disabled = true
+		shotgun_upgrade_button.disabled = true
 	else:
 		gun_1_upgrade_button.disabled = false
 		gun_2_upgrade_button.disabled = false
@@ -504,6 +526,7 @@ func disable_enable_buttons(disabled: bool = true):
 		mana_upgrade_button.disabled = false
 		gravity_well_upgrade_button.disabled = false
 		orbital_ability_upgrade_button.disabled = false
+		shotgun_upgrade_button.disabled = false
 
 func _on_quit_button_pressed() -> void:
 	get_tree().quit()
@@ -533,6 +556,15 @@ func _on_restart_button_pressed() -> void:
 	SniperBulletScript.range_bonus = 0.0
 	SniperBulletScript.glass_cannon_multiplier = false
 	SniperBulletScript.runforrestrun_multiplier = false
+	
+	var ShotgunBulletScript: GDScript = load("res://scripts/shotgun_bullet.gd")
+	ShotgunBulletScript.damage_min_bonus = 0
+	ShotgunBulletScript.damage_max_bonus = 0
+	ShotgunBulletScript.speed_bonus = 0.0
+	ShotgunBulletScript.range_bonus = 0.0
+	ShotgunBulletScript.knockback_amount = 400.0
+	ShotgunBulletScript.glass_cannon_multiplier = false
+	ShotgunBulletScript.runforrestrun_multiplier = false
 	
 	var FireBlinkScript: GDScript = load("res://scripts/fire_blink.gd")
 	FireBlinkScript.damage_min_bonus = 0
@@ -1343,6 +1375,113 @@ func _on_orbital_ability_upgrade_button_pressed() -> void:
 				level_requirement_label.show()
 				await get_tree().create_timer(1.2).timeout
 				level_requirement_label.hide()
+		else:
+			not_enough_coins_label.show()
+			await get_tree().create_timer(1.2).timeout
+			not_enough_coins_label.hide()
+
+
+func _on_shotgun_upgrade_button_pressed() -> void:
+	if semi_pacifist:
+		disable_enable_buttons()
+		semi_pacifist_label.show()
+		await get_tree().create_timer(1.2).timeout
+		semi_pacifist_label.hide()
+		disable_enable_buttons(false)
+		return
+		
+	if player.owns_shotgun == false:
+		if ui.coins_collected >= shotgun_buy_cost:
+			if ui.experience_manager.current_level >= shotgun_buy_level_req:
+				ui.coins_collected -= shotgun_buy_cost
+				ui.coin_label.text = "Coins: " + str(ui.coins_collected)
+				
+				if player:
+					player.acquire_shotgun()
+				else:
+					print("Player reference is null!")
+				
+				player_coins_label.text = "Coins: " + str(ui.coins_collected)
+				update_cost_labels()
+			else:
+				level_requirement_label.text = "Required Level: " + str(shotgun_buy_level_req)
+				level_requirement_label.show()
+				await get_tree().create_timer(1.2).timeout
+				level_requirement_label.hide()
+		elif ui.coins_collected < shotgun_buy_cost and ui.experience_manager.current_level < shotgun_buy_level_req:
+			disable_enable_buttons()
+			
+			var original_position = not_enough_coins_label.position
+			not_enough_coins_label.position.y += 50
+			
+			not_enough_coins_label.show()
+			level_requirement_label.text = "Required Level: " + str(shotgun_buy_level_req)
+			level_requirement_label.show()
+			await get_tree().create_timer(1.2).timeout
+			level_requirement_label.hide()
+			not_enough_coins_label.hide()
+			
+			not_enough_coins_label.position = original_position
+			disable_enable_buttons(false)
+		else:
+			not_enough_coins_label.show()
+			await get_tree().create_timer(1.2).timeout
+			not_enough_coins_label.hide()
+	else:
+		if shotgun_level >= 5:
+			return
+			
+		var next_level = shotgun_level + 1
+		var cost = shotgun_costs[next_level]
+		var level_req = shotgun_level_requirements[next_level]
+		
+		if ui.coins_collected >= cost:
+			if ui.experience_manager.current_level >= level_req:
+				ui.coins_collected -= cost
+				ui.coin_label.text = "Coins: " + str(ui.coins_collected)
+				
+				shotgun_level += 1
+				
+				shotgun.fire_rate -= shotgun_improvements["fire_rate"]
+				
+				var BulletScript = load("res://scripts/shotgun_bullet.gd")
+				BulletScript.damage_min_bonus += shotgun_improvements["damage_min"]
+				BulletScript.damage_max_bonus += shotgun_improvements["damage_max"]
+				BulletScript.speed_bonus += shotgun_improvements["bullet_speed"]
+				BulletScript.range_bonus += shotgun_improvements["range"]
+				BulletScript.knockback_amount += shotgun_improvements["knockback_amount"]
+				
+				if shotgun_level == 2:
+					shotgun.modulate = Color(0, 1, 0, 0.8)
+				elif shotgun_level == 3:
+					shotgun.modulate = Color(1, 0, 0, 0.8)
+				elif shotgun_level == 4:
+					shotgun.modulate = Color(0.627, 0.125, 0.941, 0.8)
+				else:
+					shotgun.modulate = Color(1, 0.84, 0.2, 0.8)
+				
+				player_coins_label.text = "Coins: " + str(ui.coins_collected)
+				update_cost_labels()
+			else:
+				level_requirement_label.text = "Required Level: " + str(level_req)
+				level_requirement_label.show()
+				await get_tree().create_timer(1.2).timeout
+				level_requirement_label.hide()
+		elif ui.coins_collected < cost and ui.experience_manager.current_level < level_req:
+			disable_enable_buttons()
+			
+			var original_position = not_enough_coins_label.position
+			not_enough_coins_label.position.y += 50
+			
+			not_enough_coins_label.show()
+			level_requirement_label.text = "Required Level: " + str(level_req)
+			level_requirement_label.show()
+			await get_tree().create_timer(1.2).timeout
+			level_requirement_label.hide()
+			not_enough_coins_label.hide()
+			
+			not_enough_coins_label.position = original_position
+			disable_enable_buttons(false)
 		else:
 			not_enough_coins_label.show()
 			await get_tree().create_timer(1.2).timeout

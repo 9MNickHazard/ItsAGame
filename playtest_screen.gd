@@ -11,6 +11,9 @@ extends CanvasLayer
 @onready var get_rocket_launcher_button: Button = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer/MarginContainer/GridContainer/RocketLauncher/VBoxContainer/GetRocketLauncherButton
 @onready var upgrade_rocket_launcher_button: Button = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer/MarginContainer/GridContainer/RocketLauncher/VBoxContainer/UpgradeRocketLauncherButton
 
+@onready var get_shotgun_button: Button = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer/MarginContainer/GridContainer/ShotgunContainer/VBoxContainer/GetShotgunButton
+@onready var upgrade_shotgun_button: Button = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer/MarginContainer/GridContainer/ShotgunContainer/VBoxContainer/UpgradeShotgunButton
+
 @onready var upgrade_blink_button: Button = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer/MarginContainer/GridContainer/Blink/VBoxContainer/UpgradeBlinkButton
 
 @onready var get_fire_blink_button: Button = $MarginContainer/PanelContainer/VBoxContainer/CenterContainer/MarginContainer/GridContainer/FireBlink/VBoxContainer/GetFireBlinkButton
@@ -46,6 +49,7 @@ const MAX_GUN1_LEVEL = 5
 const MAX_GUN2_LEVEL = 5
 const MAX_SNIPER_LEVEL = 5
 const MAX_ROCKET_LAUNCHER_LEVEL = 5
+const MAX_SHOTGUN_LEVEL = 5
 const MAX_BLINK_LEVEL = 5
 const MAX_FIRE_BLINK_LEVEL = 5
 const MAX_SHOCKWAVE_LEVEL = 5
@@ -63,27 +67,36 @@ var gun1_improvements = {
 }
 
 var gun2_improvements = {
-	"fire_rate": 0.015,
+	"fire_rate": 0.01,
 	"damage_min": 2,
 	"damage_max": 4,
-	"bullet_speed": 125.0,
+	"bullet_speed": 100.0,
 	"range": 50.0
 }
 
 var sniper_improvements = {
 	"fire_rate": 0.03,
-	"damage_min": 5,
-	"damage_max": 10,
+	"damage_min": 6,
+	"damage_max": 12,
 	"bullet_speed": 200.0,
 	"range": 200.0
 }
 
 var rocket_launcher_improvements = {
-	"fire_rate": 0.01,
-	"damage_min": 10,
-	"damage_max": 20,
-	"bullet_speed": 100.0,
+	"fire_rate": 0.02,
+	"damage_min": 8,
+	"damage_max": 16,
+	"bullet_speed": 50.0,
 	"range": 100.0
+}
+
+var shotgun_improvements = {
+	"fire_rate": 0.05,
+	"damage_min": 5,
+	"damage_max": 10,
+	"bullet_speed": 50.0,
+	"range": 40.0,
+	"knockback_amount": 50.0
 }
 
 var fire_blink_improvements = {
@@ -109,6 +122,7 @@ var gun1_level = 1
 var gun2_level = 1
 var sniper_level = 1
 var rocket_launcher_level = 1
+var shotgun_level = 1
 var blink_level = 1
 var fire_blink_level = 1
 var shockwave_level = 1
@@ -120,6 +134,7 @@ var magic_orbital_level = 1
 var has_gun2 = false
 var has_sniper = false
 var has_rocket_launcher = false
+var has_shotgun = false
 var has_fire_blink = false
 var has_gravity_well = false
 var has_magic_orbital = false
@@ -137,6 +152,7 @@ func _ready():
 	upgrade_gun_2_button.disabled = true
 	upgrade_sniper_button.disabled = true
 	upgrade_rocket_launcher_button.disabled = true
+	upgrade_shotgun_button.disabled = true
 	upgrade_fire_blink_button.disabled = true
 	upgrade_gravity_well_button.disabled = true
 	upgrade_magic_orbital_button.disabled = true
@@ -196,6 +212,22 @@ func _on_upgrade_rocket_launcher_button_pressed():
 			upgrade_rocket_launcher_button.disabled = true
 		else:
 			upgrade_rocket_launcher_button.text = "Upgrade to Level " + str(rocket_launcher_level + 1)
+			
+func _on_get_shotgun_button_pressed() -> void:
+	has_shotgun = true
+	get_shotgun_button.text = "ACQUIRED"
+	get_shotgun_button.disabled = true
+	upgrade_shotgun_button.disabled = false
+
+
+func _on_upgrade_shotgun_button_pressed() -> void:
+	if shotgun_level < MAX_SHOTGUN_LEVEL:
+		shotgun_level += 1
+		if shotgun_level == MAX_SHOTGUN_LEVEL:
+			upgrade_shotgun_button.text = "MAX LEVEL"
+			upgrade_shotgun_button.disabled = true
+		else:
+			upgrade_shotgun_button.text = "Upgrade to Level " + str(shotgun_level + 1)
 
 func _on_upgrade_blink_button_pressed():
 	if blink_level < MAX_BLINK_LEVEL:
@@ -336,6 +368,7 @@ func apply_upgrades():
 	var bullet2_script = load("res://scripts/bullet_2.gd")
 	var sniper_bullet_script = load("res://scripts/sniper_1_bullet.gd")
 	var rocket_ammo_script = load("res://scripts/rocket_ammo.gd")
+	var shotgun_ammo_script = load("res://scripts/shotgun_bullet.gd")
 	var fire_blink_script = load("res://scripts/fire_blink.gd")
 	var player_script = load("res://scripts/player.gd")
 	var shockwave_script = load("res://scripts/shockwave.gd")
@@ -383,6 +416,19 @@ func apply_upgrades():
 			rocket_ammo_script.damage_max_bonus += rocket_launcher_improvements.damage_max
 			rocket_ammo_script.speed_bonus += rocket_launcher_improvements.bullet_speed
 			rocket_ammo_script.range_bonus += rocket_launcher_improvements.range
+			
+	if has_shotgun:
+		player = get_node("/root/world/player")
+		if player:
+			player.owns_shotgun = true
+			player.update_gun_states()
+			
+		for i in range(1, shotgun_level):
+			shotgun_ammo_script.damage_min_bonus += shotgun_improvements.damage_min
+			shotgun_ammo_script.damage_max_bonus += shotgun_improvements.damage_max
+			shotgun_ammo_script.speed_bonus += shotgun_improvements.bullet_speed
+			shotgun_ammo_script.range_bonus += shotgun_improvements.range
+			shotgun_ammo_script.knockback_amount += shotgun_improvements.knockback_amount
 	
 	if blink_level > 1:
 		player = get_node("/root/world/player")
@@ -445,6 +491,8 @@ func apply_upgrades():
 			player.owns_sniper1 = true
 		if has_rocket_launcher:
 			player.owns_rocketlauncher = true
+		if has_shotgun:
+			player.owns_shotgun = true
 		if has_fire_blink:
 			player.owns_fire_blink = true
 		if has_gravity_well:
@@ -457,6 +505,7 @@ func apply_upgrades():
 		pause_menu.gun2_level = gun2_level
 		pause_menu.sniper1_level = sniper_level
 		pause_menu.rocketlauncher_level = rocket_launcher_level
+		pause_menu.shotgun_level = shotgun_level
 		pause_menu.blink_level = blink_level
 		pause_menu.fire_blink_level = fire_blink_level
 		pause_menu.shockwave_level = shockwave_level
@@ -478,6 +527,7 @@ func apply_cursed_powerup():
 	var bullet2_script = load("res://scripts/bullet_2.gd")
 	var sniper_bullet_script = load("res://scripts/sniper_1_bullet.gd")
 	var rocket_ammo_script = load("res://scripts/rocket_ammo.gd")
+	var shotgun_ammo_script = load("res://scripts/shotgun_bullet.gd")
 	var player_script = load("res://scripts/player.gd")
 	var pause_menu_script = load("res://scripts/pause_menu.gd")
 	var shockwave_script = load("res://scripts/shockwave.gd")
@@ -492,6 +542,8 @@ func apply_cursed_powerup():
 	sniper_bullet_script.runforrestrun_multiplier = false
 	rocket_ammo_script.glass_cannon_multiplier = false
 	rocket_ammo_script.runforrestrun_multiplier = false
+	shotgun_ammo_script.glass_cannon_multiplier = false
+	shotgun_ammo_script.runforrestrun_multiplier = false
 	player_script.damage_multiplier = false
 	player_script.weapon_restriction = false
 	pause_menu_script.semi_pacifist = false
@@ -509,6 +561,7 @@ func apply_cursed_powerup():
 			bullet2_script.glass_cannon_multiplier = true
 			sniper_bullet_script.glass_cannon_multiplier = true
 			rocket_ammo_script.glass_cannon_multiplier = true
+			shotgun_ammo_script.glass_cannon_multiplier = true
 			player_script.damage_multiplier = true
 			shockwave_script.glass_cannon_multiplier = true
 			gravity_well_script.glass_cannon_multiplier = true
@@ -524,6 +577,7 @@ func apply_cursed_powerup():
 			bullet2_script.runforrestrun_multiplier = true
 			sniper_bullet_script.runforrestrun_multiplier = true
 			rocket_ammo_script.runforrestrun_multiplier = true
+			shotgun_ammo_script.runforrestrun_multiplier = true
 			player_script.speed = 675.0
 			shockwave_script.runforrestrun_multiplier = true
 			gravity_well_script.runforrestrun_multiplier = true

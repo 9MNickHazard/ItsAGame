@@ -15,6 +15,7 @@ extends CharacterBody2D
 @onready var blink_cooldown_bar: ProgressBar = $BlinkCooldownBar
 @onready var player_health_bar: ProgressBar = $HealthBar
 @onready var stats_manager: Node2D = get_node("/root/world/StatsManager")
+@onready var shotgun: Area2D = $Shotgun
 
 signal health_changed(new_health: int)
 signal health_depleted
@@ -68,6 +69,7 @@ var owns_gun1: bool = true
 var owns_gun2: bool = false
 var owns_sniper1: bool = false
 var owns_rocketlauncher: bool = false
+var owns_shotgun: bool = false
 var owns_fire_blink: bool = false
 var owns_gravity_well: bool = false
 var owns_orbital_ability: bool = true
@@ -76,6 +78,7 @@ var equip_gun1: bool = true
 var equip_gun2: bool = false
 var equip_sniper1: bool = false
 var equip_rocketlauncher: bool = false
+var equip_shotgun: bool = false
 
 # curesed powerup variables
 static var damage_multiplier: bool = false
@@ -203,6 +206,8 @@ func switch_weapon(direction_num: int) -> void:
 		owned_weapons.append("sniper1")
 	if owns_rocketlauncher:
 		owned_weapons.append("rocketlauncher")
+	if owns_shotgun:
+		owned_weapons.append("shotgun")
 		
 	if owned_weapons.size() <= 1:
 		return
@@ -216,6 +221,8 @@ func switch_weapon(direction_num: int) -> void:
 		current_index = owned_weapons.find("sniper1")
 	elif equip_rocketlauncher:
 		current_index = owned_weapons.find("rocketlauncher")
+	elif equip_shotgun:
+		current_index = owned_weapons.find("shotgun")
 		
 	var new_index = (current_index + direction_num) % owned_weapons.size()
 	if new_index < 0:
@@ -226,6 +233,7 @@ func switch_weapon(direction_num: int) -> void:
 	equip_gun2 = (new_weapon == "gun2")
 	equip_sniper1 = (new_weapon == "sniper1")
 	equip_rocketlauncher = (new_weapon == "rocketlauncher")
+	equip_shotgun = (new_weapon == "shotgun")
 	
 	var weapon_hud = get_node_or_null("/root/world/UI/WeaponHUD")
 	if weapon_hud:
@@ -344,6 +352,8 @@ func update_gun_states() -> void:
 		sniper_1.visible = false
 		rocket_launcher.process_mode = Node.PROCESS_MODE_DISABLED
 		rocket_launcher.visible = false
+		shotgun.process_mode = Node.PROCESS_MODE_DISABLED
+		shotgun.visible = false
 	if owns_gun2 and equip_gun2:
 		gun.process_mode = Node.PROCESS_MODE_DISABLED
 		gun.visible = false
@@ -353,6 +363,8 @@ func update_gun_states() -> void:
 		sniper_1.visible = false
 		rocket_launcher.process_mode = Node.PROCESS_MODE_DISABLED
 		rocket_launcher.visible = false
+		shotgun.process_mode = Node.PROCESS_MODE_DISABLED
+		shotgun.visible = false
 	if owns_sniper1 and equip_sniper1:
 		gun.process_mode = Node.PROCESS_MODE_DISABLED
 		gun.visible = false
@@ -362,6 +374,8 @@ func update_gun_states() -> void:
 		sniper_1.visible = true
 		rocket_launcher.process_mode = Node.PROCESS_MODE_DISABLED
 		rocket_launcher.visible = false
+		shotgun.process_mode = Node.PROCESS_MODE_DISABLED
+		shotgun.visible = false
 	if owns_rocketlauncher and equip_rocketlauncher:
 		gun.process_mode = Node.PROCESS_MODE_DISABLED
 		gun.visible = false
@@ -371,6 +385,19 @@ func update_gun_states() -> void:
 		sniper_1.visible = false
 		rocket_launcher.process_mode = Node.PROCESS_MODE_INHERIT
 		rocket_launcher.visible = true
+		shotgun.process_mode = Node.PROCESS_MODE_DISABLED
+		shotgun.visible = false
+	if owns_shotgun and equip_shotgun:
+		gun.process_mode = Node.PROCESS_MODE_DISABLED
+		gun.visible = false
+		gun_2.process_mode = Node.PROCESS_MODE_DISABLED
+		gun_2.visible = false
+		sniper_1.process_mode = Node.PROCESS_MODE_DISABLED
+		sniper_1.visible = false
+		rocket_launcher.process_mode = Node.PROCESS_MODE_DISABLED
+		rocket_launcher.visible = false
+		shotgun.process_mode = Node.PROCESS_MODE_INHERIT
+		shotgun.visible = true
 
 func acquire_fire_blink() -> void:
 	owns_fire_blink = true
@@ -388,6 +415,7 @@ func acquire_gun2() -> void:
 	equip_gun2 = true
 	equip_sniper1 = false
 	equip_rocketlauncher = false
+	equip_shotgun = false
 	update_gun_states()
 	
 func acquire_sniper1() -> void:
@@ -397,6 +425,7 @@ func acquire_sniper1() -> void:
 	equip_gun2 = false
 	equip_sniper1 = true
 	equip_rocketlauncher = false
+	equip_shotgun = false
 	update_gun_states()
 	
 func acquire_rocketlauncher() -> void:
@@ -406,6 +435,17 @@ func acquire_rocketlauncher() -> void:
 	equip_gun2 = false
 	equip_sniper1 = false
 	equip_rocketlauncher = true
+	equip_shotgun = false
+	update_gun_states()
+
+func acquire_shotgun() -> void:
+	owns_shotgun = true
+	
+	equip_gun1 = false
+	equip_gun2 = false
+	equip_sniper1 = false
+	equip_rocketlauncher = false
+	equip_shotgun = true
 	update_gun_states()
 
 func player_movement(delta: float) -> void:
