@@ -17,9 +17,9 @@ extends CharacterBody2D
 @onready var stats_manager: Node2D = get_node("/root/world/StatsManager")
 @onready var shotgun: Area2D = $Shotgun
 
-signal health_changed(new_health: int)
+signal health_changed(new_health)
 signal health_depleted
-signal max_health_changed(new_max_health: int)
+signal max_health_changed(new_max_health)
 signal mana_changed(new_mana: float)
 signal max_mana_changed(new_max_mana: float)
 
@@ -51,15 +51,20 @@ var blink_target_position: Vector2 = Vector2.ZERO
 var blink_direction: Vector2 = Vector2.ZERO
 
 # mana variables
-static var max_mana: int = 100
+static var max_mana: float = 100.0
 var current_mana: float = 100.0
+static var permanent_mana_bonus: float = 0.0
+
 var shockwave_mana_cost: float = 50.0
 var orbital_ability_mana_cost: float = 50.0
 var orbital_ability_active: bool = false
 
-static var max_health: int = 100
-var health: int = 100
-static var speed: float = 450.0  
+static var max_health: float = 100.0
+var health: float = 100.0
+static var permanent_health_bonus: float = 0.0
+
+static var speed: float = 450.0 
+static var permanent_speed_bonus: float = 0.0 
 var acceleration: float = 4000.0
 var friction: float = 4000.0
 var direction: String = "none"
@@ -85,8 +90,22 @@ static var damage_multiplier: bool = false
 static var weapon_restriction: bool = false
 static var ability_mana_reduction: bool = false
 
+static var has_revive: bool = false
+var revive_used: bool = false
+
+static var mana_regen_rate: float = 0.0
+var total_mana_regen_rate: float
+static var hp_regen_rate: float = 0.0
+
+static var armor: int = 0
+
 func _ready() -> void:
 	update_gun_states()
+	
+	speed += permanent_speed_bonus
+	
+	max_mana += permanent_mana_bonus
+	current_mana = max_mana
 	mana_bar.max_value = int(max_mana)
 	mana_bar.value = int(current_mana)
 	
@@ -96,17 +115,29 @@ func _ready() -> void:
 	can_blink = true
 	blink_cooldown_progress = 1.0
 	
-	player_health_bar.max_value = int(max_health)
-	player_health_bar.value = int(health)
+	max_health += permanent_health_bonus
+	health = max_health
+	player_health_bar.max_value = int(floor(max_health))
+	player_health_bar.value = int(floor(health))
 	
 	health_changed.connect(_on_player_health_changed_local)
 	max_health_changed.connect(_on_player_max_health_changed_local)
 
 func _physics_process(delta: float) -> void:
-	if weapon_restriction and current_mana < max_mana:
-		current_mana = min(current_mana + delta, max_mana)
+	total_mana_regen_rate = mana_regen_rate
+	
+	if weapon_restriction:
+		total_mana_regen_rate += 1.0
+	
+	if total_mana_regen_rate > 0.0 and current_mana < max_mana:
+		current_mana = min(current_mana + total_mana_regen_rate * delta, max_mana)
 		mana_bar.value = current_mana
 		mana_changed.emit(current_mana)
+		
+	if hp_regen_rate > 0.0 and health < max_health:
+		health = min(health + hp_regen_rate * delta, max_health)
+		player_health_bar.value = health
+		health_changed.emit(health)
 		
 	if !can_blink:
 		if !blink_cooldown_bar.visible:
@@ -152,24 +183,24 @@ func _physics_process(delta: float) -> void:
 	elif Input.is_action_just_released("scroll_down"):
 		switch_weapon(1)
 		
-static func set_max_health(value: int) -> void:
-	max_health = int(value)
+static func set_max_health(value: float) -> void:
+	max_health = value + permanent_health_bonus
 	
 	var player: CharacterBody2D = Engine.get_main_loop().get_root().get_node("world/player")
 	if player:
-		player.max_health_changed.emit(value)
+		player.max_health_changed.emit(value + permanent_health_bonus)
 		
 static func set_max_mana(value: float) -> void:
-	max_mana = int(value)
+	max_mana = float(value) + permanent_mana_bonus
 	
 	var player: CharacterBody2D = Engine.get_main_loop().get_root().get_node("world/player")
 	if player:
-		player.max_mana_changed.emit(value)
+		player.max_mana_changed.emit(value + permanent_mana_bonus)
 		
-func _on_player_health_changed_local(new_health: int) -> void:
+func _on_player_health_changed_local(new_health: float) -> void:
 	player_health_bar.value = new_health
 
-func _on_player_max_health_changed_local(new_max_health: int) -> void:
+func _on_player_max_health_changed_local(new_max_health: float) -> void:
 	player_health_bar.max_value = int(new_max_health)
 		
 
@@ -498,8 +529,19 @@ func play_animation(dir: String, movement: int) -> void:
 		animated_sprite.play("run")
 	else:
 		animated_sprite.play("idle")
+
+func handle_death() -> void:
+	if has_revive and !revive_used:
+		revive_used = true
+		health = (max_health + permanent_health_bonus) * 0.5
+		health_changed.emit(health)
+		
+		# need to add a revive animation here
+	else:
+		health_depleted.emit()
 		
 func take_damage_from_mob1(damage: int) -> void:
+	damage = max(damage - armor, 1)
 	if damage_multiplier:
 		damage = damage * 2
 		
@@ -511,7 +553,7 @@ func take_damage_from_mob1(damage: int) -> void:
 	health -= damage
 	health_changed.emit(health)
 	if health <= 0:
-		health_depleted.emit()
+		handle_death()
 		
 	var camera: Camera2D = $Camera2D
 	if camera and camera.has_method("add_trauma"):

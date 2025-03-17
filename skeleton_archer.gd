@@ -36,7 +36,7 @@ var knockback_timer: float = 0.0
 var knockback_duration: float = 0.15
 const KNOCKBACK_AMOUNT: int = 250
 
-const SPEED: int = 175
+var SPEED: int = 175
 
 enum State {CHASE, WANDER}
 var current_state: State = State.CHASE

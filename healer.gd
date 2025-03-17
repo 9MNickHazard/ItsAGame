@@ -40,7 +40,7 @@ var knockback_timer: float = 0.0
 var knockback_duration: float = 0.15
 const KNOCKBACK_AMOUNT: float = 250.0
 
-const SPEED = 225.0
+var SPEED = 225.0
 const MOB_HEAL_THRESHOLD = 15
 
 enum State {CHASE, WANDER}

@@ -9,7 +9,6 @@ extends Node2D
 static var glass_cannon_multiplier: bool = false
 static var runforrestrun_multiplier: bool = false
 
-var damage_per_tick: int = 10
 var pull_strength: float = 300.0
 var max_pull_strength: float = 600.0
 var lifetime: float = 12.0
@@ -18,15 +17,28 @@ var damage_affected_enemies: Array = []
 var spin_speed: float = 2.0
 var is_spinning: bool = false
 
-
 static var damage_bonus: int = 0
 static var duration_bonus: float = 0.0
 static var pull_radius_bonus: float = 0.0
 static var damage_radius_bonus: float = 0.0
 
+var damage: int
+
+var min_damage_per_tick: int = 7
+var max_damage_per_tick: int = 12
+
+static var min_damage_bonus: int = 0
+static var max_damage_bonus: int = 0
+
+static var permanent_min_damage_bonus: int = 0
+static var permanent_max_damage_bonus: int = 0
+
 func _ready() -> void:
 	animated_sprite.play("gravity_well")
 	animated_sprite.animation_finished.connect(_on_animation_finished)
+	
+	min_damage_per_tick = min_damage_per_tick + min_damage_bonus + permanent_min_damage_bonus
+	max_damage_per_tick = max_damage_per_tick + max_damage_bonus + permanent_max_damage_bonus
 	
 	duration_timer.wait_time = lifetime + duration_bonus
 	duration_timer.one_shot = true
@@ -78,12 +90,12 @@ func _on_animation_finished() -> void:
 func _on_damage_timer_timeout() -> void:
 	for enemy in damage_affected_enemies:
 		if is_instance_valid(enemy) and enemy.has_method("take_damage"):
-			var damage_dealt: int = damage_per_tick + damage_bonus
+			damage = randi_range(min_damage_per_tick, max_damage_per_tick)
 			if glass_cannon_multiplier:
-				damage_dealt = damage_dealt * 2
+				damage = damage * 2
 			if runforrestrun_multiplier:
-				damage_dealt = ceil(damage_dealt * 0.75)
-			enemy.take_damage(damage_dealt)
+				damage = ceil(damage * 0.75)
+			enemy.take_damage(damage)
 
 func _on_pull_area_body_entered(body: CharacterBody2D) -> void:
 	if body.is_in_group("mobs"):

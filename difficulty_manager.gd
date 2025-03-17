@@ -2,6 +2,10 @@ extends Node
 
 #signal mobs_remaining_changed(remaining_count: int)
 signal difficulty_increased(new_difficulty: float)
+signal difficulty_mode_completed(mode: int)
+signal difficulty_mode_unlocked(mode: int)
+
+enum DifficultyMode { NORMAL, HEROIC, LEGENDARY }
 
 enum SpawnPattern { RANDOM, CIRCLE }
 
@@ -12,6 +16,35 @@ enum SpawnPattern { RANDOM, CIRCLE }
 @onready var spawn_timer: Timer = $SpawnTimer
 @onready var difficulty_timer: Timer = $DifficultyTimer
 @onready var stats_manager: Node2D = get_node("/root/world/StatsManager")
+@onready var save_manager = get_node("/root/SaveManager")
+
+# Difficulty mode variables
+var current_mode: int = DifficultyMode.NORMAL
+static var unlocked_heroic: bool = false
+static var unlocked_legendary: bool = false
+
+const MODE_MULTIPLIERS: Dictionary = {
+	DifficultyMode.NORMAL: {
+		"health": 1.0,
+		"damage": 1.0,
+		"speed": 1.0,
+		"spawn_rate": 1.0
+	},
+	DifficultyMode.HEROIC: {
+		"health": 1.5,
+		"damage": 1.3,
+		"speed": 1.2,
+		"spawn_rate": 1.25
+	},
+	DifficultyMode.LEGENDARY: {
+		"health": 2.5,
+		"damage": 2.0,
+		"speed": 1.4,
+		"spawn_rate": 1.5
+	}
+}
+
+var game_completed: bool
 
 var goblin_scene: PackedScene = preload("res://scenes/mob_1.tscn")
 var tnt_goblin_scene: PackedScene = preload("res://scenes/tnt_goblin.tscn")
@@ -50,7 +83,7 @@ var enemy_weights: Dictionary = {
 
 
 var special_spawns: Array[Dictionary] = [
-	# Difficulty 1.0
+	# Difficulty 1.1
 	{"type": "horde", "difficulty_trigger": 1.1, "enemies": [
 		{"scene": "goblin", "count": 10}
 	], "pattern": SpawnPattern.CIRCLE, "radius": 900.0},
@@ -65,8 +98,8 @@ var special_spawns: Array[Dictionary] = [
 		{"scene": "goblin", "count": 30}
 	], "pattern": SpawnPattern.CIRCLE, "radius": 1000.0},
 	
-	# Difficulty 2.0
-	{"type": "horde", "difficulty_trigger": 2.0, "enemies": [
+	# Difficulty 2.1
+	{"type": "horde", "difficulty_trigger": 2.1, "enemies": [
 		{"scene": "goblin", "count": 30},
 		{"scene": "tnt_goblin", "count": 10}
 	], "pattern": SpawnPattern.CIRCLE, "radius": 1100.0},
@@ -77,8 +110,8 @@ var special_spawns: Array[Dictionary] = [
 		{"scene": "skeleton_archer", "count": 6}
 	], "pattern": SpawnPattern.CIRCLE, "radius": 1200.0},
 	
-	# Difficulty 3.0
-	{"type": "horde", "difficulty_trigger": 3.0, "enemies": [
+	# Difficulty 3.1
+	{"type": "horde", "difficulty_trigger": 3.1, "enemies": [
 		{"scene": "goblin", "count": 35},
 		{"scene": "tnt_goblin", "count": 8},
 		{"scene": "skeleton_archer", "count": 6},
@@ -222,6 +255,10 @@ var special_spawns: Array[Dictionary] = [
 var total_mobs_spawned: int = 0
 
 func _ready() -> void:
+	if save_manager:
+		unlocked_heroic = save_manager.get_difficulty("heroic")
+		unlocked_legendary = save_manager.get_difficulty("legendary")
+		
 	spawn_timer.wait_time = base_spawn_delay
 	spawn_timer.timeout.connect(_on_spawn_timer_timeout)
 	
@@ -243,6 +280,10 @@ func _ready() -> void:
 		#emit_signal("mobs_remaining_changed", active_mobs.size())
 
 func start_game() -> void:
+	game_completed = false
+	
+	apply_difficulty_modifiers()
+	
 	spawn_timer.wait_time = calculate_spawn_delay()
 	spawn_timer.start()
 	difficulty_timer.start()
@@ -275,9 +316,16 @@ func _on_difficulty_timer_timeout() -> void:
 		emit_signal("difficulty_increased", current_difficulty)
 		
 		check_special_spawns()
+	else:
+		return
+		
 	
-	if abs(current_difficulty - floor(current_difficulty)) < .01 and current_difficulty <= 10.0:
+	if abs(current_difficulty - floor(current_difficulty)) < 0.01 and current_difficulty <= 10.0:
 		current_group_size = current_difficulty
+	
+	#if abs(current_difficulty - max_difficulty) < 0.01 and not game_completed:
+		#game_completed = true
+		# here I need to add a difficulty/game completed animation and show the reward gems and then a button to go back to main menu
 		
 
 
@@ -339,6 +387,24 @@ func calculate_weight(enemy_config: Dictionary, difficulty: float) -> float:
 func spawn_enemy(enemy_scene: PackedScene, pattern: int, radius: float = 900.0) -> void:
 	var new_mob: Node = enemy_scene.instantiate()
 	
+	if new_mob.has_method("take_damage"):  # Check if it's an enemy with health
+		var multipliers = MODE_MULTIPLIERS[current_mode]
+		
+		# Adjust health
+		if "max_health" in new_mob:
+			new_mob.max_health = int(new_mob.max_health * multipliers["health"])
+			new_mob.health = new_mob.max_health
+		
+		# Adjust damage for various enemy attack types
+		if "minimum_damage" in new_mob:
+			new_mob.minimum_damage = int(new_mob.minimum_damage * multipliers["damage"])
+		if "maximum_damage" in new_mob:
+			new_mob.maximum_damage = int(new_mob.maximum_damage * multipliers["damage"])
+		
+		# Adjust speed for more challenge
+		if "SPEED" in new_mob:
+			new_mob.SPEED = new_mob.SPEED * multipliers["speed"]
+	
 	if pattern == SpawnPattern.RANDOM:
 		if path_follow != null:
 			path_follow.progress_ratio = randf()
@@ -352,8 +418,6 @@ func spawn_enemy(enemy_scene: PackedScene, pattern: int, radius: float = 900.0) 
 		new_mob.global_position = spawn_position
 	
 	add_child(new_mob)
-	#active_mobs.append(new_mob)
-	#new_mob.tree_exiting.connect(_on_mob_tree_exiting.bind(new_mob))
 	total_mobs_spawned += 1
 
 func spawn_group(pattern: int, enemies: Array, radius: float = 900.0) -> void:
@@ -385,9 +449,8 @@ func spawn_group(pattern: int, enemies: Array, radius: float = 900.0) -> void:
 			
 			var new_mob: Node = enemy_scene.instantiate()
 			new_mob.global_position = spawn_position
+			
 			add_child(new_mob)
-			#active_mobs.append(new_mob)
-			#new_mob.tree_exiting.connect(_on_mob_tree_exiting.bind(new_mob))
 			total_mobs_spawned += 1
 	else:
 		for enemy_config in enemies:
@@ -400,9 +463,8 @@ func spawn_group(pattern: int, enemies: Array, radius: float = 900.0) -> void:
 					path_follow.progress_ratio = randf()
 					var new_mob: Node = enemy_scene.instantiate()
 					new_mob.global_position = path_follow.global_position
+					
 					add_child(new_mob)
-					#active_mobs.append(new_mob)
-					#new_mob.tree_exiting.connect(_on_mob_tree_exiting.bind(new_mob))
 					total_mobs_spawned += 1
 
 func get_enemy_scene_by_key(key: String) -> PackedScene:
@@ -448,10 +510,83 @@ func _on_player_level_up(new_level: int) -> void:
 	if pause_menu:
 		pause_menu.update_cost_labels()
 		pause_menu.player_coins_label.text = "Coins: " + str(ui.coins_collected)
+		pause_menu.player_level_label.text = "Level: " + str(ui.experience_manager.get_current_level())
 		pause_menu.continue_button.visible = true
 		pause_menu.visible = true
+		
+		
+		
+		
+		
+		
+		
+func set_difficulty_mode(mode: int) -> void:
+	current_mode = mode
+	
+	apply_difficulty_modifiers()
+	
 
-#func _on_mob_tree_exiting(mob: Node) -> void:
-	#if active_mobs.has(mob):
-		#active_mobs.erase(mob)
-		##emit_signal("mobs_remaining_changed", active_mobs.size())
+func apply_difficulty_modifiers() -> void:
+	var multipliers = MODE_MULTIPLIERS[current_mode]
+	
+	base_spawn_delay = 0.8 / multipliers["spawn_rate"]
+
+	match current_mode:
+		DifficultyMode.NORMAL:
+			base_difficulty = 1.0
+			current_difficulty = 1.0
+		DifficultyMode.HEROIC:
+			base_difficulty = 2.0
+			current_difficulty = 2.0
+		DifficultyMode.LEGENDARY:
+			base_difficulty = 3.0
+			current_difficulty = 3.0
+
+func is_difficulty_unlocked(mode: int) -> bool:
+	match mode:
+		DifficultyMode.NORMAL:
+			return true  # Normal is always unlocked
+		DifficultyMode.HEROIC:
+			return unlocked_heroic
+		DifficultyMode.LEGENDARY:
+			return unlocked_legendary
+		_:
+			return false
+
+func unlock_difficulty(mode: int) -> void:
+	match mode:
+		DifficultyMode.HEROIC:
+			unlocked_heroic = true
+		DifficultyMode.LEGENDARY:
+			unlocked_legendary = true
+	
+	if save_manager:
+		match mode:
+			DifficultyMode.HEROIC:
+				save_manager.save_difficulty("heroic", true)
+			DifficultyMode.LEGENDARY:
+				save_manager.save_difficulty("legendary", true)
+	
+	emit_signal("difficulty_mode_unlocked", mode)
+
+func complete_difficulty_mode() -> void:
+	game_completed = true
+	
+	if current_mode == DifficultyMode.NORMAL and not unlocked_heroic:
+		unlock_difficulty(DifficultyMode.HEROIC)
+	elif current_mode == DifficultyMode.HEROIC and not unlocked_legendary:
+		unlock_difficulty(DifficultyMode.LEGENDARY)
+	
+	var reward_gems = 0
+	match current_mode:
+		DifficultyMode.NORMAL:
+			reward_gems = 1000
+		DifficultyMode.HEROIC:
+			reward_gems = 2500
+		DifficultyMode.LEGENDARY:
+			reward_gems = 5000
+	
+	if save_manager and reward_gems > 0:
+		save_manager.add_gems(reward_gems)
+	
+	emit_signal("difficulty_mode_completed", current_mode)

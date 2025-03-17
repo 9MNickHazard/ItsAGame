@@ -48,7 +48,7 @@ var overlapping_player: bool = false
 var damage_cooldown: float = 1.5
 var damage_timer: float = 0.0
 
-const SPEED: float = 500.0
+var SPEED: float = 500.0
 const CHARGE_SPEED: float = 1200.0
 
 enum State {CHASE, CHARGING, CHARGE_ATTACK}

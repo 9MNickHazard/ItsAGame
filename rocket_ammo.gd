@@ -11,7 +11,7 @@ static var damage_min_bonus: int = 0
 static var damage_max_bonus: int = 0
 var minimum_damage: int = 30
 var maximum_damage: int = 60
-var damage: int = randf_range(minimum_damage + damage_min_bonus, maximum_damage + damage_max_bonus)
+var damage: int
 static var speed_bonus: float = 0.0
 static var range_bonus: float = 0.0
 var BULLET_SPEED: float = 600.0 + speed_bonus
@@ -23,11 +23,16 @@ static var runforrestrun_multiplier: bool = false
 var has_exploded: bool = false
 var enemies_hit: Array = []
 
+static var permanent_min_damage_bonus: int = 0
+static var permanent_max_damage_bonus: int = 0
+
 func _ready() -> void:
 	explosion.visible = false
 	explosion_collision.disabled = true
 	explosion.animation_finished.connect(_on_explosion_animation_finished)
 	explosion.frame_changed.connect(_on_explosion_frame_changed)
+	minimum_damage = minimum_damage + damage_min_bonus + permanent_min_damage_bonus
+	maximum_damage = maximum_damage + damage_max_bonus + permanent_max_damage_bonus
 
 func _physics_process(delta: float) -> void:
 	if has_exploded:
@@ -61,6 +66,7 @@ func _on_explosion_frame_changed() -> void:
 			var bodies = explosion_area.get_overlapping_bodies()
 			for body in bodies:
 				if body.has_method("take_damage") and not enemies_hit.has(body):
+					damage = randi_range(minimum_damage, maximum_damage)
 					if glass_cannon_multiplier:
 						damage = damage * 2
 					if runforrestrun_multiplier:

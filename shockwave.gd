@@ -7,7 +7,6 @@ extends Area2D
 static var glass_cannon_multiplier: bool = false
 static var runforrestrun_multiplier: bool = false
 
-static var damage: int = 20
 static var knockback_amount: float = 200.0
 
 var hit_enemies: Dictionary = {}
@@ -16,10 +15,22 @@ var current_radius: float
 var max_radius: float = 465.0
 var expansion_rate: float = 930.0
 
-var damage_dealt: int
+var damage: int
+
+var minimum_damage: int = 16
+var maximum_damage: int = 24
+
+static var min_damage_bonus: int = 0
+static var max_damage_bonus: int = 0
+
+static var permanent_min_damage_bonus: int = 0
+static var permanent_max_damage_bonus: int = 0
 
 func _ready() -> void:
 	animated_sprite.animation_finished.connect(_on_animation_finished)
+	
+	minimum_damage = minimum_damage + min_damage_bonus + permanent_min_damage_bonus
+	maximum_damage = maximum_damage + max_damage_bonus + permanent_max_damage_bonus
 	
 	hit_enemies = {}
 	
@@ -46,12 +57,12 @@ func _on_body_entered(body: CharacterBody2D) -> void:
 		hit_enemies[body_id] = true
 		
 		var knockback_dir: Vector2 = (body.global_position - global_position).normalized()
-		damage_dealt = damage
+		damage = randi_range(minimum_damage, maximum_damage)
 		if glass_cannon_multiplier:
-			damage_dealt = damage_dealt * 2
+			damage = damage * 2
 		if runforrestrun_multiplier:
-			damage_dealt = ceil(damage_dealt * 0.75)
-		body.take_damage(damage_dealt, knockback_amount, knockback_dir)
+			damage = ceil(damage * 0.75)
+		body.take_damage(damage, knockback_amount, knockback_dir)
 
 func _on_animation_finished() -> void:
 	queue_free()

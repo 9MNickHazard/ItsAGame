@@ -7,7 +7,7 @@ static var damage_max_bonus: int = 0
 
 var minimum_damage: int = 8
 var maximum_damage: int = 12
-var damage: int = randi_range(minimum_damage + damage_min_bonus, maximum_damage + damage_max_bonus)
+var damage: int
 
 static var speed_bonus: float = 0.0
 static var range_bonus: float = 0.0
@@ -15,8 +15,15 @@ static var range_bonus: float = 0.0
 static var glass_cannon_multiplier: bool = false
 static var runforrestrun_multiplier: bool = false
 
+static var permanent_min_damage_bonus: int = 0
+static var permanent_max_damage_bonus: int = 0
+
 var BULLET_SPEED: float = 1000.0 + speed_bonus
 var RANGE: float = 1500.0 + range_bonus
+
+func _ready() -> void:
+	minimum_damage = minimum_damage + damage_min_bonus + permanent_min_damage_bonus
+	maximum_damage = maximum_damage + damage_max_bonus + permanent_max_damage_bonus
 
 func _physics_process(delta: float) -> void:
 	var direction: Vector2 = Vector2.RIGHT.rotated(rotation)
@@ -31,6 +38,7 @@ func _physics_process(delta: float) -> void:
 
 func _on_body_entered(body: Node2D) -> void:
 	if body.has_method("take_damage"):
+		damage = randi_range(minimum_damage, maximum_damage)
 		if glass_cannon_multiplier:
 			damage = damage * 2
 		if runforrestrun_multiplier:

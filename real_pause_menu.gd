@@ -231,7 +231,7 @@ func _on_restart_button_pressed() -> void:
 	
 	CoinPoolManager.reset_for_new_game()
 	get_tree().paused = false
-	get_tree().reload_current_scene()
+	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
 	
 func update_stats_display() -> void:
 	for child in stats_container.get_children():

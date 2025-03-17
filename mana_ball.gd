@@ -11,7 +11,15 @@ var current_speed: float = 0.0
 var acceleration: float = 800.0
 var is_being_pulled: bool = false
 
+static var permanent_pickup_range_bonus: float = 0.0
+var pickup_shape
+var original_radius
+
 func _ready() -> void:
+	pickup_shape = pickup_area.get_node("CollisionShape2D").shape
+	original_radius = pickup_shape.radius
+	pickup_shape.radius = original_radius + permanent_pickup_range_bonus
+	
 	cpu_particles_2d.emitting = true
 	despawn_timer.start()
 

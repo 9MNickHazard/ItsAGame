@@ -19,6 +19,7 @@ var coins_collected: int = 0
 var score: int = 0
 var experience_manager: Node = null
 
+static var gold_bonus_multiplier: float = 1.0
 
 func _ready() -> void:
 	var player: CharacterBody2D = get_node("/root/world/player")
@@ -69,6 +70,7 @@ func increase_score(amount: int) -> void:
 	score_label.text = "Score: " + str(score)
 	
 func add_coin(amount: int = 1) -> void:
+	amount = int(ceil(amount * gold_bonus_multiplier))
 	coins_collected += amount
 	coin_label.text = "Coins: " + str(coins_collected)
 	
@@ -101,6 +103,9 @@ func _on_experience_gained(current_xp: int, xp_for_next: int) -> void:
 	else:
 		xp_bar.value = xp_bar.max_value
 		xp_label.text = "Max Level!"
+
+static func change_gold_bonus(bonus) -> void:
+	gold_bonus_multiplier = bonus
 
 
 func _create_level_up_animation() -> void:

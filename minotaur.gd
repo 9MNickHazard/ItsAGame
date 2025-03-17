@@ -55,7 +55,7 @@ var knockback_timer: float = 0.0
 var knockback_duration: float = 0.05
 const KNOCKBACK_AMOUNT: float = 25.0
 
-const SPEED: float = 415.0
+var SPEED: float = 415.0
 const CHARGE_SPEED: float = 1100.0
 
 # Charge attack properties

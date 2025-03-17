@@ -21,7 +21,10 @@ var xp_table: Dictionary = {
 	12: 300000
 }
 
+static var xp_bonus_multiplier: float = 1.0
+
 func add_experience(amount: int) -> void:
+	amount = int(ceil(amount * xp_bonus_multiplier))
 	current_xp += amount
 	
 	var level_up_occurred: bool = false
@@ -44,3 +47,9 @@ func get_xp_for_next_level() -> int:
 
 func get_current_xp() -> int:
 	return current_xp
+
+func get_xp_bonus() -> float:
+	return xp_bonus_multiplier
+
+static func change_xp_bonus(bonus) -> void:
+	xp_bonus_multiplier = bonus

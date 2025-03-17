@@ -5,22 +5,6 @@ extends CharacterBody2D
 @onready var facing_away_hitbox: Area2D = $FacingAwayHitbox
 @onready var facing_camera_hitbox: Area2D = $FacingCameraHitbox
 @onready var side_hitbox: Area2D = $SideHitbox
-@onready var goblin_sfx: AudioStreamPlayer2D = $Node2D/GoblinSFX
-@onready var goblin_sfx_2: AudioStreamPlayer2D = $Node2D/GoblinSFX2
-@onready var goblin_sfx_3: AudioStreamPlayer2D = $Node2D/GoblinSFX3
-@onready var goblin_sfx_4: AudioStreamPlayer2D = $Node2D/GoblinSFX4
-@onready var goblin_sfx_5: AudioStreamPlayer2D = $Node2D/GoblinSFX5
-@onready var goblin_sfx_6: AudioStreamPlayer2D = $Node2D/GoblinSFX6
-@onready var goblin_sfx_7: AudioStreamPlayer2D = $Node2D/GoblinSFX7
-@onready var goblin_sfx_8: AudioStreamPlayer2D = $Node2D/GoblinSFX8
-@onready var goblin_sfx_9: AudioStreamPlayer2D = $Node2D/GoblinSFX9
-@onready var goblin_sfx_10: AudioStreamPlayer2D = $Node2D/GoblinSFX10
-@onready var goblin_sfx_11: AudioStreamPlayer2D = $Node2D/GoblinSFX11
-@onready var goblin_sfx_12: AudioStreamPlayer2D = $Node2D/GoblinSFX12
-@onready var goblin_sfx_13: AudioStreamPlayer2D = $Node2D/GoblinSFX13
-@onready var goblin_sfx_14: AudioStreamPlayer2D = $Node2D/GoblinSFX14
-@onready var goblin_sfx_15: AudioStreamPlayer2D = $Node2D/GoblinSFX15
-@onready var goblin_death_sfx: AnimationPlayer = $GoblinDeathSFX
 @onready var stats_manager: Node2D = get_node("/root/world/StatsManager")
 
 const CoinScene: PackedScene = preload("res://scenes/coin.tscn")
@@ -59,7 +43,7 @@ var is_dead: bool = false
 var knockback_timer: float = 0.0
 var knockback_duration: float = 0.15
 
-const SPEED: float = 275.0
+var SPEED: float = 275.0
 
 enum State {CHASE, WANDER, FLANK}
 var current_state: State = State.CHASE
@@ -277,38 +261,6 @@ func calculate_flank_direction() -> Vector2:
 	return (perpendicular * 0.8 + to_player.normalized() * 0.2).normalized()
 			
 
-func play_random_goblin_death_sound() -> void:
-	var sound_effect: int = randi_range(1, 15)
-	if sound_effect == 1:
-		goblin_sfx.play()
-	elif sound_effect == 2:
-		goblin_sfx_2.play()
-	elif sound_effect == 3:
-		goblin_sfx_3.play()
-	elif sound_effect == 4:
-		goblin_sfx_4.play()
-	elif sound_effect == 5:
-		goblin_sfx_5.play()
-	elif sound_effect == 6:
-		goblin_sfx_6.play()
-	elif sound_effect == 7:
-		goblin_sfx_7.play()
-	elif sound_effect == 8:
-		goblin_sfx_8.play()
-	elif sound_effect == 9:
-		goblin_sfx_9.play()
-	elif sound_effect == 10:
-		goblin_sfx_10.play()
-	elif sound_effect == 11:
-		goblin_sfx_11.play()
-	elif sound_effect == 12:
-		goblin_sfx_12.play()
-	elif sound_effect == 13:
-		goblin_sfx_13.play()
-	elif sound_effect == 14:
-		goblin_sfx_14.play()
-	elif sound_effect == 15:
-		goblin_sfx_15.play()
 
 func take_damage(damage_dealt: float = 10.0, knockback_amount: float = 250.0, knockback_dir: Vector2 = Vector2.ZERO) -> void:
 	if is_dead:
@@ -330,6 +282,8 @@ func take_damage(damage_dealt: float = 10.0, knockback_amount: float = 250.0, kn
 	if health <= 0:
 		is_dead = true
 		is_attacking = false
+		
+		play_random_goblin_death_sound()
 		
 		stats_manager.add_enemy_kill("Torch Goblin")
 		
@@ -367,10 +321,14 @@ func take_damage(damage_dealt: float = 10.0, knockback_amount: float = 250.0, kn
 		if ui and ui.experience_manager:
 			ui.experience_manager.add_experience(xp_amount)
 			ui.increase_score(1)
-		goblin_death_sfx.play("Goblin Death SFX")
+		queue_free()
 	
 	animation_player.stop()
 	animation_player.play("hit_flash")
+	
+func play_random_goblin_death_sound():
+	AudioManager.play_sound("goblin_death", global_position)
+
 
 func heal(amount: int) -> void:
 	if not is_instance_valid(self) or is_dead or health >= max_health:
