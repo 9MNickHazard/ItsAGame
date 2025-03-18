@@ -23,6 +23,7 @@ static var gem_total: int = 0
 # Difficulty Mode
 static var unlocked_heroic: bool = false
 static var unlocked_legendary: bool = false
+static var selected_difficulty_mode: int = 0
 
 # File path
 const SAVE_FILE_PATH: String = "user://game_save.save"
@@ -33,6 +34,11 @@ func _ready() -> void:
 	
 	apply_all_saved_upgrades()
 
+func set_selected_difficulty(mode: int) -> void:
+	selected_difficulty_mode = mode
+	
+func get_selected_difficulty() -> int:
+	return selected_difficulty_mode
 
 func save_game() -> void:
 	var save_file = ConfigFile.new()

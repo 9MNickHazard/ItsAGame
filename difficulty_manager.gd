@@ -259,6 +259,10 @@ func _ready() -> void:
 		unlocked_heroic = save_manager.get_difficulty("heroic")
 		unlocked_legendary = save_manager.get_difficulty("legendary")
 		
+		current_mode = save_manager.get_selected_difficulty()
+	
+	set_difficulty_mode(current_mode)
+		
 	spawn_timer.wait_time = base_spawn_delay
 	spawn_timer.timeout.connect(_on_spawn_timer_timeout)
 	
@@ -387,7 +391,7 @@ func calculate_weight(enemy_config: Dictionary, difficulty: float) -> float:
 func spawn_enemy(enemy_scene: PackedScene, pattern: int, radius: float = 900.0) -> void:
 	var new_mob: Node = enemy_scene.instantiate()
 	
-	if new_mob.has_method("take_damage"):  # Check if it's an enemy with health
+	if current_mode == DifficultyMode.HEROIC or current_mode == DifficultyMode.LEGENDARY:
 		var multipliers = MODE_MULTIPLIERS[current_mode]
 		
 		# Adjust health
@@ -395,13 +399,13 @@ func spawn_enemy(enemy_scene: PackedScene, pattern: int, radius: float = 900.0) 
 			new_mob.max_health = int(new_mob.max_health * multipliers["health"])
 			new_mob.health = new_mob.max_health
 		
-		# Adjust damage for various enemy attack types
+		# Adjust damage
 		if "minimum_damage" in new_mob:
 			new_mob.minimum_damage = int(new_mob.minimum_damage * multipliers["damage"])
 		if "maximum_damage" in new_mob:
 			new_mob.maximum_damage = int(new_mob.maximum_damage * multipliers["damage"])
 		
-		# Adjust speed for more challenge
+		# Adjust speed
 		if "SPEED" in new_mob:
 			new_mob.SPEED = new_mob.SPEED * multipliers["speed"]
 	
@@ -419,6 +423,8 @@ func spawn_enemy(enemy_scene: PackedScene, pattern: int, radius: float = 900.0) 
 	
 	add_child(new_mob)
 	total_mobs_spawned += 1
+	active_mobs.append(new_mob)
+	new_mob.tree_exited.connect(_on_mob_removed.bind(new_mob))
 
 func spawn_group(pattern: int, enemies: Array, radius: float = 900.0) -> void:
 	var total_enemies: int = 0
@@ -448,10 +454,31 @@ func spawn_group(pattern: int, enemies: Array, radius: float = 900.0) -> void:
 			var spawn_position: Vector2 = player.global_position + Vector2(cos(angle), sin(angle)) * radius
 			
 			var new_mob: Node = enemy_scene.instantiate()
+			
+			if current_mode == DifficultyMode.HEROIC or current_mode == DifficultyMode.LEGENDARY:
+				var multipliers = MODE_MULTIPLIERS[current_mode]
+				
+				# Adjust health
+				if "max_health" in new_mob:
+					new_mob.max_health = int(new_mob.max_health * multipliers["health"])
+					new_mob.health = new_mob.max_health
+				
+				# Adjust damage
+				if "minimum_damage" in new_mob:
+					new_mob.minimum_damage = int(new_mob.minimum_damage * multipliers["damage"])
+				if "maximum_damage" in new_mob:
+					new_mob.maximum_damage = int(new_mob.maximum_damage * multipliers["damage"])
+				
+				# Adjust speed
+				if "SPEED" in new_mob:
+					new_mob.SPEED = new_mob.SPEED * multipliers["speed"]
+					
 			new_mob.global_position = spawn_position
 			
 			add_child(new_mob)
 			total_mobs_spawned += 1
+			active_mobs.append(new_mob)
+			new_mob.tree_exited.connect(_on_mob_removed.bind(new_mob))
 	else:
 		for enemy_config in enemies:
 			var scene_key: String = enemy_config["scene"]
@@ -462,10 +489,39 @@ func spawn_group(pattern: int, enemies: Array, radius: float = 900.0) -> void:
 				if path_follow != null:
 					path_follow.progress_ratio = randf()
 					var new_mob: Node = enemy_scene.instantiate()
+					
+					if current_mode == DifficultyMode.HEROIC or current_mode == DifficultyMode.LEGENDARY:
+						var multipliers = MODE_MULTIPLIERS[current_mode]
+						
+						# Adjust health
+						if "max_health" in new_mob:
+							new_mob.max_health = int(new_mob.max_health * multipliers["health"])
+							new_mob.health = new_mob.max_health
+						
+						# Adjust damage
+						if "minimum_damage" in new_mob:
+							new_mob.minimum_damage = int(new_mob.minimum_damage * multipliers["damage"])
+						if "maximum_damage" in new_mob:
+							new_mob.maximum_damage = int(new_mob.maximum_damage * multipliers["damage"])
+						
+						# Adjust speed
+						if "SPEED" in new_mob:
+							new_mob.SPEED = new_mob.SPEED * multipliers["speed"]
+			
 					new_mob.global_position = path_follow.global_position
 					
 					add_child(new_mob)
 					total_mobs_spawned += 1
+					active_mobs.append(new_mob)
+					new_mob.tree_exited.connect(_on_mob_removed.bind(new_mob))
+
+func _on_mob_removed(mob: Node) -> void:
+	if active_mobs.has(mob):
+		active_mobs.erase(mob)
+	
+	if active_mobs.size() == 0 and abs(current_difficulty - max_difficulty) < 0.01 and not game_completed:
+		complete_difficulty_mode()
+
 
 func get_enemy_scene_by_key(key: String) -> PackedScene:
 	match key:
@@ -566,6 +622,10 @@ func unlock_difficulty(mode: int) -> void:
 				save_manager.save_difficulty("heroic", true)
 			DifficultyMode.LEGENDARY:
 				save_manager.save_difficulty("legendary", true)
+	
+	var main_menu = get_node_or_null("/root/MainMenu")
+	if main_menu and main_menu.has_method("update_difficulty_buttons"):
+		main_menu.update_difficulty_buttons()
 	
 	emit_signal("difficulty_mode_unlocked", mode)
 

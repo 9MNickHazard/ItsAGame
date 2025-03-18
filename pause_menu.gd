@@ -1,6 +1,7 @@
 # pause_menu.gd
 extends CanvasLayer
 
+signal return_to_main_menu
 
 @onready var not_enough_coins_label: Label = $NotEnoughCoinsLabel
 @onready var level_requirement_label: Label = $LevelRequirementLabel
@@ -587,7 +588,7 @@ func _on_restart_button_pressed() -> void:
 	
 	var PlayerScript: GDScript = load("res://scripts/player.gd")
 	PlayerScript.max_mana = 100.0
-	PlayerScript.max_health = 100
+	PlayerScript.max_health = 100.0
 	PlayerScript.damage_multiplier = false
 	PlayerScript.weapon_restriction = false
 	PlayerScript.ability_mana_reduction = false
@@ -605,6 +606,7 @@ func _on_restart_button_pressed() -> void:
 	stats_manager.reset_stats()
 	
 	CoinPoolManager.reset_for_new_game()
+	emit_signal("return_to_main_menu")
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
 	

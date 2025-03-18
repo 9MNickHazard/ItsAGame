@@ -1,5 +1,7 @@
 extends CanvasLayer
 
+signal return_to_main_menu
+
 @onready var volume_slider: HSlider = $MarginContainer/HBoxContainer/PanelContainer/MarginContainer/VBoxContainer/VolumeSlider
 @onready var restart_button: Button = $MarginContainer/HBoxContainer/PanelContainer/MarginContainer/VBoxContainer/CenterContainer/RestartButton
 @onready var quit_button: Button = $MarginContainer/HBoxContainer/PanelContainer/MarginContainer/VBoxContainer/CenterContainer2/QuitButton
@@ -230,6 +232,7 @@ func _on_restart_button_pressed() -> void:
 	stats_manager.reset_stats()
 	
 	CoinPoolManager.reset_for_new_game()
+	emit_signal("return_to_main_menu")
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
 	
