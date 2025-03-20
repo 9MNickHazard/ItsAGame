@@ -54,7 +54,26 @@ var pull_direction: Vector2
 var pull_velocity: Vector2
 var pull_dominance: float
 
+var special_variant_1: bool = false
+
+func enable_special_variant_1():
+	special_variant_1 = true
+	
+	scale = scale * 2.0
+	
+	#minimum_damage *= 2
+	#maximum_damage *= 2
+	
+	SPEED *= 1.5
+	
+	max_health *= 5
+	health = max_health
+	
+	enable_outline()
+
 func _ready() -> void:
+	if not special_variant_1:
+		disable_outline()
 	player = get_node("/root/world/player")
 	animated_sprite.play("run")
 	animated_sprite.frame_changed.connect(_on_frame_changed)
@@ -129,7 +148,11 @@ func _physics_process(delta: float) -> void:
 			
 		move_and_slide()
 			
+func enable_outline() -> void:
+	animated_sprite.material.set_shader_parameter("outline_enabled", true)
 
+func disable_outline() -> void:
+	animated_sprite.material.set_shader_parameter("outline_enabled", false)
 
 func _on_frame_changed() -> void:
 	if is_attacking and animated_sprite.animation == "attack1" and animated_sprite.frame == 5:
@@ -158,24 +181,34 @@ func _on_frame_changed() -> void:
 		
 		
 func use_attack1() -> void:
-	if is_dead:
+	if is_dead or not animated_sprite:
 		return
-		
+				
 	is_attacking = true
 	animated_sprite.play("attack1")
-	await animated_sprite.animation_finished
-	is_attacking = false
-	animated_sprite.play("run")
+	
+	var timer = get_tree().create_timer(animated_sprite.sprite_frames.get_animation_duration("attack1"))
+	timer.timeout.connect(func(): 
+		if is_instance_valid(self) and not is_dead:
+			is_attacking = false
+			if animated_sprite:
+				animated_sprite.play("run")
+	)
 	
 func use_attack2() -> void:
-	if is_dead:
+	if is_dead or not animated_sprite:
 		return
-		
+				
 	is_attacking = true
 	animated_sprite.play("attack2")
-	await animated_sprite.animation_finished
-	is_attacking = false
-	animated_sprite.play("run")
+	
+	var timer = get_tree().create_timer(animated_sprite.sprite_frames.get_animation_duration("attack2"))
+	timer.timeout.connect(func(): 
+		if is_instance_valid(self) and not is_dead:
+			is_attacking = false
+			if animated_sprite:
+				animated_sprite.play("run")
+	)
 	
 func is_inside_play_area() -> bool:
 	return global_position.x >= -2050 and global_position.x <= 2050 and \
@@ -234,7 +267,8 @@ func take_damage(damage_dealt: int, knockback_amount: float = 250.0, knockback_d
 				x_offset = randi_range(-25, 25)
 				y_offset = randi_range(-25, 25)
 				var coin: Area2D = CoinPoolManager.get_coin()
-				coin.global_position = global_position + Vector2(x_offset, y_offset)
+				if is_instance_valid(coin):
+					coin.global_position = global_position + Vector2(x_offset, y_offset)
 			
 					
 		if randf() < 0.07:

@@ -52,5 +52,9 @@ func shoot() -> void:
 	else:
 		stats_manager.shots_fired_by_weapon[weapon_name] = 1
 	
-	get_node("/root/world").add_child(new_bullet)
+	var world = get_node_or_null("/root/world")
+	if is_instance_valid(world):
+		world.add_child(new_bullet)
+	else:
+		queue_free()
 	

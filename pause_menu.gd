@@ -97,7 +97,8 @@ var gravity_well_costs = {
 	5: 850
 }
 var gravity_well_improvements = {
-	"damage": 2,
+	"min_damage": 2,
+	"max_damage": 4,
 	"duration": 2,
 	"pull_radius": 15.0, # percent increase
 	"damage_radius": 10.0
@@ -570,6 +571,8 @@ func _on_restart_button_pressed() -> void:
 	var FireBlinkScript: GDScript = load("res://scripts/fire_blink.gd")
 	FireBlinkScript.damage_min_bonus = 0
 	FireBlinkScript.damage_max_bonus = 0
+	FireBlinkScript.glass_cannon_multiplier = false
+	FireBlinkScript.runforrestrun_multiplier = false
 	
 	var RocketAmmoScript: GDScript = load("res://scripts/rocket_ammo.gd")
 	RocketAmmoScript.damage_min_bonus = 0
@@ -580,11 +583,16 @@ func _on_restart_button_pressed() -> void:
 	RocketAmmoScript.runforrestrun_multiplier = false
 	
 	var ShockwaveScript: GDScript = load("res://scripts/shockwave.gd")
-	ShockwaveScript.damage = 20
+	ShockwaveScript.min_damage_bonus = 0
+	ShockwaveScript.max_damage_bonus = 0
 	ShockwaveScript.knockback_amount = 200.0
+	ShockwaveScript.glass_cannon_multiplier = false
+	ShockwaveScript.runforrestrun_multiplier = false
 	
 	var OrbitalAbilityScript: GDScript = load("res://scripts/orbital_ability.gd")
 	OrbitalAbilityScript.ability_level = 1
+	OrbitalAbilityScript.glass_cannon_multiplier = false
+	OrbitalAbilityScript.runforrestrun_multiplier = false
 	
 	var PlayerScript: GDScript = load("res://scripts/player.gd")
 	PlayerScript.max_mana = 100.0
@@ -595,10 +603,13 @@ func _on_restart_button_pressed() -> void:
 	PlayerScript.speed = 450.0
 	
 	var GravityWellScript: GDScript = load("res://scripts/gravity_well.gd")
-	GravityWellScript.damage_bonus = 0
+	GravityWellScript.min_damage_bonus = 0
+	GravityWellScript.max_damage_bonus = 0
 	GravityWellScript.duration_bonus = 0.0
 	GravityWellScript.pull_radius_bonus = 0.0
 	GravityWellScript.damage_radius_bonus = 0.0
+	GravityWellScript.glass_cannon_multiplier = false
+	GravityWellScript.runforrestrun_multiplier = false
 	
 	var PauseMenuScript: GDScript = load("res://scripts/pause_menu.gd")
 	PauseMenuScript.semi_pacifist = false
@@ -684,7 +695,8 @@ func _on_shockwave_upgrade_button_pressed() -> void:
 			shockwave_level += 1
 			
 			var ShockwaveScript = load("res://scripts/shockwave.gd")
-			ShockwaveScript.damage += 10
+			ShockwaveScript.min_damage_bonus += 4
+			ShockwaveScript.max_damage_bonus += 8
 			ShockwaveScript.knockback_amount += 100.0
 			
 			player_coins_label.text = "Coins: " + str(ui.coins_collected)
@@ -1310,8 +1322,9 @@ func _on_gravity_well_upgrade_button_pressed() -> void:
 				
 				gravity_well_level += 1
 				
-				var GravityWellScript = load("res://scenes/gravity_well.gd")
-				GravityWellScript.damage_bonus += gravity_well_improvements["damage"]
+				var GravityWellScript = load("res://scripts/gravity_well.gd")
+				GravityWellScript.min_damage_bonus += gravity_well_improvements["min_damage"]
+				GravityWellScript.max_damage_bonus += gravity_well_improvements["max_damage"]
 				GravityWellScript.duration_bonus += gravity_well_improvements["duration"]
 				GravityWellScript.pull_radius_bonus += gravity_well_improvements["pull_radius"]
 				GravityWellScript.damage_radius_bonus += gravity_well_improvements["damage_radius"]
@@ -1367,7 +1380,7 @@ func _on_orbital_ability_upgrade_button_pressed() -> void:
 				
 				orbital_level += 1
 				
-				var OrbitalAbilityScript = load("res://scenes/orbital_ability.tscn")
+				var OrbitalAbilityScript = load("res://scripts/orbital_ability.gd")
 				OrbitalAbilityScript.ability_level += 1
 				
 				player_coins_label.text = "Coins: " + str(ui.coins_collected)

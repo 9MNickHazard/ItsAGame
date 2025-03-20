@@ -298,10 +298,15 @@ func handle_orbital_ability() -> void:
 		stats_manager.total_orbital_abilities_used += 1
 		
 		var orbital_ability: Node2D = OrbitalAbilityScene.instantiate()
-		orbital_ability_active = true
-		orbital_ability.get_node("DurationTimer").timeout.connect(_on_orbital_ability_finished)
-		
-		get_parent().add_child(orbital_ability)
+		if is_instance_valid(orbital_ability):
+			orbital_ability_active = true
+			var duration_timer = orbital_ability.get_node_or_null("DurationTimer")
+			if is_instance_valid(duration_timer):
+				duration_timer.timeout.connect(_on_orbital_ability_finished)
+			
+			var parent = get_parent()
+			if is_instance_valid(parent):
+				parent.add_child(orbital_ability)
 		
 		current_mana -= orbital_ability_mana_cost
 		mana_bar.value = current_mana

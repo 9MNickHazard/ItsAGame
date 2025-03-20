@@ -17,12 +17,15 @@ var pickup_shape
 var original_radius
 
 func _ready() -> void:
-	pickup_shape = pickup_area.get_node("CollisionShape2D").shape
-	original_radius = pickup_shape.radius
-	pickup_shape.radius = original_radius + permanent_pickup_range_bonus
-	
+	if pickup_area and pickup_area.has_node("CollisionShape2D"):
+		pickup_shape = pickup_area.get_node("CollisionShape2D").shape
+		if pickup_shape:
+			original_radius = pickup_shape.radius
+			pickup_shape.radius = original_radius + permanent_pickup_range_bonus
+		
 	set_physics_process(false)
-	despawn_timer.start()
+	if despawn_timer:
+		despawn_timer.start()
 
 func _physics_process(delta: float) -> void:
 	if is_being_pulled and player:
@@ -35,16 +38,20 @@ func _physics_process(delta: float) -> void:
 
 
 func _on_body_entered(body: CharacterBody2D) -> void:
-	var ui: CanvasLayer = get_node("/root/world/UI")
+	var ui = get_node_or_null("/root/world/UI")
 	if ui:
 		ui.add_coin(value)
 
-	coin_sfx.play()
+	if coin_sfx:
+		coin_sfx.play()
 	
 	var timer = get_tree().create_timer(0.22)
 	await timer.timeout
 	
-	CoinPoolManager.release_coin(self)
+	if CoinPoolManager:
+		CoinPoolManager.release_coin(self)
+	else:
+		queue_free()
 
 
 func _on_pickup_area_body_entered(body: Node2D) -> void:
@@ -63,8 +70,9 @@ func _on_pickup_area_body_exited(body: Node2D) -> void:
 
 
 func _on_despawn_timer_timeout() -> void:
-	var coin_pool_manager = get_node("/root/CoinPoolManager")
+	var coin_pool_manager = get_node_or_null("/root/CoinPoolManager")
 	if coin_pool_manager:
 		coin_pool_manager.release_coin(self)
 	else:
-		print("ERROR: CoinPoolManager not found!")
+		print("ERROR: CoinPoolManager not found! Freeing Coin")
+		queue_free()

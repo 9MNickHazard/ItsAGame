@@ -55,6 +55,13 @@ var current_state: State = State.CHASE
 var state_timer: float = 0.0
 var wander_direction: Vector2 = Vector2.ZERO
 
+# attack state machine
+enum AttackState {IDLE, ATTACK1, ATTACK2, FINISHED}
+var current_attack_state: AttackState = AttackState.IDLE
+var attack_direction: String = "side" # "side", "up", "down"
+var attack_state_timer: float = 0.0
+var attack_animation_duration: float = 0.0
+
 var optimal_distance: float = 100.0
 var ai_velocity: Vector2 = Vector2.ZERO
 var distance_to_player: float
@@ -64,11 +71,30 @@ var pull_direction: Vector2
 var pull_velocity: Vector2
 var pull_dominance: float
 
+var special_variant_1: bool = false
+
+func enable_special_variant_1():
+	special_variant_1 = true
+	
+	scale = scale * 2.0
+	
+	minimum_damage *= 2
+	maximum_damage *= 2
+	
+	SPEED *= 1.5
+	
+	max_health *= 5
+	health = max_health
+	
+	enable_outline()
 
 func _ready() -> void:
+	if not special_variant_1:
+		disable_outline()
 	player = get_node("/root/world/player")
 	animated_sprite.play("run")
 	
+	animated_sprite.animation_finished.connect(_on_animation_finished)
 	animated_sprite.frame_changed.connect(_on_frame_changed)
 	
 	attack_1_hitbox.monitoring = false
@@ -79,7 +105,6 @@ func _ready() -> void:
 	attack_2_facing_camera.monitoring = false
 	
 	
-			
 func _physics_process(delta: float) -> void:
 	if is_dead:
 		return
@@ -95,15 +120,9 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 	
-	#state_timer += delta
-	#if state_timer >= 2.0:
-		#state_timer = 0
-		#if current_state == State.CHASE and randf() <= 0.2:
-			#current_state = State.WANDER
-			#wander_direction = Vector2(randf_range(-1, 1), randf_range(-1, 1)).normalized()
-		#
-		#elif current_state == State.WANDER and randf() <= 0.8:
-			#current_state = State.CHASE
+	if is_attacking:
+		process_attack_state(delta)
+		return
 	
 	attack_timer += delta
 	
@@ -111,16 +130,13 @@ func _physics_process(delta: float) -> void:
 		ai_direction = global_position.direction_to(Vector2.ZERO)
 	elif current_state == State.CHASE:
 		ai_direction = global_position.direction_to(player.global_position)
-	#else:
-		#ai_direction = wander_direction
-	
 	
 	distance_to_player = global_position.distance_to(player.global_position)
 	
 	if not is_attacking and distance_to_player <= attack_range and attack_timer >= attack_cooldown:
 		start_attack()
 		attack_timer = 0.0
-	
+		return
 	
 	if not is_attacking:
 		if distance_to_player > optimal_distance:
@@ -149,14 +165,57 @@ func _physics_process(delta: float) -> void:
 	if overlapping_player:
 		damage_timer += delta
 		if damage_timer >= damage_cooldown:
+			damage = randi_range(minimum_damage, maximum_damage)
 			if player.has_method("take_damage_from_mob1"):
 				player.take_damage_from_mob1(damage)
 			damage_timer = 0.0
 			
-			
-			
+
+func enable_outline() -> void:
+	animated_sprite.material.set_shader_parameter("outline_enabled", true)
+
+func disable_outline() -> void:
+	animated_sprite.material.set_shader_parameter("outline_enabled", false)
+
+func process_attack_state(delta: float) -> void:
+	if is_dead:
+		end_attack()
+		return
+		
+	attack_state_timer += delta
+	
+	match current_attack_state:
+		AttackState.ATTACK1:
+			if attack_state_timer >= attack_animation_duration:
+				distance_to_player = global_position.distance_to(player.global_position)
+				if distance_to_player <= attack_range:
+					transition_to_attack2()
+				else:
+					end_attack()
+					
+		AttackState.ATTACK2:
+			if attack_state_timer >= attack_animation_duration:
+				end_attack()
+				
+		AttackState.FINISHED:
+			end_attack()
+
+func transition_to_attack2() -> void:
+	current_attack_state = AttackState.ATTACK2
+	attack_state_timer = 0.0
+	
+	if attack_direction == "up":
+		play_attack_animation(4)
+		attack_animation_duration = animated_sprite.sprite_frames.get_animation_duration("attack2facingaway")
+	elif attack_direction == "down":
+		play_attack_animation(6)
+		attack_animation_duration = animated_sprite.sprite_frames.get_animation_duration("attack2facingcamera")
+	else: # side
+		play_attack_animation(2)
+		attack_animation_duration = animated_sprite.sprite_frames.get_animation_duration("attack2")
+
 func _on_frame_changed() -> void:
-	if is_attacking and animated_sprite.frame == 3:  # frame 5, index 4
+	if is_attacking and animated_sprite.frame == 3:  # frame 4, index 3
 		match animated_sprite.animation:
 			"attack1":
 				attack_1_hitbox.monitoring = true
@@ -171,20 +230,44 @@ func _on_frame_changed() -> void:
 			"attack2facingcamera":
 				attack_2_facing_camera.monitoring = true
 
-	elif is_attacking and animated_sprite.frame == 4:
+	elif is_attacking and animated_sprite.frame == 4:  # frame 5, index 4
 		attack_1_hitbox.monitoring = false
 		attack_2_hitbox.monitoring = false
 		attack_1_facing_away_hitbox.monitoring = false
 		attack_2_facing_away_hitbox.monitoring = false
 		attack_1_facing_camera.monitoring = false
 		attack_2_facing_camera.monitoring = false
+
+func _on_animation_finished() -> void:
+	if is_dead and animated_sprite.animation == "death":
+		queue_free()
+		return
 		
+	if is_attacking:
+		var current_anim = animated_sprite.animation
+		
+		if current_anim in ["attack1", "attack1facingaway", "attack1facingcamera"]:
+			distance_to_player = global_position.distance_to(player.global_position)
+			if distance_to_player <= attack_range:
+				if current_anim == "attack1":
+					play_attack_animation(2)
+				elif current_anim == "attack1facingaway":
+					play_attack_animation(4)
+				elif current_anim == "attack1facingcamera":
+					play_attack_animation(6)
+			else:
+				end_attack()
+		
+		elif current_anim in ["attack2", "attack2facingaway", "attack2facingcamera"]:
+			end_attack()
 
 func start_attack() -> void:
-	if is_dead:
+	if is_dead or is_attacking:
 		return
 	
 	is_attacking = true
+	current_attack_state = AttackState.ATTACK1
+	attack_state_timer = 0.0
 	
 	attack_1_hitbox.monitoring = false
 	attack_2_hitbox.monitoring = false
@@ -194,50 +277,28 @@ func start_attack() -> void:
 	attack_2_facing_camera.monitoring = false
 	
 	var to_player: Vector2 = player.global_position - global_position
-	var distance_to_player: float
-		
+	
 	if abs(to_player.y) > abs(to_player.x):
 		if to_player.y > 0:
+			attack_direction = "down"
 			play_attack_animation(5)
-			await animated_sprite.animation_finished
-			distance_to_player = global_position.distance_to(player.global_position)
-			
-			if distance_to_player <= attack_range:
-				play_attack_animation(6)
-				await animated_sprite.animation_finished
-				end_attack()
-			else:
-				end_attack()
+			attack_animation_duration = animated_sprite.sprite_frames.get_animation_duration("attack1facingcamera")
 		else:
+			attack_direction = "up"
 			play_attack_animation(3)
-			await animated_sprite.animation_finished
-			distance_to_player = global_position.distance_to(player.global_position)
-			
-			if distance_to_player <= attack_range:
-				play_attack_animation(4)
-				await animated_sprite.animation_finished
-				end_attack()
-			else:
-				end_attack()
+			attack_animation_duration = animated_sprite.sprite_frames.get_animation_duration("attack1facingaway")
 	else:
+		attack_direction = "side"
 		play_attack_animation(1)
-		await animated_sprite.animation_finished
-		distance_to_player = global_position.distance_to(player.global_position)
-		
-		if distance_to_player <= attack_range:
-			play_attack_animation(2)
-			await animated_sprite.animation_finished
-			end_attack()
-		else:
-			end_attack()
-	
-
+		attack_animation_duration = animated_sprite.sprite_frames.get_animation_duration("attack1")
 
 func end_attack() -> void:
-	if is_dead:
+	if not is_attacking:
 		return
 		
 	is_attacking = false
+	current_attack_state = AttackState.IDLE
+	
 	attack_1_hitbox.monitoring = false
 	attack_2_hitbox.monitoring = false
 	attack_1_facing_away_hitbox.monitoring = false
@@ -245,7 +306,9 @@ func end_attack() -> void:
 	attack_1_facing_camera.monitoring = false
 	attack_2_facing_camera.monitoring = false
 	attack_timer = 0.0
-	animated_sprite.play("run")
+	
+	if not is_dead:
+		animated_sprite.play("run")
 
 func play_attack_animation(which_attack: int) -> void:
 	if is_dead:
@@ -282,8 +345,6 @@ func play_attack_animation(which_attack: int) -> void:
 func is_inside_play_area() -> bool:
 	return global_position.x >= -2050 and global_position.x <= 2050 and \
 		   global_position.y >= -1470 and global_position.y <= 1430
-			
-
 
 func take_damage(damage_dealt: int, knockback_amount: float = 250.0, knockback_dir: Vector2 = Vector2.ZERO) -> void:
 	if is_dead:
@@ -305,6 +366,7 @@ func take_damage(damage_dealt: int, knockback_amount: float = 250.0, knockback_d
 	if health <= 0:
 		is_dead = true
 		is_attacking = false
+		end_attack()
 		
 		stats_manager.add_enemy_kill("Samurai")
 		
@@ -338,7 +400,8 @@ func take_damage(damage_dealt: int, knockback_amount: float = 250.0, knockback_d
 				x_offset = randi_range(-25, 25)
 				y_offset = randi_range(-25, 25)
 				var coin: Area2D = CoinPoolManager.get_coin()
-				coin.global_position = global_position + Vector2(x_offset, y_offset)
+				if is_instance_valid(coin):
+					coin.global_position = global_position + Vector2(x_offset, y_offset)
 
 			
 		if randf() < 0.09:
@@ -361,8 +424,6 @@ func take_damage(damage_dealt: int, knockback_amount: float = 250.0, knockback_d
 			ui.experience_manager.add_experience(xp_amount)
 			ui.increase_score(5)
 		animated_sprite.play("death")
-		await animated_sprite.animation_finished
-		queue_free()
 	
 	hit_flash.stop()
 	hit_flash.play("hit_flash")
@@ -421,10 +482,6 @@ func _on_attack_2_facing_camera_area_entered(area: Area2D) -> void:
 		if area.get_parent().has_method("take_damage_from_mob1"):
 			area.get_parent().take_damage_from_mob1(damage)
 
-
-
-
-
 # exiting areaa
 func _on_attack_1_hitbox_area_exited(area: Area2D) -> void:
 	if area.is_in_group("player_hurtbox"):
@@ -470,11 +527,3 @@ func _on_player_detector_area_entered(area: Area2D) -> void:
 func _on_player_detector_area_exited(area: Area2D) -> void:
 	if area.is_in_group("player_hurtbox"):
 		is_being_pushed = false
-
-
-func _on_visible_on_screen_notifier_2d_screen_entered() -> void:
-	show()
-
-
-func _on_visible_on_screen_notifier_2d_screen_exited() -> void:
-	hide()

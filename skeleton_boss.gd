@@ -74,7 +74,28 @@ var ai_direction: Vector2
 #var pull_velocity: Vector2
 #var pull_dominance: float
 
+var special_variant_1: bool = false
+
+func enable_special_variant_1():
+	special_variant_1 = true
+	
+	scale = scale * 1.5
+	
+	attack1_minimum_damage *= 2
+	attack1_maximum_damage *= 2
+	attack2_minimum_damage *= 2
+	attack2_maximum_damage *= 2
+	
+	SPEED *= 1.5
+	
+	max_health *= 3
+	health = max_health
+	
+	enable_outline()
+
 func _ready() -> void:
+	if not special_variant_1:
+		disable_outline()
 	player = get_node("/root/world/player")
 	
 	hp_bar.max_value = max_health
@@ -155,6 +176,12 @@ func _physics_process(delta: float) -> void:
 			if player.has_method("take_damage_from_mob1"):
 				player.take_damage_from_mob1(damage)
 			damage_timer = 0.0
+
+func enable_outline() -> void:
+	animated_sprite.material.set_shader_parameter("outline_enabled", true)
+
+func disable_outline() -> void:
+	animated_sprite.material.set_shader_parameter("outline_enabled", false)
 
 func update_animation(direction: Vector2) -> void:
 	if direction.length() > 0.1:
@@ -411,7 +438,8 @@ func die() -> void:
 			x_offset = randi_range(-80, 80)
 			y_offset = randi_range(-80, 80)
 			var coin: Node2D = CoinPoolManager.get_coin()
-			coin.global_position = global_position + Vector2(x_offset, y_offset)
+			if is_instance_valid(coin):
+				coin.global_position = global_position + Vector2(x_offset, y_offset)
 	
 	for i in range(3):
 		var heart: Node2D = HeartScene.instantiate()

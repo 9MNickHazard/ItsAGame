@@ -49,14 +49,17 @@ func create_coin_for_pool() -> void:
 
 
 func get_coin() -> Area2D:
-	for c: Area2D in coin_pool:
-		if c and not c.visible:
-			c.visible = true
-			c.set_physics_process(true)
-			if c.has_node("DespawnTimer"):
-				c.get_node("DespawnTimer").stop()
-				c.get_node("DespawnTimer").start()
-			return c
+	for i in range(coin_pool.size()):
+		var c = coin_pool[i]
+		if is_instance_valid(c) and not c.visible:
+				c.visible = true
+				c.set_physics_process(true)
+				if c.has_node("DespawnTimer"):
+						var timer = c.get_node("DespawnTimer")
+						if timer:
+								timer.stop()
+								timer.start()
+				return c
 	
 	if coin_pool.size() < target_pool_size:
 		var addedcoin: Area2D = coin_scene.instantiate()
@@ -76,14 +79,23 @@ func get_coin() -> Area2D:
 			newcoin.get_node("DespawnTimer").start()
 		return newcoin
 	
-	var coin: Area2D = coin_pool[0]
-	
-	if not is_instance_valid(coin):
-		coin = coin_scene.instantiate()
-		add_child(coin)
+	var coin_index = 0
+	var coin = null
+
+	while coin_index < coin_pool.size():
+			if is_instance_valid(coin_pool[coin_index]):
+					coin = coin_pool[coin_index]
+					break
+			coin_index += 1
+
+	# If no valid coins found, create a new one
+	if not coin:
+			coin = coin_scene.instantiate()
+			add_child(coin)
+			coin_pool.append(coin)
 	else:
-		coin_pool.remove_at(0)
-		coin_pool.append(coin)
+			coin_pool.remove_at(coin_index)
+			coin_pool.append(coin)
 		
 	if coin.has_node("DespawnTimer"):
 		coin.get_node("DespawnTimer").stop()
@@ -94,21 +106,33 @@ func get_coin() -> Area2D:
 	return coin
 
 func release_coin(coin: Area2D) -> void:
-	if coin:
-		if coin.has_node("DespawnTimer"):
-			coin.get_node("DespawnTimer").stop()
-		coin.visible = false
-		coin.position = inactive_position
-		coin.set_physics_process(false)
-		coin.is_being_pulled = false  # Reset pull state
-		coin.player = null  # Clear player reference
-	else:
-		print("WARNING: Tried to release null coin")
+		if is_instance_valid(coin):
+				if coin.has_node("DespawnTimer"):
+						var timer = coin.get_node("DespawnTimer")
+						if timer:
+								timer.stop()
+				coin.visible = false
+				coin.position = inactive_position
+				coin.set_physics_process(false)
+				
+				if "is_being_pulled" in coin:
+						coin.is_being_pulled = false
+				if "player" in coin:
+						coin.player = null
+		else:
+				print("WARNING: Tried to release null coin")
 		
 func reset_for_new_game() -> void:
-	# Hide all coins
-	for coin: Area2D in coin_pool:
+	for i in range(coin_pool.size()):
+		var coin = coin_pool[i]
 		if is_instance_valid(coin):
 			coin.visible = false
 			coin.position = inactive_position
 			coin.set_physics_process(false)
+						
+	var valid_coins = []
+	for coin in coin_pool:
+		if is_instance_valid(coin):
+			valid_coins.append(coin)
+		
+	coin_pool = valid_coins

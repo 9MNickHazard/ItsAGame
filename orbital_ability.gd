@@ -33,8 +33,8 @@ var active_orbs: int
 var minimum_damage: int = 10
 var maximum_damage: int = 15
 
-static var min_damage_bonus: int = 0
-static var max_damage_bonus: int = 0
+var min_damage_bonus: int = 0
+var max_damage_bonus: int = 0
 
 static var permanent_min_damage_bonus: int = 0
 static var permanent_max_damage_bonus: int = 0
@@ -48,6 +48,11 @@ var player
 func _ready() -> void:
 	player = get_node("/root/world/player")
 	rotation_speed = 1.5 * (1 + (ability_level * 0.15))
+	
+	if ability_level > 1:
+		for i in range(ability_level - 1):
+			min_damage_bonus += 2
+			max_damage_bonus += 4
 	
 	minimum_damage = minimum_damage + min_damage_bonus + permanent_min_damage_bonus
 	maximum_damage = maximum_damage + max_damage_bonus + permanent_max_damage_bonus

@@ -24,8 +24,8 @@ static var damage_radius_bonus: float = 0.0
 
 var damage: int
 
-var min_damage_per_tick: int = 7
-var max_damage_per_tick: int = 12
+var min_damage_per_tick: int = 5
+var max_damage_per_tick: int = 10
 
 static var min_damage_bonus: int = 0
 static var max_damage_bonus: int = 0
@@ -81,9 +81,13 @@ func _physics_process(delta: float) -> void:
 
 
 func _on_animation_finished() -> void:
+	if not is_instance_valid(animated_sprite):
+		return
+		
 	if animated_sprite.animation == "gravity_well":
 		animated_sprite.stop()
-		animated_sprite.frame = animated_sprite.sprite_frames.get_frame_count("gravity_well") - 1
+		if is_instance_valid(animated_sprite.sprite_frames):
+			animated_sprite.frame = animated_sprite.sprite_frames.get_frame_count("gravity_well") - 1
 		
 		is_spinning = true
 

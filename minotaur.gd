@@ -87,7 +87,26 @@ var pull_direction: Vector2
 var pull_velocity: Vector2
 var pull_dominance: float
 
+var special_variant_1: bool = false
+
+func enable_special_variant_1():
+	special_variant_1 = true
+	
+	scale = scale * 2.0
+	
+	minimum_damage *= 2
+	maximum_damage *= 2
+	
+	SPEED *= 1.5
+	
+	max_health *= 5
+	health = max_health
+	
+	enable_outline()
+
 func _ready() -> void:
+	if not special_variant_1:
+		disable_outline()
 	player = get_node("/root/world/player")
 	animated_sprite.play("IdleDown")
 	
@@ -203,6 +222,12 @@ func _physics_process(delta: float) -> void:
 			if player.has_method("take_damage_from_mob1"):
 				player.take_damage_from_mob1(damage)
 			damage_timer = 0.0
+
+func enable_outline() -> void:
+	animated_sprite.material.set_shader_parameter("outline_enabled", true)
+
+func disable_outline() -> void:
+	animated_sprite.material.set_shader_parameter("outline_enabled", false)
 
 func set_directional_animation(anim_type, direction):
 	var dir_suffix = "Down"
@@ -395,7 +420,8 @@ func take_damage(damage_dealt: int, knockback_amount: float = 250.0, knockback_d
 				x_offset = randi_range(-25, 25)
 				y_offset = randi_range(-25, 25)
 				var coin: Area2D = CoinPoolManager.get_coin()
-				coin.global_position = global_position + Vector2(x_offset, y_offset)
+				if is_instance_valid(coin):
+					coin.global_position = global_position + Vector2(x_offset, y_offset)
 			
 		if randf() < 0.13:
 			x_offset = randi_range(1, 25)

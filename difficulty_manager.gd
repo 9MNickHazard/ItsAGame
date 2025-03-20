@@ -389,7 +389,14 @@ func calculate_weight(enemy_config: Dictionary, difficulty: float) -> float:
 	return min_weight + (max_weight - min_weight) * difficulty_ratio
 
 func spawn_enemy(enemy_scene: PackedScene, pattern: int, radius: float = 900.0) -> void:
+	if not is_instance_valid(enemy_scene):
+		push_error("Invalid enemy scene provided to spawn_enemy")
+		return
+		
 	var new_mob: Node = enemy_scene.instantiate()
+	if not is_instance_valid(new_mob):
+		push_error("Failed to instantiate enemy")
+		return
 	
 	if current_mode == DifficultyMode.HEROIC or current_mode == DifficultyMode.LEGENDARY:
 		var multipliers = MODE_MULTIPLIERS[current_mode]
@@ -421,10 +428,11 @@ func spawn_enemy(enemy_scene: PackedScene, pattern: int, radius: float = 900.0) 
 		var spawn_position: Vector2 = player.global_position + Vector2(cos(angle), sin(angle)) * radius
 		new_mob.global_position = spawn_position
 	
-	add_child(new_mob)
-	total_mobs_spawned += 1
-	active_mobs.append(new_mob)
-	new_mob.tree_exited.connect(_on_mob_removed.bind(new_mob))
+	if is_instance_valid(new_mob):
+		add_child(new_mob)
+		total_mobs_spawned += 1
+		active_mobs.append(new_mob)
+		new_mob.tree_exited.connect(_on_mob_removed.bind(new_mob))
 
 func spawn_group(pattern: int, enemies: Array, radius: float = 900.0) -> void:
 	var total_enemies: int = 0
@@ -601,7 +609,7 @@ func apply_difficulty_modifiers() -> void:
 func is_difficulty_unlocked(mode: int) -> bool:
 	match mode:
 		DifficultyMode.NORMAL:
-			return true  # Normal is always unlocked
+			return true
 		DifficultyMode.HEROIC:
 			return unlocked_heroic
 		DifficultyMode.LEGENDARY:

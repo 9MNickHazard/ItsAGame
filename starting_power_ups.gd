@@ -38,6 +38,7 @@ func apply_glass_cannon() -> void:
 	var ShockwaveScript: GDScript = load("res://scripts/shockwave.gd")
 	var GravityWellScript: GDScript = load("res://scripts/gravity_well.gd")
 	var OrbitalAbilityScript: GDScript = load("res://scripts/orbital_ability.gd")
+	var FireBlinkScript: GDScript = load("res://scripts/fire_blink.gd")
 	
 	Bullet1Script.glass_cannon_multiplier = true
 	Bullet2Script.glass_cannon_multiplier = true
@@ -46,6 +47,7 @@ func apply_glass_cannon() -> void:
 	ShockwaveScript.glass_cannon_multiplier = true
 	GravityWellScript.glass_cannon_multiplier = true
 	OrbitalAbilityScript.glass_cannon_multiplier = true
+	FireBlinkScript.glass_cannon_multiplier = true
 
 func apply_semi_pacifist() -> void:
 	var PlayerScript: GDScript = load("res://scripts/player.gd")
@@ -66,6 +68,7 @@ func apply_run_forrest_run() -> void:
 	var ShockwaveScript: GDScript = load("res://scripts/shockwave.gd")
 	var GravityWellScript: GDScript = load("res://scripts/gravity_well.gd")
 	var OrbitalAbilityScript: GDScript = load("res://scripts/orbital_ability.gd")
+	var FireBlinkScript: GDScript = load("res://scripts/fire_blink.gd")
 	
 	Bullet1Script.runforrestrun_multiplier = true
 	Bullet2Script.runforrestrun_multiplier = true
@@ -74,6 +77,7 @@ func apply_run_forrest_run() -> void:
 	ShockwaveScript.runforrestrun_multiplier = true
 	GravityWellScript.runforrestrun_multiplier = true
 	OrbitalAbilityScript.runforrestrun_multiplier = true
+	FireBlinkScript.runforrestrun_multiplier = true
 
 
 func _on_playtest_button_pressed() -> void:

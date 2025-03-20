@@ -196,6 +196,8 @@ func _on_restart_button_pressed() -> void:
 	var FireBlinkScript: GDScript = load("res://scripts/fire_blink.gd")
 	FireBlinkScript.damage_min_bonus = 0
 	FireBlinkScript.damage_max_bonus = 0
+	FireBlinkScript.glass_cannon_multiplier = false
+	FireBlinkScript.runforrestrun_multiplier = false
 	
 	var RocketAmmoScript: GDScript = load("res://scripts/rocket_ammo.gd")
 	RocketAmmoScript.damage_min_bonus = 0
@@ -206,11 +208,16 @@ func _on_restart_button_pressed() -> void:
 	RocketAmmoScript.runforrestrun_multiplier = false
 	
 	var ShockwaveScript: GDScript = load("res://scripts/shockwave.gd")
-	ShockwaveScript.damage = 20
+	ShockwaveScript.min_damage_bonus = 0
+	ShockwaveScript.max_damage_bonus = 0
 	ShockwaveScript.knockback_amount = 200.0
+	ShockwaveScript.glass_cannon_multiplier = false
+	ShockwaveScript.runforrestrun_multiplier = false
 	
 	var OrbitalAbilityScript: GDScript = load("res://scripts/orbital_ability.gd")
 	OrbitalAbilityScript.ability_level = 1
+	OrbitalAbilityScript.glass_cannon_multiplier = false
+	OrbitalAbilityScript.runforrestrun_multiplier = false
 	
 	var PlayerScript: GDScript = load("res://scripts/player.gd")
 	PlayerScript.max_mana = 100.0
@@ -221,10 +228,13 @@ func _on_restart_button_pressed() -> void:
 	PlayerScript.speed = 450.0
 	
 	var GravityWellScript: GDScript = load("res://scripts/gravity_well.gd")
-	GravityWellScript.damage_bonus = 0
+	GravityWellScript.min_damage_bonus = 0
+	GravityWellScript.max_damage_bonus = 0
 	GravityWellScript.duration_bonus = 0.0
 	GravityWellScript.pull_radius_bonus = 0.0
 	GravityWellScript.damage_radius_bonus = 0.0
+	GravityWellScript.glass_cannon_multiplier = false
+	GravityWellScript.runforrestrun_multiplier = false
 	
 	var PauseMenuScript: GDScript = load("res://scripts/pause_menu.gd")
 	PauseMenuScript.semi_pacifist = false
