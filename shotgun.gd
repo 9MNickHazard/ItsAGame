@@ -17,6 +17,10 @@ var bullet_count: int = 6
 const TOTAL_SPREAD_ANGLE: float = PI/4
 var weapon_name: String = "Shotgun"
 
+
+func _ready() -> void:
+	world = get_node("/root/world")
+
 func _physics_process(delta: float) -> void:
 	var mouse_pos: Vector2 = get_global_mouse_position()
 	var direction: Vector2 = global_position.direction_to(mouse_pos)

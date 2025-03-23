@@ -5,8 +5,8 @@ var travelled_distance: float = 0.0
 static var damage_min_bonus: int = 0
 static var damage_max_bonus: int = 0
 
-var minimum_damage: int = 30
-var maximum_damage: int = 50
+var minimum_damage: int = 20
+var maximum_damage: int = 40
 var damage: int
 
 static var speed_bonus: float = 0.0
@@ -20,6 +20,9 @@ var RANGE: float = 2500.0 + range_bonus
 
 static var permanent_min_damage_bonus: int = 0
 static var permanent_max_damage_bonus: int = 0
+
+static var applies_slow_effect: bool = true
+static var slow_duration: float = 5.0
 
 func _ready() -> void:
 	minimum_damage = minimum_damage + damage_min_bonus + permanent_min_damage_bonus
@@ -46,4 +49,7 @@ func _on_body_entered(body: Node2D) -> void:
 			
 		var knockback_dir: Vector2 = Vector2.RIGHT.rotated(rotation)
 		body.take_damage(damage, 400.0, knockback_dir)
+		
+		if applies_slow_effect and body.has_method("apply_slow_effect"):
+				body.apply_slow_effect(slow_duration)
 		

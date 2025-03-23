@@ -9,9 +9,14 @@ var PROJECTILE_SPEED: float = 350.0
 var RANGE: float = 1000.0
 var direction: Vector2 = Vector2.ZERO
 
-func fire_projectile(target_pos: Vector2) -> void:
+func fire_projectile(target_pos: Vector2, damage_multiplier: float = 1.0) -> void:
 	direction = global_position.direction_to(target_pos).normalized()
 	rotation = direction.angle()
+	
+	if damage_multiplier != 1.0:
+		minimum_damage = int(minimum_damage * damage_multiplier)
+		maximum_damage = int(maximum_damage * damage_multiplier)
+		damage = randi_range(minimum_damage, maximum_damage)
 
 func _physics_process(delta: float) -> void:
 	position += direction * PROJECTILE_SPEED * delta

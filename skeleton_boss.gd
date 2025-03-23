@@ -29,6 +29,7 @@ const DiamondScene: PackedScene = preload("res://scenes/diamond.tscn")
 const fivecoin_scene: PackedScene = preload("res://scenes/5_coin.tscn")
 const twentyfivecoin_scene: PackedScene = preload("res://scenes/25_coin.tscn")
 const FloatingHealScene: PackedScene = preload("res://scenes/floating_heal.tscn")
+const TreasureChestScene: PackedScene = preload("res://scenes/treasure_chest_pickup.tscn")
 
 var health: int = 5000
 var max_health: int = 5000
@@ -75,6 +76,14 @@ var ai_direction: Vector2
 #var pull_dominance: float
 
 var special_variant_1: bool = false
+var outline_material = null
+var should_enable_outline: bool = false
+var damage_multiplier: float = 1.0
+
+var is_slowed: bool = false
+var slow_timer: float = 0.0
+var slow_duration: float = 0.0
+var original_speed: float = 0.0
 
 func enable_special_variant_1():
 	special_variant_1 = true
@@ -85,17 +94,16 @@ func enable_special_variant_1():
 	attack1_maximum_damage *= 2
 	attack2_minimum_damage *= 2
 	attack2_maximum_damage *= 2
+	damage_multiplier = 2.0
 	
 	SPEED *= 1.5
 	
 	max_health *= 3
 	health = max_health
 	
-	enable_outline()
+	should_enable_outline = true
 
 func _ready() -> void:
-	if not special_variant_1:
-		disable_outline()
 	player = get_node("/root/world/player")
 	
 	hp_bar.max_value = max_health
@@ -106,10 +114,23 @@ func _ready() -> void:
 	animated_sprite.frame_changed.connect(_on_frame_changed)
 	
 	disable_all_hitboxes()
+	
+	if should_enable_outline:
+		enable_outline()
+	elif not special_variant_1:
+		disable_outline()
 
 func _physics_process(delta: float) -> void:
 	if is_dead:
 		return
+	
+	if is_slowed:
+		slow_timer += delta
+		if slow_timer >= slow_duration:
+			is_slowed = false
+			SPEED = original_speed
+			animated_sprite.speed_scale = 1.0
+			animated_sprite.modulate = Color(1.0, 1.0, 1.0, 1.0)
 	
 	if current_state == State.CHARGING:
 		charge_prep_timer += delta
@@ -178,10 +199,15 @@ func _physics_process(delta: float) -> void:
 			damage_timer = 0.0
 
 func enable_outline() -> void:
-	animated_sprite.material.set_shader_parameter("outline_enabled", true)
+	if outline_material != null:
+		animated_sprite.material = outline_material
+	elif animated_sprite.material != null:
+		animated_sprite.material.set_shader_parameter("outline_enabled", true)
 
 func disable_outline() -> void:
-	animated_sprite.material.set_shader_parameter("outline_enabled", false)
+	if animated_sprite.material != null:
+		outline_material = animated_sprite.material
+		animated_sprite.material = null
 
 func update_animation(direction: Vector2) -> void:
 	if direction.length() > 0.1:
@@ -350,6 +376,7 @@ func spawn_projectiles() -> void:
 		var projectile: Node2D = SkeletonProjectile.instantiate()
 		projectile.global_position = global_position
 		projectile.direction = dir
+		projectile.initialize(damage_multiplier)
 		get_parent().add_child(projectile)
 
 func start_charge() -> void:
@@ -365,6 +392,17 @@ func is_inside_play_area() -> bool:
 	return global_position.x >= -2050 and global_position.x <= 2050 and \
 		   global_position.y >= -1470 and global_position.y <= 1430
 
+func apply_slow_effect(duration: float) -> void:
+	if not is_slowed:
+		is_slowed = true
+		original_speed = SPEED
+		SPEED = SPEED * 0.5
+		animated_sprite.speed_scale = 0.5
+		animated_sprite.modulate = Color(0.5, 0.5, 1.0, 1.0) # blue
+		
+	slow_duration = duration
+	slow_timer = 0.0
+
 func take_damage(damage_dealt: int, knockback_amount: float = 250.0, knockback_dir: Vector2 = Vector2.ZERO) -> void:
 	if is_dead:
 		return
@@ -375,7 +413,10 @@ func take_damage(damage_dealt: int, knockback_amount: float = 250.0, knockback_d
 	var damage_number: Node2D = FloatingDamageScene.instantiate()
 	damage_number.damage_amount = damage_dealt
 	get_parent().add_child(damage_number)
-	damage_number.global_position = global_position + Vector2(0, -50)
+	if special_variant_1:
+		damage_number.global_position = global_position + Vector2(0, -160)
+	else:
+		damage_number.global_position = global_position + Vector2(0, -50)
 	
 	#animation_player.stop()
 	#animation_player.play("hit_flash")
@@ -470,7 +511,10 @@ func heal(amount: int) -> void:
 	var heal_number: Node2D = FloatingHealScene.instantiate()
 	heal_number.heal_amount = actual_heal
 	get_parent().add_child(heal_number)
-	heal_number.global_position = global_position + Vector2(0, -30)
+	if special_variant_1:
+		heal_number.global_position = global_position + Vector2(0, -160)
+	else:
+		heal_number.global_position = global_position + Vector2(0, -50)
 
 
 func _on_down_attack1_area_entered(area: Area2D) -> void:

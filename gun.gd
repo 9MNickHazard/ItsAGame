@@ -13,6 +13,12 @@ var fire_timer: float = 0.0
 
 var weapon_name: String = "Pistol"
 
+var world
+var pause_menu
+
+func _ready() -> void:
+	world = get_node("/root/world")
+	pause_menu = get_node("/root/world/PauseMenu")
 
 func _physics_process(delta: float) -> void:
 	var mouse_pos: Vector2 = get_global_mouse_position()
@@ -52,7 +58,6 @@ func shoot() -> void:
 	else:
 		stats_manager.shots_fired_by_weapon[weapon_name] = 1
 	
-	var world = get_node_or_null("/root/world")
 	if is_instance_valid(world):
 		world.add_child(new_bullet)
 	else:

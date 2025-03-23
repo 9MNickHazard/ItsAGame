@@ -24,6 +24,10 @@ func _on_warning_timer_timeout() -> void:
 	collision_shape.disabled = false
 	animated_sprite.play("spike")
 
+func initialize(damage_multiplier: float = 1.0) -> void:
+	minimum_damage = int(minimum_damage * damage_multiplier)
+	maximum_damage = int(maximum_damage * damage_multiplier)
+
 func _on_frame_changed() -> void:
 	if animated_sprite.animation == "spike" and animated_sprite.frame in [1, 2]:
 		var areas = get_overlapping_areas()

@@ -15,6 +15,12 @@ const LASER_LENGTH = 2000
 
 var weapon_name: String = "Sniper"
 
+var world
+var pause_menu
+
+func _ready() -> void:
+	world = get_node("/root/world")
+	pause_menu = get_node("/root/world/PauseMenu")
 
 func _physics_process(delta: float) -> void:
 	var mouse_pos: Vector2 = get_global_mouse_position()
@@ -51,7 +57,7 @@ func shoot() -> void:
 	new_bullet.global_position = shooting_point.global_position
 	new_bullet.rotation = weapon_pivot.rotation
 	
-	get_node("/root/world").add_child(new_bullet)
+	world.add_child(new_bullet)
 	
 	stats_manager.total_shots_fired += 1
 	

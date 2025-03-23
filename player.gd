@@ -77,7 +77,7 @@ var owns_rocketlauncher: bool = false
 var owns_shotgun: bool = false
 var owns_fire_blink: bool = false
 var owns_gravity_well: bool = false
-var owns_orbital_ability: bool = true
+var owns_orbital_ability: bool = false
 
 var equip_gun1: bool = true
 var equip_gun2: bool = false

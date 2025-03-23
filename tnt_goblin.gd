@@ -28,6 +28,7 @@ const HeartScene: PackedScene = preload("res://scenes/heart_pickup.tscn")
 const ManaBallScene: PackedScene = preload("res://scenes/mana_ball.tscn")
 const fivecoin_scene: PackedScene = preload("res://scenes/5_coin.tscn")
 const FloatingHealScene: PackedScene = preload("res://scenes/floating_heal.tscn")
+const TreasureChestScene: PackedScene = preload("res://scenes/treasure_chest_pickup.tscn")
 
 var is_being_pulled_by_gravity_well: bool = false
 var gravity_well_position: Vector2 = Vector2.ZERO
@@ -68,28 +69,38 @@ var pull_velocity: Vector2 = Vector2.ZERO
 var pull_dominance: float = 0.0
 
 var special_variant_1: bool = false
+var outline_material = null
+var should_enable_outline: bool = false
+var damage_multiplier: float = 1.0
+
+var is_slowed: bool = false
+var slow_timer: float = 0.0
+var slow_duration: float = 0.0
+var original_speed: float = 0.0
 
 func enable_special_variant_1():
 	special_variant_1 = true
 	
 	scale = scale * 2.0
 	
-	#minimum_damage *= 2
-	#maximum_damage *= 2
+	damage_multiplier = 2.0
 	
 	SPEED *= 1.5
 	
 	max_health *= 5
 	health = max_health
 	
-	enable_outline()
+	should_enable_outline = true
 
 func _ready() -> void:
-	if not special_variant_1:
-		disable_outline()
 	player = get_node("/root/world/player")
 	animated_sprite.play("run")
 	animated_sprite.frame_changed.connect(_on_frame_changed)
+	
+	if should_enable_outline:
+		enable_outline()
+	elif not special_variant_1:
+		disable_outline()
 	
 
 func _physics_process(delta: float) -> void:
@@ -106,6 +117,14 @@ func _physics_process(delta: float) -> void:
 		knockback_timer -= delta
 		move_and_slide()
 		return
+	
+	if is_slowed:
+		slow_timer += delta
+		if slow_timer >= slow_duration:
+			is_slowed = false
+			SPEED = original_speed
+			animated_sprite.speed_scale = 1.0
+			animated_sprite.modulate = Color(1.0, 1.0, 1.0, 1.0)
 	
 	#state_timer += delta
 	#
@@ -161,10 +180,15 @@ func _physics_process(delta: float) -> void:
 			
 
 func enable_outline() -> void:
-	animated_sprite.material.set_shader_parameter("outline_enabled", true)
+	if outline_material != null:
+		animated_sprite.material = outline_material
+	elif animated_sprite.material != null:
+		animated_sprite.material.set_shader_parameter("outline_enabled", true)
 
 func disable_outline() -> void:
-	animated_sprite.material.set_shader_parameter("outline_enabled", false)
+	if animated_sprite.material != null:
+		outline_material = animated_sprite.material
+		animated_sprite.material = null
 
 func throw_tnt() -> void:
 	if is_dead:
@@ -187,13 +211,24 @@ func _on_frame_changed() -> void:
 			var time_to_reach: float = distance_to_player / new_tnt.TNT_SPEED
 			
 			var predicted_position: Vector2 = player.global_position + player.velocity * time_to_reach
-			new_tnt.throw(predicted_position)
+			new_tnt.throw(predicted_position, damage_multiplier)
 		else:
 			new_tnt.throw(player.global_position)
 			
 func is_inside_play_area() -> bool:
 	return global_position.x >= -2050 and global_position.x <= 2050 and \
 		   global_position.y >= -1470 and global_position.y <= 1430
+
+func apply_slow_effect(duration: float) -> void:
+	if not is_slowed:
+		is_slowed = true
+		original_speed = SPEED
+		SPEED = SPEED * 0.5
+		animated_sprite.speed_scale = 0.5
+		animated_sprite.modulate = Color(0.5, 0.5, 1.0, 1.0) # blue
+		
+	slow_duration = duration
+	slow_timer = 0.0
 
 func take_damage(damage_dealt: float = 10.0, knockback_amount: float = 250.0, knockback_dir: Vector2 = Vector2.ZERO) -> void:
 	if is_dead:
@@ -204,7 +239,10 @@ func take_damage(damage_dealt: float = 10.0, knockback_amount: float = 250.0, kn
 	var damage_number: Node2D = FloatingDamageScene.instantiate()
 	damage_number.damage_amount = damage_dealt
 	get_parent().add_child(damage_number)
-	damage_number.global_position = global_position + Vector2(0, -30)
+	if special_variant_1:
+		damage_number.global_position = global_position + Vector2(0, -130)
+	else:
+		damage_number.global_position = global_position + Vector2(0, -30)
 	
 	if knockback_dir != Vector2.ZERO:
 		velocity = knockback_dir * knockback_amount
@@ -216,45 +254,58 @@ func take_damage(damage_dealt: float = 10.0, knockback_amount: float = 250.0, kn
 		is_dead = true
 		is_throwing = false
 		
-		stats_manager.add_enemy_kill("TNT Goblin")
 		
-		var coin_number: int = randi_range(1, 5)
-		var x_offset: int = randi_range(-25, 25)
-		var y_offset: int = randi_range(-25, 25)
-		
-		if coin_number >= 5:
-			var fivecoin: Area2D = fivecoin_scene.instantiate()
-			fivecoin.global_position = global_position + Vector2(x_offset, y_offset)
-			get_parent().call_deferred("add_child", fivecoin)
+		if special_variant_1:
+			stats_manager.add_enemy_kill("Special TNT Goblin")
 			
+			var treasure_chest = TreasureChestScene.instantiate()
+			treasure_chest.global_position = global_position
+			get_parent().call_deferred("add_child", treasure_chest)
+			
+			var xp_amount: int = 135
+			var ui: CanvasLayer = get_node("/root/world/UI")
+			if ui and ui.experience_manager:
+				ui.experience_manager.add_experience(xp_amount)
+				ui.increase_score(3)
 		else:
-			for i in range(coin_number):
-				x_offset = randi_range(-25, 25)
-				y_offset = randi_range(-25, 25)
+			stats_manager.add_enemy_kill("TNT Goblin")
+			var coin_number: int = randi_range(1, 5)
+			var x_offset: int = randi_range(-25, 25)
+			var y_offset: int = randi_range(-25, 25)
+			
+			if coin_number >= 5:
+				var fivecoin: Area2D = fivecoin_scene.instantiate()
+				fivecoin.global_position = global_position + Vector2(x_offset, y_offset)
+				get_parent().call_deferred("add_child", fivecoin)
 				
-				var coin: Area2D = CoinPoolManager.get_coin()
-				if is_instance_valid(coin):
-					coin.global_position = global_position + Vector2(x_offset, y_offset)
+			else:
+				for i in range(coin_number):
+					x_offset = randi_range(-25, 25)
+					y_offset = randi_range(-25, 25)
+					
+					var coin: Area2D = CoinPoolManager.get_coin()
+					if is_instance_valid(coin):
+						coin.global_position = global_position + Vector2(x_offset, y_offset)
+				
+			if randf() < 0.05:
+				x_offset = randi_range(1, 25)
+				y_offset = randi_range(1, 25)
+				var heart: Area2D = HeartScene.instantiate()
+				heart.global_position = global_position + Vector2(x_offset, y_offset)
+				get_parent().call_deferred("add_child", heart)
 			
-		if randf() < 0.05:
-			x_offset = randi_range(1, 25)
-			y_offset = randi_range(1, 25)
-			var heart: Area2D = HeartScene.instantiate()
-			heart.global_position = global_position + Vector2(x_offset, y_offset)
-			get_parent().call_deferred("add_child", heart)
-		
-		if randf() < 0.03:
-			x_offset = randi_range(1, 25)
-			y_offset = randi_range(1, 25)
-			var manaball: Area2D = ManaBallScene.instantiate()
-			manaball.global_position = global_position + Vector2(x_offset, y_offset)
-			get_parent().call_deferred("add_child", manaball)
-			
-		var xp_amount: int = 45
-		var ui: CanvasLayer = get_node("/root/world/UI")
-		if ui and ui.experience_manager:
-			ui.experience_manager.add_experience(xp_amount)
-			ui.increase_score(1)
+			if randf() < 0.03:
+				x_offset = randi_range(1, 25)
+				y_offset = randi_range(1, 25)
+				var manaball: Area2D = ManaBallScene.instantiate()
+				manaball.global_position = global_position + Vector2(x_offset, y_offset)
+				get_parent().call_deferred("add_child", manaball)
+				
+			var xp_amount: int = 45
+			var ui: CanvasLayer = get_node("/root/world/UI")
+			if ui and ui.experience_manager:
+				ui.experience_manager.add_experience(xp_amount)
+				ui.increase_score(1)
 		play_random_goblin_death_sound()
 		goblin_death_sfx.play("DeathSFX")
 		queue_free()
@@ -305,7 +356,10 @@ func heal(amount: int) -> void:
 	var heal_number: Node2D = FloatingHealScene.instantiate()
 	heal_number.heal_amount = actual_heal
 	get_parent().add_child(heal_number)
-	heal_number.global_position = global_position + Vector2(0, -30)
+	if special_variant_1:
+		heal_number.global_position = global_position + Vector2(0, -130)
+	else:
+		heal_number.global_position = global_position + Vector2(0, -30)
 		
 func _on_player_detector_area_entered(area: Area2D) -> void:
 	if area.is_in_group("player_hurtbox"):

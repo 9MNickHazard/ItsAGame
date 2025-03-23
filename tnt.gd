@@ -26,12 +26,16 @@ func _ready() -> void:
 	initial_position = global_position
 	explosion_collision.disabled = true
 
-func throw(target_pos: Vector2) -> void:
+func throw(target_pos: Vector2, damage_multiplier: float = 1.0) -> void:
 	target_position = target_pos
 
 	target_position += Vector2(randf_range(-150, 150), randf_range(-150, 150))
 
 	direction = global_position.direction_to(target_position)
+	
+	if damage_multiplier != 1.0:
+		minimum_damage = int(minimum_damage * damage_multiplier)
+		maximum_damage = int(maximum_damage * damage_multiplier)
 
 func _physics_process(delta: float) -> void:
 	if has_landed:

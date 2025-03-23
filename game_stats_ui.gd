@@ -19,6 +19,7 @@ func _on_restart_button_pressed() -> void:
 	BulletScript.range_bonus = 0.0
 	BulletScript.glass_cannon_multiplier = false
 	BulletScript.runforrestrun_multiplier = false
+	BulletScript.homing_enabled = false
 	
 	var Bullet2Script: GDScript = load("res://scripts/bullet_2.gd")
 	Bullet2Script.damage_min_bonus = 0
@@ -35,6 +36,8 @@ func _on_restart_button_pressed() -> void:
 	SniperBulletScript.range_bonus = 0.0
 	SniperBulletScript.glass_cannon_multiplier = false
 	SniperBulletScript.runforrestrun_multiplier = false
+	SniperBulletScript.applies_slow_effect = false
+	SniperBulletScript.slow_duration = 5.0
 	
 	var ShotgunBulletScript: GDScript = load("res://scripts/shotgun_bullet.gd")
 	ShotgunBulletScript.damage_min_bonus = 0

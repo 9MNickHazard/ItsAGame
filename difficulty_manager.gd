@@ -398,6 +398,11 @@ func spawn_enemy(enemy_scene: PackedScene, pattern: int, radius: float = 900.0) 
 		push_error("Failed to instantiate enemy")
 		return
 	
+	var is_special_variant: bool = randf() <= 0.005
+	
+	if is_special_variant and new_mob.has_method("enable_special_variant_1"):
+		new_mob.enable_special_variant_1()
+	
 	if current_mode == DifficultyMode.HEROIC or current_mode == DifficultyMode.LEGENDARY:
 		var multipliers = MODE_MULTIPLIERS[current_mode]
 		

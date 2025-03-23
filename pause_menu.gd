@@ -114,10 +114,10 @@ var gravity_well_level_requirements = {
 # GUN1 VARIABLES
 var gun1 = null
 var gun1_costs = {
-	2: 25,
-	3: 50,
-	4: 80,
-	5: 120
+	2: 50,
+	3: 100,
+	4: 300,
+	5: 550
 }
 var gun1_improvements = {
 	"fire_rate": 0.02,  # reduce fire_rate by x
@@ -130,8 +130,8 @@ var gun1_level = 1
 var gun1_level_requirements = {
 	2: 2,  
 	3: 3,  
-	4: 4,  
-	5: 5
+	4: 6,  
+	5: 8
 }
 
 # GUN2 VARIABLES
@@ -141,8 +141,8 @@ var gun2_buy_level_req = 3
 var gun2_costs = {
 	2: 100,
 	3: 175,
-	4: 300,
-	5: 500
+	4: 450,
+	5: 1000
 }
 var gun2_improvements = {
 	"fire_rate": 0.01,
@@ -193,8 +193,8 @@ var mana_upgrade_costs = {
 	3: 200,
 	4: 300,
 	5: 400,
-	6: 500,
-	7: 600
+	6: 600,
+	7: 900
 }
 var mana_upgrade_level_requirements = {
 	2: 2,
@@ -233,10 +233,10 @@ var rocketlauncher = null
 var rocketlauncher_buy_cost = 150
 var rocketlauncher_buy_level_req = 4
 var rocketlauncher_costs = {
-	2: 200,
-	3: 250,
-	4: 300,
-	5: 350
+	2: 500,
+	3: 800,
+	4: 1200,
+	5: 1800
 }
 var rocketlauncher_improvements = {
 	"fire_rate": 0.02,
@@ -256,10 +256,10 @@ var rocketlauncher_level_requirements = {
 # SHOCKWAVE VARIABLES
 var shockwave_level = 1
 var shockwave_upgrade_costs = {
-	2: 150,
-	3: 300,
-	4: 450,
-	5: 600
+	2: 250,
+	3: 400,
+	4: 700,
+	5: 1200
 }
 var shockwave_upgrade_level_requirements = {
 	2: 3,
@@ -275,8 +275,8 @@ var shotgun_buy_level_req = 3
 var shotgun_costs = {
 	2: 200,
 	3: 300,
-	4: 400,
-	5: 600
+	4: 500,
+	5: 900
 }
 var shotgun_improvements = {
 	"fire_rate": 0.05,
@@ -300,9 +300,9 @@ var sniper1_buy_cost = 75
 var sniper1_buy_level_req = 2
 var sniper1_costs = {
 	2: 50,
-	3: 75,
-	4: 100,
-	5: 125
+	3: 150,
+	4: 300,
+	5: 550
 }
 var sniper1_improvements = {
 	"fire_rate": 0.03,
@@ -416,6 +416,8 @@ func update_cost_labels():
 		if player.owns_gun2 == true and gun2_level < 5:
 			gun_2_upgrade_button.text = "Level " + str(gun2_level + 1) + ": " + str(gun2_costs[gun2_level + 1])
 			gun_2_level_req.text = "Level Req: " + str(gun2_level_requirements[gun2_level + 1])
+			if gun2_level == 3:
+				gun_2_level_req.text += "\n(Extra Shot)"
 		elif gun2_level >= 5:
 			gun_2_upgrade_button.text = "MAX LEVEL"
 			gun_2_level_req.text = "MAX LEVEL"
@@ -445,6 +447,8 @@ func update_cost_labels():
 	if player.owns_gun1 == true and gun1_level < 5:
 		gun_1_upgrade_button.text = "Level " + str(gun1_level + 1) + ": " + str(gun1_costs[gun1_level + 1])
 		gun_1_level_req.text = "Level Req: " + str(gun1_level_requirements[gun1_level + 1])
+		if gun1_level == 3:
+			gun_1_level_req.text += "\n(Homing Shot)"
 	elif gun1_level >= 5:
 		gun_1_upgrade_button.text = "MAX LEVEL"
 		gun_1_level_req.text = "MAX LEVEL"
@@ -542,6 +546,7 @@ func _on_restart_button_pressed() -> void:
 	BulletScript.range_bonus = 0.0
 	BulletScript.glass_cannon_multiplier = false
 	BulletScript.runforrestrun_multiplier = false
+	BulletScript.homing_enabled = false
 	
 	var Bullet2Script: GDScript = load("res://scripts/bullet_2.gd")
 	Bullet2Script.damage_min_bonus = 0
@@ -558,6 +563,8 @@ func _on_restart_button_pressed() -> void:
 	SniperBulletScript.range_bonus = 0.0
 	SniperBulletScript.glass_cannon_multiplier = false
 	SniperBulletScript.runforrestrun_multiplier = false
+	SniperBulletScript.applies_slow_effect = false
+	SniperBulletScript.slow_duration = 5.0
 	
 	var ShotgunBulletScript: GDScript = load("res://scripts/shotgun_bullet.gd")
 	ShotgunBulletScript.damage_min_bonus = 0
@@ -1081,6 +1088,11 @@ func _on_sniper_upgrade_button_pressed() -> void:
 				BulletScript.speed_bonus += sniper1_improvements["bullet_speed"]
 				BulletScript.range_bonus += sniper1_improvements["range"]
 				
+				if sniper1_level >= 4:
+					BulletScript.applies_slow_effect = true
+				if sniper1_level >= 5:
+					BulletScript.slow_duration += 5.0
+	
 				if sniper1_level == 2:
 					sniper1.modulate = Color(0, 1, 0, 0.8)
 				elif sniper1_level == 3:
@@ -1246,6 +1258,9 @@ func _on_gun_1_upgrade_button_pressed() -> void:
 			BulletScript.damage_max_bonus += gun1_improvements["damage_max"]
 			BulletScript.speed_bonus += gun1_improvements["bullet_speed"]
 			BulletScript.range_bonus += gun1_improvements["range"]
+			
+			if gun1_level >= 4:
+				BulletScript.homing_enabled = true
 			
 			if gun1_level == 2:
 				gun1.modulate = Color(0, 1, 0, 0.9)

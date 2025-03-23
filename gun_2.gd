@@ -11,11 +11,15 @@ var can_fire: bool = true
 var fire_rate: float = 0.12
 var fire_timer: float = 0.0
 var world: Node2D
+var pause_menu
 
 const SPREAD_ANGLE: float = 0.10
 
 var weapon_name: String = "Multi-Shot Gun"
 
+func _ready() -> void:
+	world = get_node("/root/world")
+	pause_menu = get_node("/root/world/PauseMenu")
 
 func _physics_process(delta: float) -> void:
 	var mouse_pos: Vector2 = get_global_mouse_position()
@@ -47,8 +51,6 @@ func shoot() -> void:
 	var new_bullet1: Area2D = BULLET2.instantiate()
 	var new_bullet2: Area2D = BULLET2.instantiate()
 	
-	var pause_menu: CanvasLayer = get_node("/root/world/PauseMenu")
-	
 	stats_manager.total_shots_fired += 2
 	
 	if stats_manager.shots_fired_by_weapon.has(weapon_name):
@@ -60,7 +62,6 @@ func shoot() -> void:
 		var new_bullet3: Area2D = BULLET2.instantiate()
 		new_bullet3.global_position = shooting_point.global_position
 		new_bullet3.rotation = weapon_pivot.rotation
-		world = get_node("/root/world")
 		world.add_child(new_bullet3)
 		
 		stats_manager.total_shots_fired += 1
