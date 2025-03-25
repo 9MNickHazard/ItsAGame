@@ -28,6 +28,7 @@ const FireBlinkScene: PackedScene = preload("res://scenes/fire_blink.tscn")
 const ShockwaveScene: PackedScene = preload("res://scenes/shockwave.tscn")
 const GravityWellScene: PackedScene = preload("res://scenes/gravity_well.tscn")
 const OrbitalAbilityScene: PackedScene = preload("res://scenes/orbital_ability.tscn")
+const TimeWarpScene: PackedScene = preload("res://scenes/time_warp.tscn")
 
 #const PauseMenuScript = preload("res://scripts/pause_menu.gd")
 
@@ -43,6 +44,10 @@ var blink_cooldown: float = 5.0
 var blink_timer: float = 0.0
 var blink_cooldown_progress: float = 1.0
 
+# time warp ability
+var time_warp_mana_cost: float = 25.0
+#var time_warp_cooldown: float = 2.0
+#var time_warp_timer: float = 0.0
 
 const BLINK_DISTANCE = 400.0
 var blinking: bool = false
@@ -51,17 +56,17 @@ var blink_target_position: Vector2 = Vector2.ZERO
 var blink_direction: Vector2 = Vector2.ZERO
 
 # mana variables
+static var permanent_mana_bonus: float = 0.0
 static var max_mana: float = 100.0
 var current_mana: float = 100.0
-static var permanent_mana_bonus: float = 0.0
 
 var shockwave_mana_cost: float = 50.0
 var orbital_ability_mana_cost: float = 50.0
 var orbital_ability_active: bool = false
 
+static var permanent_health_bonus: float = 0.0
 static var max_health: float = 100.0
 var health: float = 100.0
-static var permanent_health_bonus: float = 0.0
 
 static var speed: float = 450.0 
 static var permanent_speed_bonus: float = 0.0 
@@ -78,6 +83,7 @@ var owns_shotgun: bool = false
 var owns_fire_blink: bool = false
 var owns_gravity_well: bool = false
 var owns_orbital_ability: bool = false
+var owns_time_warp: bool = false
 
 var equip_gun1: bool = true
 var equip_gun2: bool = false
@@ -100,14 +106,19 @@ static var hp_regen_rate: float = 0.0
 static var armor: int = 0
 
 func _ready() -> void:
+	health_changed.connect(_on_player_health_changed_local)
+	max_health_changed.connect(_on_player_max_health_changed_local)
+	
 	update_gun_states()
 	
 	speed += permanent_speed_bonus
 	
 	max_mana += permanent_mana_bonus
-	current_mana = max_mana
+	current_mana += permanent_mana_bonus
 	mana_bar.max_value = int(max_mana)
 	mana_bar.value = int(current_mana)
+	max_mana_changed.emit(max_mana)
+	mana_changed.emit(current_mana)
 	
 	blink_cooldown_bar.visible = false
 	blink_cooldown_bar.value = 0.0
@@ -116,12 +127,12 @@ func _ready() -> void:
 	blink_cooldown_progress = 1.0
 	
 	max_health += permanent_health_bonus
-	health = max_health
+	health += permanent_health_bonus
 	player_health_bar.max_value = int(floor(max_health))
 	player_health_bar.value = int(floor(health))
+	max_health_changed.emit(max_health)
+	health_changed.emit(health)
 	
-	health_changed.connect(_on_player_health_changed_local)
-	max_health_changed.connect(_on_player_max_health_changed_local)
 
 func _physics_process(delta: float) -> void:
 	total_mana_regen_rate = mana_regen_rate
@@ -157,6 +168,9 @@ func _physics_process(delta: float) -> void:
 	
 	if gravity_well_timer > 0:
 		gravity_well_timer -= delta
+	
+	#if time_warp_timer > 0:
+		#time_warp_timer -= delta
 		
 	
 	if blinking:
@@ -312,6 +326,25 @@ func handle_orbital_ability() -> void:
 		mana_bar.value = current_mana
 		mana_changed.emit(current_mana)
 
+func handle_time_warp() -> void:
+	if ability_mana_reduction:
+		time_warp_mana_cost = 20.0
+	
+	if Input.is_action_just_pressed("Ability 4") and current_mana >= time_warp_mana_cost and owns_time_warp:
+		stats_manager.total_time_warps_used += 1
+		
+		var time_warp: Node2D = TimeWarpScene.instantiate()
+		
+		var mouse_pos: Vector2 = get_global_mouse_position()
+		time_warp.global_position = mouse_pos
+		
+		get_parent().add_child(time_warp)
+		
+		current_mana -= time_warp_mana_cost
+		mana_bar.value = current_mana
+		mana_changed.emit(current_mana)
+		#time_warp_timer = time_warp_cooldown
+
 func _on_orbital_ability_finished() -> void:
 	orbital_ability_active = false
 	
@@ -444,6 +477,9 @@ func acquire_gravity_well() -> void:
 func acquire_orbital_ability() -> void:
 	owns_orbital_ability = true
 
+func acquire_time_warp() -> void:
+	owns_time_warp = true
+
 func acquire_gun2() -> void:
 	owns_gun2 = true
 	
@@ -552,8 +588,9 @@ func take_damage_from_mob1(damage: int) -> void:
 		
 	var damage_number: Node2D = FloatingDamageScene.instantiate()
 	damage_number.damage_amount = damage
-	get_parent().add_child(damage_number)
 	damage_number.global_position = global_position + Vector2(0, -30)
+	get_parent().add_child(damage_number)
+	
 	
 	health -= damage
 	health_changed.emit(health)

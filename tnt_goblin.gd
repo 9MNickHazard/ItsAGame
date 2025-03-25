@@ -78,6 +78,8 @@ var slow_timer: float = 0.0
 var slow_duration: float = 0.0
 var original_speed: float = 0.0
 
+var difficulty_mode_damage_multiplier: float = 1.0
+
 func enable_special_variant_1():
 	special_variant_1 = true
 	
@@ -211,7 +213,7 @@ func _on_frame_changed() -> void:
 			var time_to_reach: float = distance_to_player / new_tnt.TNT_SPEED
 			
 			var predicted_position: Vector2 = player.global_position + player.velocity * time_to_reach
-			new_tnt.throw(predicted_position, damage_multiplier)
+			new_tnt.throw(predicted_position, damage_multiplier * difficulty_mode_damage_multiplier)
 		else:
 			new_tnt.throw(player.global_position)
 			

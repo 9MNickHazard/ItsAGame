@@ -28,8 +28,8 @@ func _ready() -> void:
 	player.mana_changed.connect(_on_player_mana_changed)
 	player.max_mana_changed.connect(_on_max_mana_changed)
 	
-	health_bar.max_value = player.health
-	health_bar.value = player.health
+	#health_bar.max_value = player.health
+	#health_bar.value = player.health
 	
 	experience_manager = load("res://scripts/experience_manager.gd").new()
 	add_child(experience_manager)
@@ -51,19 +51,19 @@ func _process(delta: float) -> void:
 
 func _on_max_health_changed(new_max_health: float) -> void:
 	health_bar.max_value = new_max_health
-	health_label.text = str(health_bar.value) + "/" + str(new_max_health)
+	health_label.text = str(int(health_bar.value)) + "/" + str(int(new_max_health))
 
 func _on_player_health_changed(new_health: float) -> void:
 	health_bar.value = new_health
-	health_label.text = str(new_health) + "/" + str(PlayerScript.max_health)
+	health_label.text = str(int(new_health)) + "/" + str(int(PlayerScript.max_health))
 	
 func _on_player_mana_changed(new_mana: float) -> void:
 	mana_bar.value = new_mana
-	mana_amount_label.text = str(int(new_mana)) + "/" + str(PlayerScript.max_mana)
+	mana_amount_label.text = str(int(new_mana)) + "/" + str(int(PlayerScript.max_mana))
 
 func _on_max_mana_changed(new_max_mana: float) -> void:
 	mana_bar.max_value = new_max_mana
-	mana_amount_label.text = str(mana_bar.value) + "/" + str(new_max_mana)
+	mana_amount_label.text = str(int(mana_bar.value)) + "/" + str(int(new_max_mana))
 
 func increase_score(amount: int) -> void:
 	score += amount

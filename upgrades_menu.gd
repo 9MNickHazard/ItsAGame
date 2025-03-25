@@ -77,6 +77,8 @@ extends CanvasLayer
 @onready var magnet_checked_pip_2: TextureRect = $MarginContainer/PanelContainer/MainVbox/MainRow/MarginContainer/GridContainer/Magnet/VBoxContainer/CenterContainer/HBoxContainer/MarginContainer2/MagnetCheckedPip2
 @onready var magnet_checked_pip_3: TextureRect = $MarginContainer/PanelContainer/MainVbox/MainRow/MarginContainer/GridContainer/Magnet/VBoxContainer/CenterContainer/HBoxContainer/MarginContainer3/MagnetCheckedPip3
 
+@onready var not_enough_gems_label: Label = $MarginContainer/PanelContainer/MainVbox/BottomRow/MarginContainer/NotEnoughGemsLabel
+
 static var base_health_level: int = 0
 static var base_mana_level: int = 0
 static var movement_speed_level: int = 0
@@ -131,6 +133,8 @@ const UPGRADE_EFFECTS: Dictionary = {
 }
 
 func _ready() -> void:
+	not_enough_gems_label.hide()
+	
 	if save_manager:
 		base_health_level = save_manager.get_upgrade_level("base_health")
 		base_mana_level = save_manager.get_upgrade_level("base_mana")
@@ -164,9 +168,45 @@ func _ready() -> void:
 	update_gold_bonus_pips()
 	update_magnet_pips()
 	
-	gems_label.text = "Gems: " + save_manager.get_gems()
+	gems_label.text = "Gems: " + str(save_manager.get_gems())
 
 	update_button_texts()
+
+func disable_enable_buttons(disabled: bool = true):
+	if disabled:
+		back_button.disabled = true
+		base_health_button.disabled = true
+		base_mana_button.disabled = true
+		move_speed_button.disabled = true
+		wep_min_dmg_button.disabled = true
+		wep_max_dmg_button.disabled = true
+		abl_min_dmg_button.disabled = true
+		abl_max_dmg_button.disabled = true
+		luck_button.disabled = true
+		revive_button.disabled = true
+		hp_regen_button.disabled = true
+		mana_regen_button.disabled = true
+		armor_button.disabled = true
+		xp_bonus_button.disabled = true
+		gold_bonus_button.disabled = true
+		magnet_button.disabled = true
+	else:
+		back_button.disabled = false
+		base_health_button.disabled = false
+		base_mana_button.disabled = false
+		move_speed_button.disabled = false
+		wep_min_dmg_button.disabled = false
+		wep_max_dmg_button.disabled = false
+		abl_min_dmg_button.disabled = false
+		abl_max_dmg_button.disabled = false
+		luck_button.disabled = false
+		revive_button.disabled = false
+		hp_regen_button.disabled = false
+		mana_regen_button.disabled = false
+		armor_button.disabled = false
+		xp_bonus_button.disabled = false
+		gold_bonus_button.disabled = false
+		magnet_button.disabled = false
 
 func _on_base_health_button_pressed() -> void:
 	if base_health_level >= UPGRADE_COSTS["base_health"].size():
@@ -177,7 +217,7 @@ func _on_base_health_button_pressed() -> void:
 	
 	if gems >= cost:
 		save_manager.spend_gems(cost)
-		gems_label.text = "Gems: " + save_manager.get_gems()
+		gems_label.text = "Gems: " + str(save_manager.get_gems())
 		
 		var health_boost = UPGRADE_EFFECTS["base_health"][base_health_level]
 		var PlayerScript = load("res://scripts/player.gd")
@@ -189,6 +229,14 @@ func _on_base_health_button_pressed() -> void:
 		save_manager.save_upgrade_level("base_health", base_health_level)
 		
 		update_button_texts()
+	else:
+		disable_enable_buttons()
+		
+		not_enough_gems_label.show()
+		await get_tree().create_timer(1.2).timeout
+		not_enough_gems_label.hide()
+		
+		disable_enable_buttons(false)
 
 func update_base_health_pips() -> void:
 	base_health_checked_pip_1.visible = base_health_level >= 1
@@ -205,7 +253,7 @@ func _on_base_mana_button_pressed() -> void:
 	
 	if gems >= cost:
 		save_manager.spend_gems(cost)
-		gems_label.text = "Gems: " + save_manager.get_gems()
+		gems_label.text = "Gems: " + str(save_manager.get_gems())
 		
 		var mana_boost = UPGRADE_EFFECTS["base_mana"][base_mana_level]
 		var PlayerScript = load("res://scripts/player.gd")
@@ -217,6 +265,14 @@ func _on_base_mana_button_pressed() -> void:
 		save_manager.save_upgrade_level("base_mana", base_mana_level)
 		
 		update_button_texts()
+	else:
+		disable_enable_buttons()
+		
+		not_enough_gems_label.show()
+		await get_tree().create_timer(1.2).timeout
+		not_enough_gems_label.hide()
+		
+		disable_enable_buttons(false)
 
 func update_base_mana_pips() -> void:
 	base_mana_checked_pip_1.visible = base_mana_level >= 1
@@ -233,7 +289,7 @@ func _on_move_speed_button_pressed() -> void:
 	
 	if gems >= cost:
 		save_manager.spend_gems(cost)
-		gems_label.text = "Gems: " + save_manager.get_gems()
+		gems_label.text = "Gems: " + str(save_manager.get_gems())
 		
 		var speed_boost = UPGRADE_EFFECTS["movement_speed"][movement_speed_level]
 		var PlayerScript = load("res://scripts/player.gd")
@@ -245,6 +301,14 @@ func _on_move_speed_button_pressed() -> void:
 		save_manager.save_upgrade_level("movement_speed", movement_speed_level)
 		
 		update_button_texts()
+	else:
+		disable_enable_buttons()
+		
+		not_enough_gems_label.show()
+		await get_tree().create_timer(1.2).timeout
+		not_enough_gems_label.hide()
+		
+		disable_enable_buttons(false)
 
 func update_movement_speed_pips() -> void:
 	move_speed_checked_pip_1.visible = movement_speed_level >= 1
@@ -262,7 +326,7 @@ func _on_wep_min_dmg_button_pressed() -> void:
 	
 	if gems >= cost:
 		save_manager.spend_gems(cost)
-		gems_label.text = "Gems: " + save_manager.get_gems()
+		gems_label.text = "Gems: " + str(save_manager.get_gems())
 		
 		var damage_boost = UPGRADE_EFFECTS["min_weapon_damage"][min_weapon_damage_level]
 		
@@ -284,6 +348,14 @@ func _on_wep_min_dmg_button_pressed() -> void:
 		save_manager.save_upgrade_level("min_weapon_damage", min_weapon_damage_level)
 		
 		update_button_texts()
+	else:
+		disable_enable_buttons()
+		
+		not_enough_gems_label.show()
+		await get_tree().create_timer(1.2).timeout
+		not_enough_gems_label.hide()
+		
+		disable_enable_buttons(false)
 
 func update_min_weapon_damage_pips() -> void:
 	wep_min_dmg_checked_pip_1.visible = min_weapon_damage_level >= 1
@@ -301,7 +373,7 @@ func _on_wep_max_dmg_button_pressed() -> void:
 	
 	if gems >= cost:
 		save_manager.spend_gems(cost)
-		gems_label.text = "Gems: " + save_manager.get_gems()
+		gems_label.text = "Gems: " + str(save_manager.get_gems())
 		
 		var damage_boost = UPGRADE_EFFECTS["max_weapon_damage"][max_weapon_damage_level]
 		
@@ -323,6 +395,14 @@ func _on_wep_max_dmg_button_pressed() -> void:
 		save_manager.save_upgrade_level("max_weapon_damage", max_weapon_damage_level)
 		
 		update_button_texts()
+	else:
+		disable_enable_buttons()
+		
+		not_enough_gems_label.show()
+		await get_tree().create_timer(1.2).timeout
+		not_enough_gems_label.hide()
+		
+		disable_enable_buttons(false)
 
 func update_max_weapon_damage_pips() -> void:
 	wep_max_dmg_checked_pip_1.visible = max_weapon_damage_level >= 1
@@ -340,7 +420,7 @@ func _on_abl_min_dmg_button_pressed() -> void:
 	
 	if gems >= cost:
 		save_manager.spend_gems(cost)
-		gems_label.text = "Gems: " + save_manager.get_gems()
+		gems_label.text = "Gems: " + str(save_manager.get_gems())
 		
 		var damage_boost = UPGRADE_EFFECTS["min_ability_damage"][min_ability_damage_level]
 		
@@ -360,6 +440,14 @@ func _on_abl_min_dmg_button_pressed() -> void:
 		save_manager.save_upgrade_level("min_ability_damage", min_ability_damage_level)
 		
 		update_button_texts()
+	else:
+		disable_enable_buttons()
+		
+		not_enough_gems_label.show()
+		await get_tree().create_timer(1.2).timeout
+		not_enough_gems_label.hide()
+		
+		disable_enable_buttons(false)
 
 func update_min_ability_damage_pips() -> void:
 	abl_min_dmg_checked_pip_1.visible = min_ability_damage_level >= 1
@@ -376,7 +464,7 @@ func _on_abl_max_dmg_button_pressed() -> void:
 	
 	if gems >= cost:
 		save_manager.spend_gems(cost)
-		gems_label.text = "Gems: " + save_manager.get_gems()
+		gems_label.text = "Gems: " + str(save_manager.get_gems())
 		
 		var damage_boost = UPGRADE_EFFECTS["max_ability_damage"][max_ability_damage_level]
 		
@@ -396,6 +484,14 @@ func _on_abl_max_dmg_button_pressed() -> void:
 		save_manager.save_upgrade_level("max_ability_damage", max_ability_damage_level)
 		
 		update_button_texts()
+	else:
+		disable_enable_buttons()
+		
+		not_enough_gems_label.show()
+		await get_tree().create_timer(1.2).timeout
+		not_enough_gems_label.hide()
+		
+		disable_enable_buttons(false)
 
 func update_max_ability_damage_pips() -> void:
 	abl_max_dmg_checked_pip_1.visible = max_ability_damage_level >= 1
@@ -416,7 +512,7 @@ func _on_revive_button_pressed() -> void:
 	
 	if gems >= cost:
 		save_manager.spend_gems(cost)
-		gems_label.text = "Gems: " + save_manager.get_gems()
+		gems_label.text = "Gems: " + str(save_manager.get_gems())
 		
 		var PlayerScript = load("res://scripts/player.gd")
 		PlayerScript.has_revive = true
@@ -427,6 +523,14 @@ func _on_revive_button_pressed() -> void:
 		save_manager.save_upgrade_level("revive", revive_level)
 		
 		update_button_texts()
+	else:
+		disable_enable_buttons()
+		
+		not_enough_gems_label.show()
+		await get_tree().create_timer(1.2).timeout
+		not_enough_gems_label.hide()
+		
+		disable_enable_buttons(false)
 
 func update_revive_pips() -> void:
 	revive_checked_pip_1.visible = revive_level >= 1
@@ -440,7 +544,7 @@ func _on_hp_regen_button_pressed() -> void:
 	
 	if gems >= cost:
 		save_manager.spend_gems(cost)
-		gems_label.text = "Gems: " + save_manager.get_gems()
+		gems_label.text = "Gems: " + str(save_manager.get_gems())
 		
 		var regen_boost = UPGRADE_EFFECTS["hp_regeneration"][hp_regeneration_level]
 		var PlayerScript = load("res://scripts/player.gd")
@@ -452,6 +556,14 @@ func _on_hp_regen_button_pressed() -> void:
 		save_manager.save_upgrade_level("hp_regeneration", hp_regeneration_level)
 		
 		update_button_texts()
+	else:
+		disable_enable_buttons()
+		
+		not_enough_gems_label.show()
+		await get_tree().create_timer(1.2).timeout
+		not_enough_gems_label.hide()
+		
+		disable_enable_buttons(false)
 
 func update_hp_regen_pips() -> void:
 	hp_regen_checked_pip_1.visible = hp_regeneration_level >= 1
@@ -467,7 +579,7 @@ func _on_mana_regen_button_pressed() -> void:
 	
 	if gems >= cost:
 		save_manager.spend_gems(cost)
-		gems_label.text = "Gems: " + save_manager.get_gems()
+		gems_label.text = "Gems: " + str(save_manager.get_gems())
 		
 		var regen_boost = UPGRADE_EFFECTS["mana_regeneration"][mana_regeneration_level]
 		var PlayerScript = load("res://scripts/player.gd")
@@ -479,6 +591,14 @@ func _on_mana_regen_button_pressed() -> void:
 		save_manager.save_upgrade_level("mana_regeneration", mana_regeneration_level)
 		
 		update_button_texts()
+	else:
+		disable_enable_buttons()
+		
+		not_enough_gems_label.show()
+		await get_tree().create_timer(1.2).timeout
+		not_enough_gems_label.hide()
+		
+		disable_enable_buttons(false)
 
 func update_mana_regen_pips() -> void:
 	mana_regen_check_pip_1.visible = mana_regeneration_level >= 1
@@ -494,7 +614,7 @@ func _on_armor_button_pressed() -> void:
 	
 	if gems >= cost:
 		save_manager.spend_gems(cost)
-		gems_label.text = "Gems: " + save_manager.get_gems()
+		gems_label.text = "Gems: " + str(save_manager.get_gems())
 		
 		var armor_boost = UPGRADE_EFFECTS["armor"][armor_level]
 		var PlayerScript = load("res://scripts/player.gd")
@@ -506,6 +626,14 @@ func _on_armor_button_pressed() -> void:
 		save_manager.save_upgrade_level("armor", armor_level)
 		
 		update_button_texts()
+	else:
+		disable_enable_buttons()
+		
+		not_enough_gems_label.show()
+		await get_tree().create_timer(1.2).timeout
+		not_enough_gems_label.hide()
+		
+		disable_enable_buttons(false)
 
 func update_armor_pips() -> void:
 	armor_checked_pip_1.visible = armor_level >= 1
@@ -523,7 +651,7 @@ func _on_xp_bonus_button_pressed() -> void:
 	
 	if gems >= cost:
 		save_manager.spend_gems(cost)
-		gems_label.text = "Gems: " + save_manager.get_gems()
+		gems_label.text = "Gems: " + str(save_manager.get_gems())
 		
 		var xp_boost = UPGRADE_EFFECTS["xp_bonus"][xp_bonus_level]
 		var ExperienceManagerScript = load("res://scripts/experience_manager.gd")
@@ -535,6 +663,14 @@ func _on_xp_bonus_button_pressed() -> void:
 		save_manager.save_upgrade_level("xp_bonus", xp_bonus_level)
 		
 		update_button_texts()
+	else:
+		disable_enable_buttons()
+		
+		not_enough_gems_label.show()
+		await get_tree().create_timer(1.2).timeout
+		not_enough_gems_label.hide()
+		
+		disable_enable_buttons(false)
 
 func update_xp_bonus_pips() -> void:
 	xp_checked_pip_1.visible = xp_bonus_level >= 1
@@ -551,7 +687,7 @@ func _on_gold_bonus_button_pressed() -> void:
 	
 	if gems >= cost:
 		save_manager.spend_gems(cost)
-		gems_label.text = "Gems: " + save_manager.get_gems()
+		gems_label.text = "Gems: " + str(save_manager.get_gems())
 		
 		var gold_boost = UPGRADE_EFFECTS["gold_bonus"][gold_bonus_level]
 		var UIScript = load("res://scripts/ui.gd")
@@ -563,6 +699,14 @@ func _on_gold_bonus_button_pressed() -> void:
 		save_manager.save_upgrade_level("gold_bonus", gold_bonus_level)
 		
 		update_button_texts()
+	else:
+		disable_enable_buttons()
+		
+		not_enough_gems_label.show()
+		await get_tree().create_timer(1.2).timeout
+		not_enough_gems_label.hide()
+		
+		disable_enable_buttons(false)
 
 func update_gold_bonus_pips() -> void:
 	gold_checked_pip_1.visible = gold_bonus_level >= 1
@@ -579,7 +723,7 @@ func _on_magnet_button_pressed() -> void:
 	
 	if gems >= cost:
 		save_manager.spend_gems(cost)
-		gems_label.text = "Gems: " + save_manager.get_gems()
+		gems_label.text = "Gems: " + str(save_manager.get_gems())
 		
 		var magnet_boost = UPGRADE_EFFECTS["magnet"][magnet_level]
 		
@@ -603,6 +747,14 @@ func _on_magnet_button_pressed() -> void:
 		save_manager.save_upgrade_level("magnet", magnet_level)
 		
 		update_button_texts()
+	else:
+		disable_enable_buttons()
+		
+		not_enough_gems_label.show()
+		await get_tree().create_timer(1.2).timeout
+		not_enough_gems_label.hide()
+		
+		disable_enable_buttons(false)
 
 func update_magnet_pips() -> void:
 	magnet_checked_pip_1.visible = magnet_level >= 1

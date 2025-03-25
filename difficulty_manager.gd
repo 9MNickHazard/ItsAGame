@@ -54,6 +54,7 @@ var skeleton_boss_scene: PackedScene = preload("res://scenes/skeleton_boss.tscn"
 var minotaur_scene: PackedScene = preload("res://scenes/minotaur.tscn")
 var healer_scene: PackedScene = preload("res://scenes/healer.tscn")
 var skeleton_archer_scene: PackedScene = preload("res://scenes/skeleton_archer.tscn")
+var elite_orc_scene: PackedScene = preload("res://scenes/elite_orc.tscn")
 
 var base_difficulty: float = 1.0
 var current_difficulty: float = 1.0
@@ -62,7 +63,7 @@ var difficulty_increment_time: float = 12.0  # seconds
 var max_difficulty: float = 10.0
 
 var base_spawn_delay: float = 0.8
-var min_spawn_delay: float = 0.05
+var min_spawn_delay: float = 0.08
 var active_mobs: Array[Node] = []
 var spawning_in_progress: bool = false
 var game_paused: bool = false
@@ -76,7 +77,8 @@ var enemy_weights: Dictionary = {
 	"tnt_goblin": {"scene": tnt_goblin_scene, "min_difficulty": 1.1, "max_difficulty": 10.0, "weight_at_min": 15, "weight_at_max": 30},
 	"wizard": {"scene": wizard_scene, "min_difficulty": 1.5, "max_difficulty": 10.0, "weight_at_min": 2, "weight_at_max": 25},
 	"martial_hero": {"scene": martial_hero_scene, "min_difficulty": 2.0, "max_difficulty": 10.0, "weight_at_min": 2, "weight_at_max": 20},
-	"skeleton_archer": {"scene": skeleton_archer_scene, "min_difficulty": 2.2, "max_difficulty": 10.0, "weight_at_min": 3, "weight_at_max": 25},
+	"elite_orc": {"scene": elite_orc_scene, "min_difficulty": 3.0, "max_difficulty": 10.0, "weight_at_min": 3, "weight_at_max": 18},
+	"skeleton_archer": {"scene": skeleton_archer_scene, "min_difficulty": 2.2, "max_difficulty": 10.0, "weight_at_min": 4, "weight_at_max": 25},
 	"healer": {"scene": healer_scene, "min_difficulty": 3.0, "max_difficulty": 10.0, "weight_at_min": 2, "weight_at_max": 15},
 	"minotaur": {"scene": minotaur_scene, "min_difficulty": 3.5, "max_difficulty": 10.0, "weight_at_min": 2, "weight_at_max": 15}
 }
@@ -335,7 +337,11 @@ func _on_difficulty_timer_timeout() -> void:
 
 func calculate_spawn_delay() -> float:
 	var difficulty_factor: float = (current_difficulty - base_difficulty) / (max_difficulty - base_difficulty)
-	return max(min_spawn_delay, base_spawn_delay * (1.0 - 0.7 * difficulty_factor))
+	if current_difficulty < 2.0:
+		var early_game_multiplier: float = 0.90  # raise to make early game spawning faster
+		return max(min_spawn_delay, base_spawn_delay * (1.0 - early_game_multiplier * difficulty_factor))
+	else:
+		return max(min_spawn_delay, base_spawn_delay * (1.0 - 0.7 * difficulty_factor))
 
 func _on_spawn_timer_timeout() -> void:
 	if game_paused:
@@ -420,6 +426,9 @@ func spawn_enemy(enemy_scene: PackedScene, pattern: int, radius: float = 900.0) 
 		# Adjust speed
 		if "SPEED" in new_mob:
 			new_mob.SPEED = new_mob.SPEED * multipliers["speed"]
+		
+		if "damage_multiplier" in new_mob:
+			new_mob.difficulty_mode_damage_multiplier = multipliers["damage"]
 	
 	if pattern == SpawnPattern.RANDOM:
 		if path_follow != null:
@@ -546,6 +555,7 @@ func get_enemy_scene_by_key(key: String) -> PackedScene:
 		"minotaur": return minotaur_scene
 		"healer": return healer_scene
 		"skeleton_archer": return skeleton_archer_scene
+		"elite_orc": return elite_orc_scene
 		_: return goblin_scene
 
 func check_special_spawns() -> void:

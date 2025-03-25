@@ -85,6 +85,8 @@ var slow_timer: float = 0.0
 var slow_duration: float = 0.0
 var original_speed: float = 0.0
 
+var difficulty_mode_damage_multiplier: float = 1.0
+
 func enable_special_variant_1():
 	special_variant_1 = true
 	
@@ -376,7 +378,7 @@ func spawn_projectiles() -> void:
 		var projectile: Node2D = SkeletonProjectile.instantiate()
 		projectile.global_position = global_position
 		projectile.direction = dir
-		projectile.initialize(damage_multiplier)
+		projectile.initialize(damage_multiplier * difficulty_mode_damage_multiplier)
 		get_parent().add_child(projectile)
 
 func start_charge() -> void:

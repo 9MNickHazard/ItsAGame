@@ -7,30 +7,32 @@ signal return_to_main_menu
 @onready var level_requirement_label: Label = $LevelRequirementLabel
 @onready var pause_menu: CanvasLayer = $"."
 
-@onready var gun_1_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/Gun1Container/VBoxContainer/Gun1UpgradeButton
-@onready var gun_1_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/Gun1Container/VBoxContainer/Gun1LevelReq
-@onready var gun_2_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/Gun2Container/VBoxContainer/Gun2UpgradeButton
-@onready var gun_2_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/Gun2Container/VBoxContainer/Gun2LevelReq
-@onready var sniper_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/SniperContainer/VBoxContainer/SniperUpgradeButton
-@onready var sniper_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/SniperContainer/VBoxContainer/SniperLevelReq
-@onready var rocket_launcher_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/RocketLauncherContainer/VBoxContainer/RocketLauncherUpgradeButton
-@onready var rocket_launcher_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/RocketLauncherContainer/VBoxContainer/RocketLauncherLevelReq
-@onready var blink_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/BlinkContainer/VBoxContainer/BlinkUpgradeButton
-@onready var blink_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/BlinkContainer/VBoxContainer/BlinkLevelReq
-@onready var fire_blink_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/FireBlinkContainer/VBoxContainer/FireBlinkUpgradeButton
-@onready var fire_blink_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/FireBlinkContainer/VBoxContainer/FireBlinkLevelReq
+@onready var gun_1_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/Gun1Container/CenterContainer/VBoxContainer/Gun1UpgradeButton
+@onready var gun_1_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/Gun1Container/CenterContainer/VBoxContainer/Gun1LevelReq
+@onready var gun_2_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/Gun2Container/CenterContainer/VBoxContainer/Gun2UpgradeButton
+@onready var gun_2_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/Gun2Container/CenterContainer/VBoxContainer/Gun2LevelReq
+@onready var sniper_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/SniperContainer/CenterContainer/VBoxContainer/SniperUpgradeButton
+@onready var sniper_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/SniperContainer/CenterContainer/VBoxContainer/SniperLevelReq
+@onready var rocket_launcher_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/RocketLauncherContainer/CenterContainer/VBoxContainer/RocketLauncherUpgradeButton
+@onready var rocket_launcher_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/RocketLauncherContainer/CenterContainer/VBoxContainer/RocketLauncherLevelReq
+@onready var blink_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/BlinkContainer/CenterContainer/VBoxContainer/BlinkUpgradeButton
+@onready var blink_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/BlinkContainer/CenterContainer/VBoxContainer/BlinkLevelReq
+@onready var fire_blink_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/FireBlinkContainer/CenterContainer/VBoxContainer/FireBlinkUpgradeButton
+@onready var fire_blink_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/FireBlinkContainer/CenterContainer/VBoxContainer/FireBlinkLevelReq
 @onready var shockwave_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/ShockwaveContainer/VBoxContainer/ShockwaveUpgradeButton
-@onready var shockwave_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/ShockwaveContainer/VBoxContainer/ShockwaveLevelReq
-@onready var hp_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/HpContainer/VBoxContainer/HpUpgradeButton
-@onready var hp_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/HpContainer/VBoxContainer/HpLevelReq
-@onready var mana_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/ManaContainer/VBoxContainer/ManaUpgradeButton
-@onready var mana_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/ManaContainer/VBoxContainer/ManaLevelReq
-@onready var gravity_well_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/GravityWellContainer/VBoxContainer/GravityWellUpgradeButton
-@onready var gravity_well_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/GravityWellContainer/VBoxContainer/GravityWellLevelReq
-@onready var orbital_ability_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/OrbitalAbilityContainer/VBoxContainer/OrbitalAbilityUpgradeButton
-@onready var orbital_ability_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/OrbitalAbilityContainer/VBoxContainer/OrbitalAbilityLevelReq
-@onready var shotgun_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/ShotgunContainer/VBoxContainer/ShotgunUpgradeButton
-@onready var shotgun_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/ShotgunContainer/VBoxContainer/ShotgunLevelReq
+@onready var shockwave_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/ShockwaveContainer/CenterContainer/VBoxContainer/ShockwaveLevelReq
+@onready var hp_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/HpContainer/CenterContainer/VBoxContainer/HpUpgradeButton
+@onready var hp_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/HpContainer/CenterContainer/VBoxContainer/HpLevelReq
+@onready var mana_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/ManaContainer/CenterContainer/VBoxContainer/ManaUpgradeButton
+@onready var mana_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/ManaContainer/CenterContainer/VBoxContainer/ManaLevelReq
+@onready var gravity_well_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/GravityWellContainer/CenterContainer/VBoxContainer/GravityWellUpgradeButton
+@onready var gravity_well_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/GravityWellContainer/CenterContainer/VBoxContainer/GravityWellLevelReq
+@onready var orbital_ability_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/OrbitalAbilityContainer/CenterContainer/VBoxContainer/OrbitalAbilityUpgradeButton
+@onready var orbital_ability_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/OrbitalAbilityContainer/CenterContainer/VBoxContainer/OrbitalAbilityLevelReq
+@onready var shotgun_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/ShotgunContainer/CenterContainer/VBoxContainer/ShotgunUpgradeButton
+@onready var shotgun_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/ShotgunContainer/CenterContainer/VBoxContainer/ShotgunLevelReq
+@onready var time_warp_upgrade_button: Button = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/TimeWarpContainer/CenterContainer/VBoxContainer/TimeWarpUpgradeButton
+@onready var time_warp_level_req: Label = $MainMargin/MainPanel/VBoxMain/ContentRow/MarginContainer/GridContainer/TimeWarpContainer/CenterContainer/VBoxContainer/TimeWarpLevelReq
 
 @onready var continue_button: Button = $MainMargin/MainPanel/VBoxMain/BottomRow/MarginContainer/HBoxContainer/ContinueButton
 @onready var player_coins_label: Label = $MainMargin/MainPanel/VBoxMain/TopRow/VBoxContainer/CoinsLabel
@@ -214,8 +216,8 @@ var orbital_costs = {
 	4: 700,
 	5: 850,
 	6: 1000,
-	7: 1222,
-	8: 1200
+	7: 1200,
+	8: 1500
 }
 var orbital_level = 1
 var orbital_level_requirements = {
@@ -319,6 +321,22 @@ var sniper1_level_requirements = {
 	5: 6
 }
 
+var time_warp_buy_cost = 180
+var time_warp_buy_level_req = 2
+var time_warp_costs = {
+	2: 200,
+	3: 400,
+	4: 700,
+	5: 800
+}
+var time_warp_level = 1
+var time_warp_level_requirements = {
+	2: 4,
+	3: 6,
+	4: 8,
+	5: 10
+}
+
 
 func _ready() -> void:
 	pause_menu.hide()
@@ -351,6 +369,8 @@ func _ready() -> void:
 	
 	shotgun_upgrade_button.text = "Buy: " + str(shotgun_buy_cost)
 	
+	time_warp_upgrade_button.text = "Buy: " + str(time_warp_buy_cost)
+	
 	orbital_ability_level_req.text = "Level Req: " + str(orbital_level_requirements[orbital_level + 1])
 	gun_1_level_req.text = "Level Req: " + str(gun1_level_requirements[gun1_level + 1])
 	gun_2_level_req.text = "Level Req: " + str(gun2_buy_level_req)
@@ -363,6 +383,7 @@ func _ready() -> void:
 	shockwave_level_req.text = "Level Req: " + str(shockwave_upgrade_level_requirements[shockwave_level + 1])
 	gravity_well_level_req.text = "Level Req: " + str(gravity_well_buy_level_req)
 	shotgun_level_req.text = "Level Req: " + str(shotgun_buy_level_req)
+	time_warp_level_req.text = "Level Req: " + str(time_warp_buy_level_req)
 	
 	ui = get_node("/root/world/UI")
 	gun1 = get_node("/root/world/player/gun")
@@ -505,6 +526,13 @@ func update_cost_labels():
 	elif orbital_level >= 8:
 		orbital_ability_upgrade_button.text = "MAX LEVEL"
 		orbital_ability_level_req.text = "MAX LEVEL"
+	
+	if player.owns_time_warp == true and time_warp_level < 5:
+		time_warp_upgrade_button.text = "Level " + str(time_warp_level + 1) + ": " + str(time_warp_costs[time_warp_level + 1])
+		time_warp_level_req.text = "Level Req: " + str(time_warp_level_requirements[time_warp_level + 1])
+	elif time_warp_level >= 5:
+		time_warp_upgrade_button.text = "MAX LEVEL"
+		time_warp_level_req.text = "MAX LEVEL"
 		
 func disable_enable_buttons(disabled: bool = true):
 	if disabled:
@@ -600,6 +628,9 @@ func _on_restart_button_pressed() -> void:
 	OrbitalAbilityScript.ability_level = 1
 	OrbitalAbilityScript.glass_cannon_multiplier = false
 	OrbitalAbilityScript.runforrestrun_multiplier = false
+	
+	var TimeWarpScript: GDScript = load("res://scripts/time_warp.gd")
+	TimeWarpScript.ability_level = 1
 	
 	var PlayerScript: GDScript = load("res://scripts/player.gd")
 	PlayerScript.max_mana = 100.0
@@ -1410,6 +1441,58 @@ func _on_orbital_ability_upgrade_button_pressed() -> void:
 			await get_tree().create_timer(1.2).timeout
 			not_enough_coins_label.hide()
 
+func _on_time_warp_upgrade_button_pressed() -> void:
+	if player.owns_time_warp == false:
+		if ui.coins_collected >= time_warp_buy_cost:
+			if ui.experience_manager.current_level >= time_warp_buy_level_req:
+				ui.coins_collected -= time_warp_buy_cost
+				ui.coin_label.text = "Coins: " + str(ui.coins_collected)
+				
+				if player:
+					player.acquire_time_warp()
+				else:
+					print("Player reference is null!")
+				
+				player_coins_label.text = "Coins: " + str(ui.coins_collected)
+				update_cost_labels()
+			else:
+				level_requirement_label.text = "Required Level: " + str(time_warp_buy_level_req)
+				level_requirement_label.show()
+				await get_tree().create_timer(1.2).timeout
+				level_requirement_label.hide()
+		else:
+			not_enough_coins_label.show()
+			await get_tree().create_timer(1.2).timeout
+			not_enough_coins_label.hide()
+	else:
+		if time_warp_level >= 5:
+			return
+			
+		var next_level = time_warp_level + 1
+		var cost = time_warp_costs[next_level]
+		var level_req = time_warp_level_requirements[next_level]
+		
+		if ui.coins_collected >= cost:
+			if ui.experience_manager.current_level >= level_req:
+				ui.coins_collected -= cost
+				ui.coin_label.text = "Coins: " + str(ui.coins_collected)
+				
+				time_warp_level += 1
+				
+				var TimeWarpScript = load("res://scripts/time_warp.gd")
+				TimeWarpScript.ability_level += 1
+				
+				player_coins_label.text = "Coins: " + str(ui.coins_collected)
+				update_cost_labels()
+			else:
+				level_requirement_label.text = "Required Level: " + str(level_req)
+				level_requirement_label.show()
+				await get_tree().create_timer(1.2).timeout
+				level_requirement_label.hide()
+		else:
+			not_enough_coins_label.show()
+			await get_tree().create_timer(1.2).timeout
+			not_enough_coins_label.hide()
 
 func _on_shotgun_upgrade_button_pressed() -> void:
 	if semi_pacifist:

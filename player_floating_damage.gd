@@ -11,7 +11,7 @@ func _ready() -> void:
 	
 	velocity = Vector2(randf_range(-20, 20), -100)
 	
-	label.text = str(round(damage_amount))
+	label.text = str(round(int(damage_amount)))
 	
 	var tween: Tween = create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, fade_duration).set_delay(lifetime)

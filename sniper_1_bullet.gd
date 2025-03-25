@@ -51,5 +51,5 @@ func _on_body_entered(body: Node2D) -> void:
 		body.take_damage(damage, 400.0, knockback_dir)
 		
 		if applies_slow_effect and body.has_method("apply_slow_effect"):
-				body.apply_slow_effect(slow_duration)
+			body.apply_slow_effect(slow_duration)
 		

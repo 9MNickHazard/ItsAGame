@@ -128,7 +128,6 @@ func _physics_process(delta: float) -> void:
 			animated_sprite_2d.speed_scale = 1.0
 			animated_sprite_2d.modulate = Color(1.0, 1.0, 1.0, 1.0)
 	
-	# Handle whirlwind state
 	if current_state == State.CHARGING_WHIRLWIND:
 		velocity = whirlwind_direction * CHARGE_SPEED
 		
@@ -148,11 +147,9 @@ func _physics_process(delta: float) -> void:
 	
 	distance_to_player = global_position.distance_to(player.global_position)
 	
-	# Handle normal attack at close range
 	if not is_attacking and attack_timer >= attack_cooldown and distance_to_player <= normal_attack_range:
 		start_normal_attack()
 		attack_timer = 0.0
-	# Handle whirlwind charge attack at larger range
 	elif not is_attacking and not is_charging_whirlwind and attack_timer >= attack_cooldown and distance_to_player <= whirlwind_charge_range and distance_to_player > normal_attack_range and randf() <= 0.25:
 		start_whirlwind_charge()
 		attack_timer = 0.0
@@ -231,24 +228,19 @@ func start_whirlwind_charge() -> void:
 	current_state = State.CHARGING_WHIRLWIND
 	is_charging_whirlwind = true
 	
-	# Calculate destination 300px past the player
 	whirlwind_direction = global_position.direction_to(player.global_position).normalized()
 	whirlwind_target_position = player.global_position + whirlwind_direction * 300.0
 	
-	# Disable hurtbox during charge
 	hurtbox.disabled = true
 	
-	# Start whirlwind animation
 	animated_sprite_2d.play("WhirlwindAttack")
 
 func end_whirlwind() -> void:
 	current_state = State.CHASE
 	is_charging_whirlwind = false
 	
-	# Re-enable hurtbox
 	hurtbox.disabled = false
 	
-	# Deactivate hitbox
 	hitbox_active = false
 	hitbox.monitoring = false
 

@@ -74,6 +74,8 @@ var slow_timer: float = 0.0
 var slow_duration: float = 0.0
 var original_speed: float = 0.0
 
+var difficulty_mode_damage_multiplier: float = 1.0
+
 func enable_special_variant_1():
 	special_variant_1 = true
 	
@@ -400,7 +402,7 @@ func _on_frame_changed() -> void:
 		
 		var attack_instance: Area2D = ATTACK.instantiate()
 		attack_instance.global_position = target_position
-		attack_instance.initialize(damage_multiplier)
+		attack_instance.initialize(damage_multiplier * difficulty_mode_damage_multiplier)
 		get_parent().add_child(attack_instance)
 	
 
@@ -408,7 +410,7 @@ func _on_frame_changed() -> void:
 		if heal_position != Vector2.ZERO:
 			var heal_effect: Area2D = HEAL.instantiate()
 			heal_effect.global_position = heal_position
-			heal_effect.initialize(heal_multiplier)
+			heal_effect.initialize(heal_multiplier * difficulty_mode_damage_multiplier)
 			get_parent().add_child(heal_effect)
 	
 func _on_player_detector_area_entered(area: Area2D) -> void:

@@ -21,6 +21,7 @@ var total_blinks_used: int = 0
 var total_shockwaves_used: int = 0
 var total_gravity_wells_used: int = 0
 var total_orbital_abilities_used: int = 0
+var total_time_warps_used: int = 0
 var total_shots_fired: int = 0
 var shots_fired_by_weapon: Dictionary = {}
 

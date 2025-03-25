@@ -74,6 +74,9 @@ func _on_restart_button_pressed() -> void:
 	OrbitalAbilityScript.glass_cannon_multiplier = false
 	OrbitalAbilityScript.runforrestrun_multiplier = false
 	
+	var TimeWarpScript: GDScript = load("res://scripts/time_warp.gd")
+	TimeWarpScript.ability_level = 1
+	
 	var PlayerScript: GDScript = load("res://scripts/player.gd")
 	PlayerScript.max_mana = 100.0
 	PlayerScript.max_health = 100
@@ -121,6 +124,7 @@ func populate_stats() -> void:
 	add_stat_label("Damage Dealt to Mobs: " + str(round(stats_manager.damage_dealt_to_enemies)))
 	add_stat_label("Damage Taken from Mobs: " + str(round(stats_manager.damage_taken_from_enemies)))
 	add_stat_label("Total Mobs Killed: " + str(stats_manager.total_enemies_killed))
+	add_stat_label("Total Shots Fired: " + str(stats_manager.total_shots_fired))
 	add_stat_label("")
 	
 	# enemy kills
@@ -136,7 +140,7 @@ func populate_stats() -> void:
 	add_stat_label("Total Shockwaves Used: " + str(stats_manager.total_shockwaves_used))
 	add_stat_label("Total Gravity Wells Used: " + str(stats_manager.total_gravity_wells_used))
 	add_stat_label("Total Magic Orbitals Used: " + str(stats_manager.total_orbital_abilities_used))
-	add_stat_label("Total Shots Fired: " + str(stats_manager.total_shots_fired))
+	add_stat_label("Total Time Warps Used: " + str(stats_manager.total_time_warps_used))
 	add_stat_label("")
 	
 	# shots by weapon

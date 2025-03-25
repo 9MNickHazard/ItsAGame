@@ -97,6 +97,8 @@ var slow_timer: float = 0.0
 var slow_duration: float = 0.0
 var original_speed: float = 0.0
 
+var difficulty_mode_damage_multiplier: float = 1.0
+
 func enable_special_variant_1():
 	special_variant_1 = true
 	
@@ -104,6 +106,10 @@ func enable_special_variant_1():
 	
 	minimum_damage *= 2
 	maximum_damage *= 2
+	horn_minimum_damage *= 2
+	horn_maximum_damage *= 2
+	charge_minimum_damage *= 2
+	charge_maximum_damage *= 2
 	
 	SPEED *= 1.5
 	
@@ -550,21 +556,21 @@ func _on_attack_up_hitbox_area_entered(area: Area2D) -> void:
 
 func _on_horn_attack_down_hitbox_area_entered(area: Area2D) -> void:
 	if area.is_in_group("player_hurtbox"):
-		damage = randi_range(horn_minimum_damage, horn_maximum_damage)
+		damage = randi_range(horn_minimum_damage * difficulty_mode_damage_multiplier, horn_maximum_damage * difficulty_mode_damage_multiplier)
 		overlapping_player = true
 		if area.get_parent().has_method("take_damage_from_mob1"):
 			area.get_parent().take_damage_from_mob1(damage)
 
 func _on_horn_attack_right_hitbox_area_entered(area: Area2D) -> void:
 	if area.is_in_group("player_hurtbox"):
-		damage = randi_range(horn_minimum_damage, horn_maximum_damage)
+		damage = randi_range(horn_minimum_damage * difficulty_mode_damage_multiplier, horn_maximum_damage * difficulty_mode_damage_multiplier)
 		overlapping_player = true
 		if area.get_parent().has_method("take_damage_from_mob1"):
 			area.get_parent().take_damage_from_mob1(damage)
 
 func _on_horn_attack_up_hitbox_area_entered(area: Area2D) -> void:
 	if area.is_in_group("player_hurtbox"):
-		damage = randi_range(horn_minimum_damage, horn_maximum_damage)
+		damage = randi_range(horn_minimum_damage * difficulty_mode_damage_multiplier, horn_maximum_damage * difficulty_mode_damage_multiplier)
 		overlapping_player = true
 		if area.get_parent().has_method("take_damage_from_mob1"):
 			area.get_parent().take_damage_from_mob1(damage)
@@ -594,7 +600,7 @@ func _on_stomp_up_hitbox_area_entered(area: Area2D) -> void:
 
 func _on_charge_hitbox_area_entered(area: Area2D) -> void:
 	if area.is_in_group("player_hurtbox"):
-		damage = randi_range(charge_minimum_damage, charge_maximum_damage)
+		damage = randi_range(charge_minimum_damage * difficulty_mode_damage_multiplier, charge_maximum_damage * difficulty_mode_damage_multiplier)
 		overlapping_player = true
 		if area.get_parent().has_method("take_damage_from_mob1"):
 			area.get_parent().take_damage_from_mob1(damage)

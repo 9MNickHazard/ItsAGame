@@ -52,7 +52,7 @@ var state_timer: float = 0.0
 var wander_direction: Vector2 = Vector2.ZERO
 var flank_direction: Vector2 = Vector2.ZERO
 
-var optimal_distance: float = 50.0
+var optimal_distance: float = 60.0
 var ai_velocity: Vector2 = Vector2.ZERO
 var distance_to_player: float
 var ai_direction: Vector2
@@ -75,14 +75,17 @@ var original_speed: float = 0.0
 func enable_special_variant_1():
 	special_variant_1 = true
 	
-	scale = scale * 2.0
+	optimal_distance = 125.0
+	attack_range = 125.0
+	
+	scale *= 2
 	
 	minimum_damage *= 2
 	maximum_damage *= 2
 	
 	SPEED *= 1.5
 	
-	max_health *= 5
+	max_health *= 15
 	health = max_health
 	
 	should_enable_outline = true
@@ -101,8 +104,8 @@ func _ready() -> void:
 		enable_outline()
 	elif not special_variant_1:
 		disable_outline()
-	
-			
+
+
 func _physics_process(delta: float) -> void:
 	if is_dead:
 		return

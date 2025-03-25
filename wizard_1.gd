@@ -65,6 +65,8 @@ var slow_timer: float = 0.0
 var slow_duration: float = 0.0
 var original_speed: float = 0.0
 
+var difficulty_mode_damage_multiplier: float = 1.0
+
 func enable_special_variant_1():
 	special_variant_1 = true
 	
@@ -194,13 +196,13 @@ func _on_frame_changed() -> void:
 		for dir in directions:
 			var attack1_projectile: Area2D = ATTACK1.instantiate()
 			attack1_projectile.global_position = attack_1_release_point.global_position
-			attack1_projectile.fire_projectile(dir, damage_multiplier)
+			attack1_projectile.fire_projectile(dir, damage_multiplier * difficulty_mode_damage_multiplier)
 			get_parent().add_child(attack1_projectile)
 			
 	elif is_attacking and animated_sprite.animation == "attack2" and animated_sprite.frame == 4:
 		var attack2_projectile: Area2D = ATTACK2.instantiate()
 		attack2_projectile.global_position = attack_2_release_point.global_position
-		attack2_projectile.fire_projectile(player.global_position, damage_multiplier)
+		attack2_projectile.fire_projectile(player.global_position, damage_multiplier * difficulty_mode_damage_multiplier)
 		get_parent().add_child(attack2_projectile)
 		
 		

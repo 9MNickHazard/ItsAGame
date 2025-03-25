@@ -94,6 +94,12 @@ func _on_button_pressed(action, button):
 
 func _input(event):
 	if event.is_action_pressed("pause") and not waiting_for_input:
+		var game_stats_ui = get_node_or_null("/root/world/GameStatsUI")
+		var treasure_chest_scene = get_node_or_null("/root/world/TreasureChestScene")
+		
+		if (game_stats_ui and game_stats_ui.visible) or (treasure_chest_scene and treasure_chest_scene.visible):
+			return
+		
 		toggle_pause()
 	
 	elif waiting_for_input:
@@ -221,6 +227,9 @@ func _on_restart_button_pressed() -> void:
 	OrbitalAbilityScript.ability_level = 1
 	OrbitalAbilityScript.glass_cannon_multiplier = false
 	OrbitalAbilityScript.runforrestrun_multiplier = false
+	
+	var TimeWarpScript: GDScript = load("res://scripts/time_warp.gd")
+	TimeWarpScript.ability_level = 1
 	
 	var PlayerScript: GDScript = load("res://scripts/player.gd")
 	PlayerScript.max_mana = 100.0

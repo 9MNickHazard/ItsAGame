@@ -1,6 +1,6 @@
 extends Node
 
-# Upgrade levels
+# upgrade levels
 static var base_health_level: int = 0
 static var base_mana_level: int = 0
 static var movement_speed_level: int = 0
@@ -17,16 +17,17 @@ static var xp_bonus_level: int = 0
 static var gold_bonus_level: int = 0
 static var magnet_level: int = 0
 
-# Gems
+# gems
 static var gem_total: int = 0
 
-# Difficulty Mode
+# difficulty mode
 static var unlocked_heroic: bool = false
 static var unlocked_legendary: bool = false
 static var selected_difficulty_mode: int = 0
 
-# File path
 const SAVE_FILE_PATH: String = "user://game_save.save"
+
+const VERSION: float = 0.5
 
 
 func _ready() -> void:
@@ -41,68 +42,97 @@ func get_selected_difficulty() -> int:
 	return selected_difficulty_mode
 
 func save_game() -> void:
-	var save_file = ConfigFile.new()
+	var save_data = {
+		"upgrades": {
+			"base_health_level": base_health_level,
+			"base_mana_level": base_mana_level,
+			"movement_speed_level": movement_speed_level,
+			"min_weapon_damage_level": min_weapon_damage_level,
+			"max_weapon_damage_level": max_weapon_damage_level,
+			"min_ability_damage_level": min_ability_damage_level,
+			"max_ability_damage_level": max_ability_damage_level,
+			"luck_level": luck_level,
+			"revive_level": revive_level,
+			"mana_regeneration_level": mana_regeneration_level,
+			"hp_regeneration_level": hp_regeneration_level,
+			"armor_level": armor_level,
+			"xp_bonus_level": xp_bonus_level,
+			"gold_bonus_level": gold_bonus_level,
+			"magnet_level": magnet_level
+		},
+		"currency": {
+			"gems": gem_total
+		},
+		"difficulty": {
+			"unlocked_heroic": unlocked_heroic,
+			"unlocked_legendary": unlocked_legendary
+		},
+		"metadata": {
+			"version": VERSION
+		}
+	}
 	
-	save_file.set_value("upgrades", "base_health_level", base_health_level)
-	save_file.set_value("upgrades", "base_mana_level", base_mana_level)
-	save_file.set_value("upgrades", "movement_speed_level", movement_speed_level)
-	save_file.set_value("upgrades", "min_weapon_damage_level", min_weapon_damage_level)
-	save_file.set_value("upgrades", "max_weapon_damage_level", max_weapon_damage_level)
-	save_file.set_value("upgrades", "min_ability_damage_level", min_ability_damage_level)
-	save_file.set_value("upgrades", "max_ability_damage_level", max_ability_damage_level)
-	save_file.set_value("upgrades", "luck_level", luck_level)
-	save_file.set_value("upgrades", "revive_level", revive_level)
-	save_file.set_value("upgrades", "mana_regeneration_level", mana_regeneration_level)
-	save_file.set_value("upgrades", "hp_regeneration_level", hp_regeneration_level)
-	save_file.set_value("upgrades", "armor_level", armor_level)
-	save_file.set_value("upgrades", "xp_bonus_level", xp_bonus_level)
-	save_file.set_value("upgrades", "gold_bonus_level", gold_bonus_level)
-	save_file.set_value("upgrades", "magnet_level", magnet_level)
-	
-	save_file.set_value("currency", "gems", gem_total)
-	
-	save_file.set_value("difficulty", "unlocked_heroic", unlocked_heroic)
-	save_file.set_value("difficulty", "unlocked_legendary", unlocked_legendary)
-	
-	save_file.set_value("metadata", "version", 0.5)
-	
-	var error = save_file.save(SAVE_FILE_PATH)
-	if error != OK:
-		print("Error saving game: ", error)
-	else:
+	var save_file = FileAccess.open(SAVE_FILE_PATH, FileAccess.WRITE)
+	if save_file:
+		save_file.store_var(save_data)
+		save_file.close()
 		print("Game saved successfully")
+	else:
+		print("Error opening file for saving")
 
 
 func load_game() -> void:
-	var save_file = ConfigFile.new()
-	var error = save_file.load(SAVE_FILE_PATH)
-	
-	if error != OK:
-		print("No save file found or error loading. Using default values.")
+	if not FileAccess.file_exists(SAVE_FILE_PATH):
+		print("No save file found. Using default values.")
+		reset_to_defaults()
 		return
 	
-	base_health_level = save_file.get_value("upgrades", "base_health_level", 0)
-	base_mana_level = save_file.get_value("upgrades", "base_mana_level", 0)
-	movement_speed_level = save_file.get_value("upgrades", "movement_speed_level", 0)
-	min_weapon_damage_level = save_file.get_value("upgrades", "min_weapon_damage_level", 0)
-	max_weapon_damage_level = save_file.get_value("upgrades", "max_weapon_damage_level", 0)
-	min_ability_damage_level = save_file.get_value("upgrades", "min_ability_damage_level", 0)
-	max_ability_damage_level = save_file.get_value("upgrades", "max_ability_damage_level", 0)
-	luck_level = save_file.get_value("upgrades", "luck_level", 0)
-	revive_level = save_file.get_value("upgrades", "revive_level", 0)
-	mana_regeneration_level = save_file.get_value("upgrades", "mana_regeneration_level", 0)
-	hp_regeneration_level = save_file.get_value("upgrades", "hp_regeneration_level", 0)
-	armor_level = save_file.get_value("upgrades", "armor_level", 0)
-	xp_bonus_level = save_file.get_value("upgrades", "xp_bonus_level", 0)
-	gold_bonus_level = save_file.get_value("upgrades", "gold_bonus_level", 0)
-	magnet_level = save_file.get_value("upgrades", "magnet_level", 0)
-	
-	gem_total = save_file.get_value("currency", "gems", 0)
-	
-	unlocked_heroic = save_file.get_value("difficulty", "unlocked_heroic", false)
-	unlocked_legendary = save_file.get_value("difficulty", "unlocked_legendary", false)
-	
-	print("Game loaded successfully")
+	var save_file = FileAccess.open(SAVE_FILE_PATH, FileAccess.READ)
+	if save_file:
+		var save_data = save_file.get_var()
+		save_file.close()
+		
+		if save_data:
+			var saved_version: float = 0.0
+			if save_data.has("metadata") and save_data["metadata"].has("version"):
+				saved_version = save_data["metadata"].get("version")
+			
+			if saved_version != VERSION:
+				print("Save data version mismatch. Using default values.")
+				reset_to_defaults()
+				return
+			
+			if save_data.has("upgrades"):
+				base_health_level = save_data["upgrades"].get("base_health_level", 0)
+				base_mana_level = save_data["upgrades"].get("base_mana_level", 0)
+				movement_speed_level = save_data["upgrades"].get("movement_speed_level", 0)
+				min_weapon_damage_level = save_data["upgrades"].get("min_weapon_damage_level", 0)
+				max_weapon_damage_level = save_data["upgrades"].get("max_weapon_damage_level", 0)
+				min_ability_damage_level = save_data["upgrades"].get("min_ability_damage_level", 0)
+				max_ability_damage_level = save_data["upgrades"].get("max_ability_damage_level", 0)
+				luck_level = save_data["upgrades"].get("luck_level", 0)
+				revive_level = save_data["upgrades"].get("revive_level", 0)
+				mana_regeneration_level = save_data["upgrades"].get("mana_regeneration_level", 0)
+				hp_regeneration_level = save_data["upgrades"].get("hp_regeneration_level", 0)
+				armor_level = save_data["upgrades"].get("armor_level", 0)
+				xp_bonus_level = save_data["upgrades"].get("xp_bonus_level", 0)
+				gold_bonus_level = save_data["upgrades"].get("gold_bonus_level", 0)
+				magnet_level = save_data["upgrades"].get("magnet_level", 0)
+			
+			if save_data.has("currency"):
+				gem_total = save_data["currency"].get("gems", 0)
+			
+			if save_data.has("difficulty"):
+				unlocked_heroic = save_data["difficulty"].get("unlocked_heroic", false)
+				unlocked_legendary = save_data["difficulty"].get("unlocked_legendary", false)
+			
+			print("Game loaded successfully")
+		else:
+			print("Error reading save data")
+			reset_to_defaults()
+	else:
+		print("Error opening save file for reading")
+		reset_to_defaults()
 
 
 func apply_all_saved_upgrades() -> void:
@@ -359,8 +389,34 @@ func reset_all_data() -> void:
 	xp_bonus_level = 0
 	gold_bonus_level = 0
 	magnet_level = 0
+
 	gem_total = 0
+
+	unlocked_heroic = false
+	unlocked_legendary = false
 	
 	save_game()
 	apply_all_saved_upgrades()
 	print("All save data has been reset!")
+
+func reset_to_defaults() -> void:
+	base_health_level = 0
+	base_mana_level = 0
+	movement_speed_level = 0
+	min_weapon_damage_level = 0
+	max_weapon_damage_level = 0
+	min_ability_damage_level = 0
+	max_ability_damage_level = 0
+	luck_level = 0
+	revive_level = 0
+	mana_regeneration_level = 0
+	hp_regeneration_level = 0
+	armor_level = 0
+	xp_bonus_level = 0
+	gold_bonus_level = 0
+	magnet_level = 0
+	
+	gem_total = 0
+	
+	unlocked_heroic = false
+	unlocked_legendary = false

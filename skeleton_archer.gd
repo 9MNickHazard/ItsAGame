@@ -63,6 +63,8 @@ var slow_timer: float = 0.0
 var slow_duration: float = 0.0
 var original_speed: float = 0.0
 
+var difficulty_mode_damage_multiplier: float = 1.0
+
 func enable_special_variant_1():
 	special_variant_1 = true
 	
@@ -177,7 +179,7 @@ func _on_frame_changed() -> void:
 	if is_attacking and animated_sprite.animation == "Attack" and animated_sprite.frame == 6:
 		var attack_projectile: Node2D = ATTACK.instantiate()
 		attack_projectile.global_position = attack_release_point.global_position
-		attack_projectile.fire_projectile(player.global_position, damage_multiplier)
+		attack_projectile.fire_projectile(player.global_position, damage_multiplier * difficulty_mode_damage_multiplier)
 		get_parent().add_child(attack_projectile)
 		
 		
