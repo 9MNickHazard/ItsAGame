@@ -16,6 +16,8 @@ static var armor_level: int = 0
 static var xp_bonus_level: int = 0
 static var gold_bonus_level: int = 0
 static var magnet_level: int = 0
+static var heart_pickup_level: int = 0
+static var mana_pickup_level: int = 0
 
 # gems
 static var gem_total: int = 0
@@ -58,7 +60,9 @@ func save_game() -> void:
 			"armor_level": armor_level,
 			"xp_bonus_level": xp_bonus_level,
 			"gold_bonus_level": gold_bonus_level,
-			"magnet_level": magnet_level
+			"magnet_level": magnet_level,
+			"heart_pickup_level": heart_pickup_level,
+			"mana_pickup_level": mana_pickup_level
 		},
 		"currency": {
 			"gems": gem_total
@@ -118,6 +122,8 @@ func load_game() -> void:
 				xp_bonus_level = save_data["upgrades"].get("xp_bonus_level", 0)
 				gold_bonus_level = save_data["upgrades"].get("gold_bonus_level", 0)
 				magnet_level = save_data["upgrades"].get("magnet_level", 0)
+				heart_pickup_level = save_data["upgrades"].get("heart_pickup_level", 0)
+				mana_pickup_level = save_data["upgrades"].get("mana_pickup_level", 0)
 			
 			if save_data.has("currency"):
 				gem_total = save_data["currency"].get("gems", 0)
@@ -296,6 +302,16 @@ func apply_all_saved_upgrades() -> void:
 		DiamondScript.permanent_pickup_range_bonus += bonus
 	
 	# LUCK HERE
+	
+	# Apply Heart Pickup
+	HeartPickupScript.permanent_healing_bonus = 0
+	for i in range(heart_pickup_level):
+		HeartPickupScript.permanent_healing_bonus += upgrade_effects["heart_pickup"][i]
+
+	# Apply Mana Pickup
+	ManaBallScript.permanent_mana_bonus = 0
+	for i in range(mana_pickup_level):
+		ManaBallScript.permanent_mana_bonus += upgrade_effects["mana_pickup"][i]
 
 
 func get_gems() -> int:
@@ -336,6 +352,8 @@ func get_upgrade_level(upgrade_name: String) -> int:
 		"xp_bonus": return xp_bonus_level
 		"gold_bonus": return gold_bonus_level
 		"magnet": return magnet_level
+		"heart_pickup": return heart_pickup_level
+		"mana_pickup": return mana_pickup_level
 		_: 
 			print("Warning: Unknown upgrade name: " + upgrade_name)
 			return 0
@@ -368,6 +386,8 @@ func save_upgrade_level(upgrade_name: String, level: int) -> void:
 		"xp_bonus": xp_bonus_level = level
 		"gold_bonus": gold_bonus_level = level
 		"magnet": magnet_level = level
+		"heart_pickup": heart_pickup_level = level
+		"mana_pickup": mana_pickup_level = level
 		_: print("Warning: Unknown upgrade name: " + upgrade_name)
 	
 	save_game()
@@ -389,6 +409,8 @@ func reset_all_data() -> void:
 	xp_bonus_level = 0
 	gold_bonus_level = 0
 	magnet_level = 0
+	heart_pickup_level = 0
+	mana_pickup_level = 0
 
 	gem_total = 0
 
@@ -415,8 +437,91 @@ func reset_to_defaults() -> void:
 	xp_bonus_level = 0
 	gold_bonus_level = 0
 	magnet_level = 0
+	heart_pickup_level = 0
+	mana_pickup_level = 0
 	
 	gem_total = 0
 	
 	unlocked_heroic = false
 	unlocked_legendary = false
+
+func reset_upgrade_levels() -> void:
+	base_health_level = 0
+	base_mana_level = 0
+	movement_speed_level = 0
+	min_weapon_damage_level = 0
+	max_weapon_damage_level = 0
+	min_ability_damage_level = 0
+	max_ability_damage_level = 0
+	luck_level = 0
+	revive_level = 0
+	mana_regeneration_level = 0
+	hp_regeneration_level = 0
+	armor_level = 0
+	xp_bonus_level = 0
+	gold_bonus_level = 0
+	magnet_level = 0
+	heart_pickup_level = 0
+	mana_pickup_level = 0
+	
+	var PlayerScript = load("res://scripts/player.gd")
+	var BulletScript = load("res://scripts/bullet.gd")
+	var Bullet2Script = load("res://scripts/bullet_2.gd")
+	var SniperBulletScript = load("res://scripts/sniper_1_bullet.gd")
+	var RocketAmmoScript = load("res://scripts/rocket_ammo.gd")
+	var ShotgunBulletScript = load("res://scripts/shotgun_bullet.gd")
+	var ShockwaveScript = load("res://scripts/shockwave.gd")
+	var FireBlinkScript = load("res://scripts/fire_blink.gd")
+	var GravityWellScript = load("res://scripts/gravity_well.gd")
+	var OrbitalAbilityScript = load("res://scripts/orbital_ability.gd")
+	var ExperienceManagerScript = load("res://scripts/experience_manager.gd")
+	var UIScript = load("res://scripts/ui.gd")
+	var CoinScript = load("res://scripts/coin.gd")
+	var FiveCoinScript = load("res://scripts/5_coin.gd")
+	var TwentyFiveCoinScript = load("res://scripts/25_coin.gd")
+	var HeartPickupScript = load("res://scripts/heart_pickup.gd")
+	var ManaBallScript = load("res://scripts/mana_ball.gd")
+	var DiamondScript = load("res://scripts/diamond.gd")
+	
+	PlayerScript.permanent_health_bonus = 0.0
+	PlayerScript.permanent_mana_bonus = 0.0
+	PlayerScript.permanent_speed_bonus = 0.0
+	PlayerScript.has_revive = false
+	PlayerScript.mana_regen_rate = 0.0
+	PlayerScript.hp_regen_rate = 0.0
+	PlayerScript.armor = 0
+	
+	BulletScript.permanent_min_damage_bonus = 0
+	BulletScript.permanent_max_damage_bonus = 0
+	Bullet2Script.permanent_min_damage_bonus = 0
+	Bullet2Script.permanent_max_damage_bonus = 0
+	SniperBulletScript.permanent_min_damage_bonus = 0
+	SniperBulletScript.permanent_max_damage_bonus = 0
+	RocketAmmoScript.permanent_min_damage_bonus = 0
+	RocketAmmoScript.permanent_max_damage_bonus = 0
+	ShotgunBulletScript.permanent_min_damage_bonus = 0
+	ShotgunBulletScript.permanent_max_damage_bonus = 0
+	
+	ShockwaveScript.permanent_min_damage_bonus = 0
+	ShockwaveScript.permanent_max_damage_bonus = 0
+	FireBlinkScript.permanent_min_damage_bonus = 0
+	FireBlinkScript.permanent_max_damage_bonus = 0
+	GravityWellScript.permanent_min_damage_bonus = 0
+	GravityWellScript.permanent_max_damage_bonus = 0
+	OrbitalAbilityScript.permanent_min_damage_bonus = 0
+	OrbitalAbilityScript.permanent_max_damage_bonus = 0
+	
+	CoinScript.permanent_pickup_range_bonus = 0.0
+	FiveCoinScript.permanent_pickup_range_bonus = 0.0
+	TwentyFiveCoinScript.permanent_pickup_range_bonus = 0.0
+	HeartPickupScript.permanent_pickup_range_bonus = 0.0
+	ManaBallScript.permanent_pickup_range_bonus = 0.0
+	DiamondScript.permanent_pickup_range_bonus = 0.0
+	
+	HeartPickupScript.permanent_healing_bonus = 0
+	ManaBallScript.permanent_mana_bonus = 0
+	
+	ExperienceManagerScript.change_xp_bonus(1.0)
+	UIScript.change_gold_bonus(1.0)
+	
+	save_game()

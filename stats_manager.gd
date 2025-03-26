@@ -9,6 +9,7 @@ var total_coins_collected: int = 0
 var total_hearts_collected: int = 0
 var total_mana_balls_collected: int = 0
 var total_diamonds_collected: int = 0
+var total_chests_collected: int = 0
 
 # combat stats
 var damage_dealt_to_enemies: float = 0.0
@@ -49,6 +50,7 @@ func reset_stats() -> void:
 	total_hearts_collected = 0
 	total_mana_balls_collected = 0
 	total_diamonds_collected = 0
+	total_chests_collected = 0
 	damage_dealt_to_enemies = 0.0
 	damage_taken_from_enemies = 0.0
 	total_enemies_killed = 0

@@ -33,5 +33,6 @@ func _on_player_health_depleted() -> void:
 			difficulty_manager.difficulty_timer.stop()
 	
 	$GameStatsUI.visible = true
+	$GameStatsUI.populate_stats()
 	#var stats_ui: CanvasLayer = load("res://scenes/game_stats_ui.tscn").instantiate()
 	#add_child(stats_ui)

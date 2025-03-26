@@ -18,6 +18,13 @@ extends CanvasLayer
 @onready var xp_bonus_button: Button = $MarginContainer/PanelContainer/MainVbox/MainRow/MarginContainer/GridContainer/XpBonus/VBoxContainer/CenterContainer2/XpBonusButton
 @onready var gold_bonus_button: Button = $MarginContainer/PanelContainer/MainVbox/MainRow/MarginContainer/GridContainer/GoldBonus/VBoxContainer/CenterContainer2/GoldBonusButton
 @onready var magnet_button: Button = $MarginContainer/PanelContainer/MainVbox/MainRow/MarginContainer/GridContainer/Magnet/VBoxContainer/CenterContainer2/MagnetButton
+@onready var heart_pickup_button: Button = $MarginContainer/PanelContainer/MainVbox/MainRow/MarginContainer/GridContainer/HeartPickup/VBoxContainer/CenterContainer2/HeartPickupButton
+@onready var mana_pickup_button: Button = $MarginContainer/PanelContainer/MainVbox/MainRow/MarginContainer/GridContainer/ManaPickup/VBoxContainer/CenterContainer2/ManaPickupButton
+@onready var refund_button: Button = $MarginContainer/PanelContainer/MainVbox/ButtonRow/RefundButton
+
+@onready var confirm_refund_button: Button = $MarginContainer/PanelContainer/RefundConfirm/PanelContainer/MarginContainer/VBoxContainer/CenterContainer/HBoxContainer/ConfirmRefundButton
+@onready var cancel_refund_button: Button = $MarginContainer/PanelContainer/RefundConfirm/PanelContainer/MarginContainer/VBoxContainer/CenterContainer/HBoxContainer/CancelRefundButton
+@onready var refund_confirm: CenterContainer = $MarginContainer/PanelContainer/RefundConfirm
 
 @onready var base_health_checked_pip_1: TextureRect = $MarginContainer/PanelContainer/MainVbox/MainRow/MarginContainer/GridContainer/BaseHealth/VBoxContainer/CenterContainer/HBoxContainer/MarginContainer/BaseHealthCheckedPip1
 @onready var base_health_checked_pip_2: TextureRect = $MarginContainer/PanelContainer/MainVbox/MainRow/MarginContainer/GridContainer/BaseHealth/VBoxContainer/CenterContainer/HBoxContainer/MarginContainer2/BaseHealthCheckedPip2
@@ -76,6 +83,14 @@ extends CanvasLayer
 @onready var magnet_checked_pip_1: TextureRect = $MarginContainer/PanelContainer/MainVbox/MainRow/MarginContainer/GridContainer/Magnet/VBoxContainer/CenterContainer/HBoxContainer/MarginContainer/MagnetCheckedPip1
 @onready var magnet_checked_pip_2: TextureRect = $MarginContainer/PanelContainer/MainVbox/MainRow/MarginContainer/GridContainer/Magnet/VBoxContainer/CenterContainer/HBoxContainer/MarginContainer2/MagnetCheckedPip2
 @onready var magnet_checked_pip_3: TextureRect = $MarginContainer/PanelContainer/MainVbox/MainRow/MarginContainer/GridContainer/Magnet/VBoxContainer/CenterContainer/HBoxContainer/MarginContainer3/MagnetCheckedPip3
+@onready var heart_pickup_checked_pip_1: TextureRect = $MarginContainer/PanelContainer/MainVbox/MainRow/MarginContainer/GridContainer/HeartPickup/VBoxContainer/CenterContainer/HBoxContainer/MarginContainer/HeartPickupCheckedPip1
+@onready var heart_pickup_checked_pip_2: TextureRect = $MarginContainer/PanelContainer/MainVbox/MainRow/MarginContainer/GridContainer/HeartPickup/VBoxContainer/CenterContainer/HBoxContainer/MarginContainer2/HeartPickupCheckedPip2
+@onready var heart_pickup_checked_pip_3: TextureRect = $MarginContainer/PanelContainer/MainVbox/MainRow/MarginContainer/GridContainer/HeartPickup/VBoxContainer/CenterContainer/HBoxContainer/MarginContainer3/HeartPickupCheckedPip3
+@onready var heart_pickup_checked_pip_4: TextureRect = $MarginContainer/PanelContainer/MainVbox/MainRow/MarginContainer/GridContainer/HeartPickup/VBoxContainer/CenterContainer/HBoxContainer/MarginContainer4/HeartPickupCheckedPip4
+@onready var mana_pickup_checked_pip_1: TextureRect = $MarginContainer/PanelContainer/MainVbox/MainRow/MarginContainer/GridContainer/ManaPickup/VBoxContainer/CenterContainer/HBoxContainer/MarginContainer/ManaPickupCheckedPip1
+@onready var mana_pickup_checked_pip_2: TextureRect = $MarginContainer/PanelContainer/MainVbox/MainRow/MarginContainer/GridContainer/ManaPickup/VBoxContainer/CenterContainer/HBoxContainer/MarginContainer2/ManaPickupCheckedPip2
+@onready var mana_pickup_checked_pip_3: TextureRect = $MarginContainer/PanelContainer/MainVbox/MainRow/MarginContainer/GridContainer/ManaPickup/VBoxContainer/CenterContainer/HBoxContainer/MarginContainer3/ManaPickupCheckedPip3
+@onready var mana_pickup_checked_pip_4: TextureRect = $MarginContainer/PanelContainer/MainVbox/MainRow/MarginContainer/GridContainer/ManaPickup/VBoxContainer/CenterContainer/HBoxContainer/MarginContainer4/ManaPickupCheckedPip4
 
 @onready var not_enough_gems_label: Label = $MarginContainer/PanelContainer/MainVbox/BottomRow/MarginContainer/NotEnoughGemsLabel
 
@@ -94,6 +109,8 @@ static var armor_level: int = 0
 static var xp_bonus_level: int = 0
 static var gold_bonus_level: int = 0
 static var magnet_level: int = 0
+static var heart_pickup_level: int = 0
+static var mana_pickup_level: int = 0
 
 # Upgrade costs and effects
 const UPGRADE_COSTS: Dictionary = {
@@ -111,7 +128,9 @@ const UPGRADE_COSTS: Dictionary = {
 	"armor": [250, 525, 1000, 1800, 3200],
 	"xp_bonus": [150, 325, 650, 1300],
 	"gold_bonus": [180, 400, 800, 1600],
-	"magnet": [125, 300, 600]
+	"magnet": [125, 300, 600],
+	"heart_pickup": [500, 1250, 2500, 4000],
+	"mana_pickup": [400, 1000, 1800, 3000]
 }
 
 const UPGRADE_EFFECTS: Dictionary = {
@@ -129,11 +148,14 @@ const UPGRADE_EFFECTS: Dictionary = {
 	"armor": [1, 1, 1, 1, 2],  #
 	"xp_bonus": [0.05, 0.08, 0.12, 0.20],  #
 	"gold_bonus": [.10, .15, .25, .4],  #
-	"magnet": [50.0, 100.0, 150.0]  #
+	"magnet": [50.0, 100.0, 150.0],  #
+	"heart_pickup": [10, 10, 10, 10], # 10 extra HP gained from heart pickups per level
+	"mana_pickup": [25.0, 25.0, 25.0, 25.0] # 25 extra Mana gained from manaball pickups per level
 }
 
 func _ready() -> void:
 	not_enough_gems_label.hide()
+	refund_confirm.hide()
 	
 	if save_manager:
 		base_health_level = save_manager.get_upgrade_level("base_health")
@@ -151,6 +173,8 @@ func _ready() -> void:
 		xp_bonus_level = save_manager.get_upgrade_level("xp_bonus")
 		gold_bonus_level = save_manager.get_upgrade_level("gold_bonus")
 		magnet_level = save_manager.get_upgrade_level("magnet")
+		heart_pickup_level = save_manager.get_upgrade_level("heart_pickup")
+		mana_pickup_level = save_manager.get_upgrade_level("mana_pickup")
 	
 	update_base_health_pips()
 	update_base_mana_pips()
@@ -167,6 +191,8 @@ func _ready() -> void:
 	update_xp_bonus_pips()
 	update_gold_bonus_pips()
 	update_magnet_pips()
+	update_heart_pickup_pips()
+	update_mana_pickup_pips()
 	
 	gems_label.text = "Gems: " + str(save_manager.get_gems())
 
@@ -190,6 +216,9 @@ func disable_enable_buttons(disabled: bool = true):
 		xp_bonus_button.disabled = true
 		gold_bonus_button.disabled = true
 		magnet_button.disabled = true
+		heart_pickup_button.disabled = true
+		mana_pickup_button.disabled = true
+		refund_button.disabled = true
 	else:
 		back_button.disabled = false
 		base_health_button.disabled = false
@@ -207,6 +236,9 @@ func disable_enable_buttons(disabled: bool = true):
 		xp_bonus_button.disabled = false
 		gold_bonus_button.disabled = false
 		magnet_button.disabled = false
+		heart_pickup_button.disabled = false
+		mana_pickup_button.disabled = false
+		refund_button.disabled = false
 
 func _on_base_health_button_pressed() -> void:
 	if base_health_level >= UPGRADE_COSTS["base_health"].size():
@@ -882,9 +914,218 @@ func update_button_texts() -> void:
 	else:
 		magnet_button.text = "MAXED"
 		magnet_button.disabled = true
+	
+	# Heart Pickup
+	if heart_pickup_level < UPGRADE_COSTS["heart_pickup"].size():
+		heart_pickup_button.text = "Upgrade: " + str(UPGRADE_COSTS["heart_pickup"][heart_pickup_level])
+		heart_pickup_button.disabled = false
+	else:
+		heart_pickup_button.text = "MAXED"
+		heart_pickup_button.disabled = true
 
+	# Mana Pickup
+	if mana_pickup_level < UPGRADE_COSTS["mana_pickup"].size():
+		mana_pickup_button.text = "Upgrade: " + str(UPGRADE_COSTS["mana_pickup"][mana_pickup_level])
+		mana_pickup_button.disabled = false
+	else:
+		mana_pickup_button.text = "MAXED"
+		mana_pickup_button.disabled = true
 	
 
 
 func _on_back_button_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+
+
+func _on_heart_pickup_button_pressed() -> void:
+	if heart_pickup_level >= UPGRADE_COSTS["heart_pickup"].size():
+		return
+	
+	var cost = UPGRADE_COSTS["heart_pickup"][heart_pickup_level]
+	var gems = save_manager.get_gems()
+	
+	if gems >= cost:
+		save_manager.spend_gems(cost)
+		gems_label.text = "Gems: " + str(save_manager.get_gems())
+		
+		var heal_boost = UPGRADE_EFFECTS["heart_pickup"][heart_pickup_level]
+		var HeartPickupScript = load("res://scripts/heart_pickup.gd")
+		HeartPickupScript.permanent_healing_bonus += heal_boost
+		
+		heart_pickup_level += 1
+		update_heart_pickup_pips()
+		
+		save_manager.save_upgrade_level("heart_pickup", heart_pickup_level)
+		
+		update_button_texts()
+	else:
+		disable_enable_buttons()
+		
+		not_enough_gems_label.show()
+		await get_tree().create_timer(1.2).timeout
+		not_enough_gems_label.hide()
+		
+		disable_enable_buttons(false)
+
+func update_heart_pickup_pips() -> void:
+	heart_pickup_checked_pip_1.visible = heart_pickup_level >= 1
+	heart_pickup_checked_pip_2.visible = heart_pickup_level >= 2
+	heart_pickup_checked_pip_3.visible = heart_pickup_level >= 3
+	heart_pickup_checked_pip_4.visible = heart_pickup_level >= 4
+
+
+func _on_mana_pickup_button_pressed() -> void:
+	if mana_pickup_level >= UPGRADE_COSTS["mana_pickup"].size():
+		return
+	
+	var cost = UPGRADE_COSTS["mana_pickup"][mana_pickup_level]
+	var gems = save_manager.get_gems()
+	
+	if gems >= cost:
+		save_manager.spend_gems(cost)
+		gems_label.text = "Gems: " + str(save_manager.get_gems())
+		
+		var mana_boost = UPGRADE_EFFECTS["mana_pickup"][mana_pickup_level]
+		var ManaBallScript = load("res://scripts/mana_ball.gd")
+		ManaBallScript.permanent_mana_bonus += mana_boost
+		
+		mana_pickup_level += 1
+		update_mana_pickup_pips()
+		
+		save_manager.save_upgrade_level("mana_pickup", mana_pickup_level)
+		
+		update_button_texts()
+	else:
+		disable_enable_buttons()
+		
+		not_enough_gems_label.show()
+		await get_tree().create_timer(1.2).timeout
+		not_enough_gems_label.hide()
+		
+		disable_enable_buttons(false)
+
+func update_mana_pickup_pips() -> void:
+	mana_pickup_checked_pip_1.visible = mana_pickup_level >= 1
+	mana_pickup_checked_pip_2.visible = mana_pickup_level >= 2
+	mana_pickup_checked_pip_3.visible = mana_pickup_level >= 3
+	mana_pickup_checked_pip_4.visible = mana_pickup_level >= 4
+
+
+func _on_refund_button_pressed() -> void:
+	disable_enable_buttons(true)
+	
+	refund_confirm.show()
+
+func calculate_total_gems_spent() -> int:
+	var total_spent: int = 0
+	
+	for level in range(base_health_level):
+		total_spent += UPGRADE_COSTS["base_health"][level]
+	
+	for level in range(base_mana_level):
+		total_spent += UPGRADE_COSTS["base_mana"][level]
+	
+	for level in range(movement_speed_level):
+		total_spent += UPGRADE_COSTS["movement_speed"][level]
+	
+	for level in range(min_weapon_damage_level):
+		total_spent += UPGRADE_COSTS["min_weapon_damage"][level]
+	
+	for level in range(max_weapon_damage_level):
+		total_spent += UPGRADE_COSTS["max_weapon_damage"][level]
+	
+	for level in range(min_ability_damage_level):
+		total_spent += UPGRADE_COSTS["min_ability_damage"][level]
+	
+	for level in range(max_ability_damage_level):
+		total_spent += UPGRADE_COSTS["max_ability_damage"][level]
+	
+	for level in range(luck_level):
+		total_spent += UPGRADE_COSTS["luck"][level]
+	
+	for level in range(revive_level):
+		total_spent += UPGRADE_COSTS["revive"][level]
+	
+	for level in range(mana_regeneration_level):
+		total_spent += UPGRADE_COSTS["mana_regeneration"][level]
+	
+	for level in range(hp_regeneration_level):
+		total_spent += UPGRADE_COSTS["hp_regeneration"][level]
+	
+	for level in range(armor_level):
+		total_spent += UPGRADE_COSTS["armor"][level]
+	
+	for level in range(xp_bonus_level):
+		total_spent += UPGRADE_COSTS["xp_bonus"][level]
+	
+	for level in range(gold_bonus_level):
+		total_spent += UPGRADE_COSTS["gold_bonus"][level]
+	
+	for level in range(magnet_level):
+		total_spent += UPGRADE_COSTS["magnet"][level]
+	
+	for level in range(heart_pickup_level):
+		total_spent += UPGRADE_COSTS["heart_pickup"][level]
+	
+	for level in range(mana_pickup_level):
+		total_spent += UPGRADE_COSTS["mana_pickup"][level]
+	
+	return total_spent
+
+
+func _on_confirm_refund_button_pressed() -> void:
+	var total_spent = calculate_total_gems_spent()
+	
+	if total_spent > 0:
+		save_manager.add_gems(total_spent)
+		
+		save_manager.reset_upgrade_levels()
+		
+		base_health_level = 0
+		base_mana_level = 0
+		movement_speed_level = 0
+		min_weapon_damage_level = 0
+		max_weapon_damage_level = 0
+		min_ability_damage_level = 0
+		max_ability_damage_level = 0
+		luck_level = 0
+		revive_level = 0
+		mana_regeneration_level = 0
+		hp_regeneration_level = 0
+		armor_level = 0
+		xp_bonus_level = 0
+		gold_bonus_level = 0
+		magnet_level = 0
+		heart_pickup_level = 0
+		mana_pickup_level = 0
+		
+		update_base_health_pips()
+		update_base_mana_pips()
+		update_movement_speed_pips()
+		update_min_weapon_damage_pips()
+		update_max_weapon_damage_pips()
+		update_min_ability_damage_pips()
+		update_max_ability_damage_pips()
+		update_revive_pips()
+		update_hp_regen_pips()
+		update_mana_regen_pips()
+		update_armor_pips()
+		update_xp_bonus_pips()
+		update_gold_bonus_pips()
+		update_magnet_pips()
+		update_heart_pickup_pips()
+		update_mana_pickup_pips()
+		
+		save_manager.apply_all_saved_upgrades()
+		
+		update_button_texts()
+		
+		gems_label.text = "Gems: " + str(save_manager.get_gems())
+	
+	refund_confirm.hide()
+	disable_enable_buttons(false)
+
+
+func _on_cancel_refund_button_pressed() -> void:
+	refund_confirm.hide()
+	disable_enable_buttons(false)

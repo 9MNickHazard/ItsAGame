@@ -276,6 +276,7 @@ func update_stats_display() -> void:
 	add_stat_label("Total Hearts Collected: " + str(stats_manager.total_hearts_collected))
 	add_stat_label("Total Mana Balls Collected: " + str(stats_manager.total_mana_balls_collected))
 	add_stat_label("Total Diamonds Collected: " + str(stats_manager.total_diamonds_collected))
+	add_stat_label("Total Chests Collected: " + str(stats_manager.total_chests_collected))
 	add_stat_label("")
 	
 	# Combat stats

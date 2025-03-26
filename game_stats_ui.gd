@@ -8,8 +8,8 @@ signal return_to_main_menu
 
 var pixel_font: FontFile = preload("res://assets/fonts/PixelOperator8.ttf")
 
-func _ready() -> void:
-	populate_stats()
+#func _ready() -> void:
+	#populate_stats()
 	
 func _on_restart_button_pressed() -> void:
 	var BulletScript: GDScript = load("res://scripts/bullet.gd")
@@ -117,6 +117,7 @@ func populate_stats() -> void:
 	add_stat_label("Total Hearts Collected: " + str(stats_manager.total_hearts_collected))
 	add_stat_label("Total Mana Balls Collected: " + str(stats_manager.total_mana_balls_collected))
 	add_stat_label("Total Diamonds Collected: " + str(stats_manager.total_diamonds_collected))
+	add_stat_label("Total Chests Collected: " + str(stats_manager.total_chests_collected))
 	add_stat_label("")
 	
 	# combat stats

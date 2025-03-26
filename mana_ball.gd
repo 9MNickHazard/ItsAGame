@@ -12,8 +12,11 @@ var acceleration: float = 800.0
 var is_being_pulled: bool = false
 
 static var permanent_pickup_range_bonus: float = 0.0
+static var permanent_mana_bonus: float = 0.0
 var pickup_shape
 var original_radius
+
+const BASE_MANA_RECHARGE: float = 50.0
 
 func _ready() -> void:
 	pickup_shape = pickup_area.get_node("CollisionShape2D").shape
@@ -42,7 +45,7 @@ func _on_body_entered(body: Node2D) -> void:
 	if player.current_mana >= player.max_mana:
 		return
 	else:
-		var mana_amount: float = min(50.0, player.max_mana - player.current_mana)
+		var mana_amount: float = min(BASE_MANA_RECHARGE + permanent_mana_bonus, player.max_mana - player.current_mana)
 		player.current_mana += mana_amount
 		player.mana_changed.emit(player.current_mana)
 		

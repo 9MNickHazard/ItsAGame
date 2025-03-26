@@ -11,7 +11,7 @@ static var knockback_amount: float = 200.0
 
 var hit_enemies: Dictionary = {}
 
-var current_radius: float
+var current_radius: float = 68.0
 var max_radius: float = 465.0
 var expansion_rate: float = 930.0
 

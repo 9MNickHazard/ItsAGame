@@ -12,8 +12,11 @@ var acceleration: float = 800.0
 var is_being_pulled: bool = false
 
 static var permanent_pickup_range_bonus: float = 0.0
+static var permanent_healing_bonus: int = 0
 var pickup_shape
 var original_radius
+
+const BASE_HEAL: int = 10
 
 func _ready() -> void:
 	pickup_shape = pickup_area.get_node("CollisionShape2D").shape
@@ -42,7 +45,7 @@ func _on_body_entered(body: Node2D) -> void:
 	if player.health >= player.max_health:
 		return
 	else:
-		var heal_amount: int = min(10, player.max_health - player.health)
+		var heal_amount: int = min(BASE_HEAL + permanent_healing_bonus, player.max_health - player.health)
 		player.health += heal_amount
 		player.health_changed.emit(player.health)
 		
